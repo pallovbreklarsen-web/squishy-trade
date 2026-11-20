@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Squishy Trade</title>
+<meta name="theme-color" content="#ff8fc7">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Squishy Trade">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{
+  --bg:#fff4fa; --ink:#3b2a4a; --muted:#8a7a99; --pink:#ff8fc7; --pink2:#ffc2e2; --purple:#a78bfa;
+  --card:#ffffff; --line:#f1dbe9;
+  --t0:#9aa5b1; --t1:#3fb56b; --t2:#3b8df0; --t3:#a24de8; --t4:#ff9a1f;
+  --font: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI Rounded", system-ui, sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);
+  background-image:radial-gradient(circle at 10% 10%,#ffe3f2 0,transparent 40%),radial-gradient(circle at 90% 30%,#e9e1ff 0,transparent 40%),radial-gradient(circle at 30% 90%,#dff7ff 0,transparent 40%);
+  background-attachment:fixed; overscroll-behavior:none}
+button{font-family:inherit;cursor:pointer}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:rgba(255,244,250,.85);backdrop-filter:blur(10px);border-bottom:2px solid var(--line)}
+.logo{font-weight:900;font-size:20px;letter-spacing:.3px}
+.logo span{color:var(--pink)}
+.coins{background:#fff;border:2px solid #ffd76a;border-radius:999px;padding:6px 12px;font-weight:800;display:flex;gap:6px;align-items:center;box-shadow:0 3px 0 #ffd76a}
+.coins.bump{animation:bump .5s}
+@keyframes bump{30%{transform:scale(1.25)}60%{transform:scale(.92)}100%{transform:scale(1)}}
+main{padding:14px 14px calc(env(safe-area-inset-bottom) + 96px);max-width:820px;margin:0 auto}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:space-around;background:#fff;
+  border-top:2px solid var(--line);padding:6px 4px calc(env(safe-area-inset-bottom) + 6px)}
+nav button{flex:1;border:0;background:none;font-size:12px;font-weight:800;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px;border-radius:14px}
+nav button .ic{font-size:24px;transition:transform .2s}
+nav button.on{color:var(--ink);background:var(--pink2)}
+nav button.on .ic{transform:scale(1.15) rotate(-6deg)}
+h2{margin:6px 0 12px;font-size:22px}
+h3{margin:16px 0 8px}
+.muted{color:var(--muted)}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px;margin-bottom:14px;box-shadow:0 4px 0 var(--line)}
+.btn{border:0;border-radius:16px;padding:12px 16px;font-weight:900;font-size:16px;background:var(--pink);color:#fff;box-shadow:0 4px 0 #e06aa6;transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #e06aa6}
+.btn.sec{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.btn.green{background:#3fc77a;box-shadow:0 4px 0 #2a9a5a}
+.btn.red{background:#ff6b6b;box-shadow:0 4px 0 #d64545}
+.btn.purple{background:var(--purple);box-shadow:0 4px 0 #7c5fd6}
+.btn:disabled{opacity:.45}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grow{flex:1}
+input,select{font-family:inherit;font-size:16px;padding:12px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--ink);width:100%}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{flex:1;border:2px solid var(--line);background:#fff;border-radius:14px;padding:8px;font-weight:800;color:var(--muted)}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.grid.small{grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.card{position:relative;background:#fff;border-radius:20px;padding:10px 8px 8px;text-align:center;border:3px solid var(--tc,var(--t0));
+  box-shadow:0 4px 0 var(--tc,var(--t0));user-select:none;overflow:hidden}
+.card.tap:active, .card.squish{animation:squish .35s}
+@keyframes squish{0%{transform:scale(1)}30%{transform:scale(1.12,.82)}60%{transform:scale(.93,1.08)}100%{transform:scale(1)}}
+.card .blob{width:64px;height:64px;margin:0 auto 6px;border-radius:50% 50% 46% 46%;display:grid;place-items:center;font-size:38px;background:var(--bc,#ffe)}
+.grid.small .card .blob{width:46px;height:46px;font-size:28px}
+.card .nm{font-weight:900;font-size:12.5px;line-height:1.15;min-height:29px}
+.grid.small .card .nm{font-size:10.5px;min-height:24px}
+.card .br{font-size:10.5px;color:var(--muted);font-weight:700}
+.card .val{font-size:12px;font-weight:900;margin-top:4px}
+.card .tier{position:absolute;top:6px;left:6px;font-size:9px;font-weight:900;color:#fff;background:var(--tc);padding:2px 6px;border-radius:999px}
+.card .vtag{position:absolute;top:6px;right:6px;font-size:13px}
+.card.locked{opacity:.45}
+.card.locked::after{content:"🔒 på bordet";position:absolute;inset:auto 0 0 0;font-size:10px;font-weight:800;background:#000a;color:#fff;padding:2px}
+.t0{--tc:var(--t0)}.t1{--tc:var(--t1)}.t2{--tc:var(--t2)}.t3{--tc:var(--t3)}.t4{--tc:var(--t4)}
+/* variants */
+.v-g .blob{position:relative}
+.v-g .blob::after{content:"✨";position:absolute;right:-6px;top:-6px;font-size:18px;animation:twinkle 1.4s infinite}
+.v-g{background:linear-gradient(160deg,#fff 0%,#fff6d9 50%,#fff 100%)}
+@keyframes twinkle{50%{transform:scale(.6) rotate(30deg);opacity:.5}}
+.v-r{border:0;padding:13px 11px 11px;background:
+  linear-gradient(#fff,#fff) padding-box,
+  linear-gradient(var(--ang,0deg),#ff5f6d,#ffc371,#47e891,#3fa9f5,#b06bff,#ff5f6d) border-box;border:3px solid transparent;border-radius:20px;animation:spinb 3s linear infinite}
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes spinb{to{--ang:360deg}}
+.v-gold{background:linear-gradient(150deg,#fff8d6,#ffe27a 45%,#fff3b8 60%,#ffd04a);box-shadow:0 0 14px #ffcf3f,0 4px 0 #d9a400;border-color:#e3b400}
+.v-gold .nm,.v-gold .val{color:#6b4a00}
+
+/* Shop */
+.shopitem{display:flex;flex-direction:column;align-items:center;gap:6px}
+.boxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.box{border-radius:22px;padding:14px;text-align:center;color:#fff;font-weight:900;box-shadow:0 5px 0 #0002;position:relative;overflow:hidden}
+.box .e{font-size:52px;display:block;animation:float 2.4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px) rotate(4deg)}}
+.box small{display:block;font-weight:700;opacity:.9;margin:4px 0 10px;font-size:12px}
+.box .btn{background:#fff;color:var(--ink);box-shadow:0 4px 0 #0003;width:100%}
+.b1{background:linear-gradient(150deg,#7dd3fc,#3b82f6)}
+.b2{background:linear-gradient(150deg,#c084fc,#7c3aed)}
+.b3{background:linear-gradient(150deg,#fbbf24,#f43f5e)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px}
+.chips button{flex:none;border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-weight:800;color:var(--muted)}
+.chips button.on{background:var(--pink);border-color:var(--pink);color:#fff}
+
+/* Quiz */
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.cat{border:0;border-radius:20px;padding:16px 10px;font-weight:900;font-size:15px;color:var(--ink);box-shadow:0 4px 0 #0001}
+.cat .e{font-size:34px;display:block;margin-bottom:4px}
+.qbox{text-align:center}
+.qtext{font-size:22px;font-weight:900;margin:10px 0 16px;line-height:1.25}
+.qbig{font-size:84px;line-height:1;margin:6px 0}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:2px solid var(--line);background:#fff;border-radius:16px;padding:14px 8px;font-weight:800;font-size:16px;color:var(--ink);box-shadow:0 4px 0 var(--line);min-height:58px}
+.opt.ok{background:#c9f7d9;border-color:#3fc77a;box-shadow:0 4px 0 #3fc77a;animation:squish .4s}
+.opt.no{background:#ffd3d3;border-color:#ff6b6b;box-shadow:0 4px 0 #ff6b6b;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.qhead{display:flex;justify-content:space-between;align-items:center;font-weight:800}
+.streak{background:#fff0c2;border-radius:999px;padding:4px 10px}
+.coinfly{position:fixed;font-weight:900;font-size:22px;color:#e0a800;pointer-events:none;z-index:90;animation:fly 1s forwards}
+@keyframes fly{to{transform:translateY(-80px);opacity:0}}
+
+/* Trade board */
+.board{border-radius:26px;padding:12px;background:
+  repeating-linear-gradient(45deg,#ffe9f5 0 14px,#fff 14px 28px);border:3px dashed var(--pink);margin-bottom:12px}
+.sides{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.side{background:#fffc;border-radius:18px;padding:8px;min-height:170px;border:2px solid var(--line);position:relative}
+.side h4{margin:2px 0 6px;font-size:14px;display:flex;justify-content:space-between}
+.side.acc{border-color:#3fc77a;box-shadow:0 0 0 3px #3fc77a55}
+.side .accb{font-size:12px;color:#2a9a5a;font-weight:900}
+.side .empty{color:var(--muted);font-size:13px;text-align:center;padding:30px 4px}
+.side .grid.small{grid-template-columns:repeat(auto-fill,minmax(70px,1fr))}
+.side .card .blob{width:40px;height:40px;font-size:24px}
+.side .card .nm{font-size:9.5px;min-height:22px}
+.side .card .br{display:none}
+.side .card{animation:drop .35s}
+@keyframes drop{0%{transform:translateY(-30px) scale(.6);opacity:0}70%{transform:translateY(3px) scale(1.06,.92)}100%{transform:none;opacity:1}}
+.fair{text-align:center;font-weight:800;margin:8px 0;font-size:14px}
+.tbtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.status{display:flex;align-items:center;gap:8px;font-weight:800}
+.dot{width:10px;height:10px;border-radius:50%;background:#ccc}
+.dot.on{background:#3fc77a;box-shadow:0 0 0 4px #3fc77a33}
+.code{font-size:40px;font-weight:900;letter-spacing:8px;text-align:center;background:#fff;border:3px dashed var(--purple);border-radius:18px;padding:10px;margin:10px 0}
+.chat{max-height:150px;overflow-y:auto;font-size:14px;margin-bottom:8px;display:flex;flex-direction:column;gap:4px}
+.msg{background:#f5effa;border-radius:12px;padding:6px 10px;align-self:flex-start;max-width:85%}
+.msg.me{background:var(--pink2);align-self:flex-end}
+.msg.sys{background:none;color:var(--muted);font-size:12px;align-self:center}
+
+/* Modal & reveal */
+.modal{position:fixed;inset:0;background:#3b2a4a99;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:640px;max-height:85vh;overflow:auto;border-radius:26px 26px 0 0;padding:16px 16px calc(env(safe-area-inset-bottom) + 16px);animation:up .25s}
+@keyframes up{from{transform:translateY(60px);opacity:0}}
+.center{align-items:center}
+.center .sheet{border-radius:26px;margin:16px;max-width:420px}
+#reveal{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle,#4a2a6b,#1c1030);color:#fff;text-align:center;overflow:hidden}
+#reveal.show{display:flex}
+#rays{position:absolute;width:200vmax;height:200vmax;left:50%;top:50%;margin:-100vmax 0 0 -100vmax;opacity:0;
+  background:repeating-conic-gradient(var(--rc,#fff) 0 8deg,transparent 8deg 20deg);animation:rot 8s linear infinite;
+  -webkit-mask:radial-gradient(circle,#000 0,transparent 55%);mask:radial-gradient(circle,#000 0,transparent 55%)}
+#reveal.big #rays{opacity:.55;transition:opacity .4s}
+@keyframes rot{to{transform:rotate(360deg)}}
+#rbox{font-size:120px;position:relative;z-index:2}
+#rbox.shake{animation:boxshake .12s infinite}
+@keyframes boxshake{0%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.06)}100%{transform:rotate(-8deg)}}
+#rbox.boom{animation:boom .35s forwards}
+@keyframes boom{to{transform:scale(2.4);opacity:0}}
+#ritem{position:relative;z-index:2;display:none}
+#ritem.on{display:block;animation:popin .7s cubic-bezier(.2,1.6,.4,1)}
+@keyframes popin{0%{transform:scale(0) rotate(-30deg)}100%{transform:scale(1)}}
+#ritem .card{width:200px;margin:0 auto;padding:16px}
+#ritem .card .blob{width:120px;height:120px;font-size:80px}
+#ritem .card .nm{font-size:18px;min-height:0}
+#ritem .card .br{font-size:13px}
+#ritem .card .val{font-size:18px}
+#rlabel{font-size:34px;font-weight:900;margin:16px 0 4px;position:relative;z-index:2;text-shadow:0 3px 0 #0005;min-height:42px}
+#rlabel.pop{animation:lab 1s ease-in-out infinite}
+@keyframes lab{50%{transform:scale(1.15) rotate(-3deg)}}
+#rsub{position:relative;z-index:2;opacity:.85;min-height:22px}
+#rnext{position:relative;z-index:2;margin-top:18px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:85}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 64px);transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;z-index:95;animation:up .2s;max-width:90vw;text-align:center}
+.dexbar{height:14px;background:#f1dbe9;border-radius:999px;overflow:hidden;margin:6px 0}
+.dexbar div{height:100%;background:linear-gradient(90deg,var(--pink),var(--purple))}
+.card.unknown{filter:grayscale(1) brightness(1.6);opacity:.55}
+.stat{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Squishy<span>Trade</span></div>
+  <div class="coins" id="coins">🪙 <span id="coinN">0</span></div>
+</header>
+<main id="main"></main>
+<nav id="nav">
+  <button data-v="samling"><span class="ic">🧸</span>Samling</button>
+  <button data-v="oppgaver"><span class="ic">🧠</span>Oppgaver</button>
+  <button data-v="butikk"><span class="ic">🛍️</span>Butikk</button>
+  <button data-v="trade"><span class="ic">🤝</span>Trade</button>
+  <button data-v="meg"><span class="ic">⭐</span>Meg</button>
+</nav>
+
+<div id="reveal">
+  <div id="rays"></div>
+  <div id="rbox">🎁</div>
+  <div id="ritem"></div>
+  <div id="rlabel"></div>
+  <div id="rsub"></div>
+  <button class="btn" id="rnext" style="display:none">Fortsett</button>
+</div>
+<canvas id="confetti"></canvas>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+"use strict";
+/* =========================================================
+   DATA – squishies (ekte merkenavn, kun til privat bruk)
+   ========================================================= */
+const TIERS = [
+  {k:0, name:"Vanlig",      price:60},
+  {k:1, name:"Uvanlig",     price:120},
+  {k:2, name:"Sjelden",     price:250},
+  {k:3, name:"Episk",       price:600},
+  {k:4, name:"Legendarisk", price:1500},
+];
+const VARIANTS = {
+  n:    {name:"",         mult:1,   icon:"",   fan:0},
+  g:    {name:"Glitter",  mult:2.5, icon:"✨", fan:2},
+  r:    {name:"Regnbue",  mult:6,   icon:"🌈", fan:3},
+  gold: {name:"Gull",     mult:20,  icon:"👑", fan:4},
+};
+// [id, navn, merke, emoji, bakgrunnsfarge, tier]
+const CATALOG = [
+  ["sq-cam","Cam the Cat","Squishmallows","🐱","#ffe1c4",0],
+  ["sq-wendy","Wendy the Frog","Squishmallows","🐸","#d6f5c9",0],
+  ["sq-connor","Connor the Cow","Squishmallows","🐮","#f0f0f0",0],
+  ["sq-maui","Maui the Pineapple","Squishmallows","🍍","#fff1a8",0],
+  ["sq-hans","Hans the Hedgehog","Squishmallows","🦔","#ead7c3",1],
+  ["sq-winston","Winston the Owl","Squishmallows","🦉","#e3d4f7",1],
+  ["sq-fifi","Fifi the Fox","Squishmallows","🦊","#ffd3b0",1],
+  ["sq-malcolm","Malcolm the Mushroom","Squishmallows","🍄","#ffd0d0",2],
+  ["sq-archie","Archie the Axolotl","Squishmallows","🦎","#ffd1ea",2],
+  ["sq-lola","Lola the Unicorn","Squishmallows","🦄","#f3dcff",2],
+  ["sq-jack","Jack the Black Cat","Squishmallows","🐈‍⬛","#d9d2e9",3],
+  ["sq-belana","Belana the Fairy","Squishmallows","🧚","#e2f0ff",4],
+
+  ["jc-avocado","Amuseable Avocado","Jellycat","🥑","#e1f3c7",0],
+  ["jc-croissant","Amuseable Croissant","Jellycat","🥐","#ffe8c2",0],
+  ["jc-egg","Amuseable Boiled Egg","Jellycat","🥚","#fff6e0",0],
+  ["jc-taco","Amuseable Taco","Jellycat","🌮","#ffe4b3",1],
+  ["jc-bunny","Bashful Bunny","Jellycat","🐰","#f5ece4",1],
+  ["jc-bart","Bartholomew Bear","Jellycat","🐻","#ecd5bd",2],
+  ["jc-odell","Odell Octopus","Jellycat","🐙","#ffd6e8",3],
+
+  ["nd-cube","NeeDoh Nice Cube","NeeDoh","🧊","#d4f1ff",0],
+  ["nd-gumdrop","NeeDoh Gumdrop","NeeDoh","🍬","#ffd9f0",0],
+  ["nd-dohnut","NeeDoh Dohnut","NeeDoh","🍩","#ffe0cc",0],
+  ["nd-snow","NeeDoh Snowball Crunch","NeeDoh","❄️","#eaf6ff",1],
+  ["nd-cats","NeeDoh Cool Cats","NeeDoh","😺","#fff0c9",1],
+  ["nd-glow","NeeDoh Glow in the Dark","NeeDoh","🌟","#2b2d55",3],
+
+  ["tb-dumpling","Squishy Dumpling","Taba Squishy","🥟","#fff3e3",0],
+  ["tb-mochi","Mochi Squishy","Taba Squishy","🍡","#ffe3ef",0],
+  ["tb-onigiri","Onigiri Squishy","Taba Squishy","🍙","#f2f2f2",1],
+  ["tb-boba","Boba Tea Squishy","Taba Squishy","🧋","#f1dcc4",1],
+  ["tb-cake","Strawberry Cake Squishy","Taba Squishy","🍰","#ffe0e6",2],
+  ["tb-dragon","Dragon Dumpling","Taba Squishy","🐲","#d7f7e3",3],
+  ["tb-king","Kongedumplingen","Taba Squishy","🫅","#fff1b3",4],
+].map(([id,name,brand,emoji,color,tier])=>({id,name,brand,emoji,color,tier}));
+const DEF = Object.fromEntries(CATALOG.map(d=>[d.id,d]));
+
+const BOXES = [
+  {id:"liten", name:"Mysterieboks", e:"🎁", cls:"b1", price:100, count:1, odds:[70,25,5,0,0], vboost:1, desc:"1 squishy · mest vanlige"},
+  {id:"stor",  name:"Superboks",    e:"💜", cls:"b2", price:300, count:2, odds:[30,40,22,7,1], vboost:1.5, desc:"2 squishies · sjanse for episk!"},
+  {id:"mega",  name:"Megaboks",     e:"🌟", cls:"b3", price:800, count:3, odds:[0,20,45,28,7], vboost:2, desc:"3 squishies · høy sjanse for legendarisk"},
+];
+
+/* =========================================================
+   QUIZ
+   ========================================================= */
+// [navn, flagg, hovedstad, nivå]
+const COUNTRIES = [
+ ["Norge","🇳🇴","Oslo",1],["Sverige","🇸🇪","Stockholm",1],["Danmark","🇩🇰","København",1],["Finland","🇫🇮","Helsingfors",1],
+ ["Island","🇮🇸","Reykjavik",1],["Tyskland","🇩🇪","Berlin",1],["Frankrike","🇫🇷","Paris",1],["Spania","🇪🇸","Madrid",1],
+ ["Italia","🇮🇹","Roma",1],["Storbritannia","🇬🇧","London",1],["USA","🇺🇸","Washington D.C.",1],["Japan","🇯🇵","Tokyo",1],
+ ["Kina","🇨🇳","Beijing",1],["Brasil","🇧🇷","Brasília",1],["Canada","🇨🇦","Ottawa",1],["Hellas","🇬🇷","Athen",1],["Nederland","🇳🇱","Amsterdam",1],
+ ["Polen","🇵🇱","Warszawa",2],["Portugal","🇵🇹","Lisboa",2],["Sveits","🇨🇭","Bern",2],["Østerrike","🇦🇹","Wien",2],["Belgia","🇧🇪","Brussel",2],
+ ["Irland","🇮🇪","Dublin",2],["Mexico","🇲🇽","Mexico by",2],["Argentina","🇦🇷","Buenos Aires",2],["Australia","🇦🇺","Canberra",2],
+ ["India","🇮🇳","New Delhi",2],["Sør-Korea","🇰🇷","Seoul",2],["Tyrkia","🇹🇷","Ankara",2],["Egypt","🇪🇬","Kairo",2],
+ ["Sør-Afrika","🇿🇦","Pretoria",2],["Kenya","🇰🇪","Nairobi",2],["Ukraina","🇺🇦","Kyiv",2],["Estland","🇪🇪","Tallinn",2],
+ ["Thailand","🇹🇭","Bangkok",2],["Jamaica","🇯🇲","Kingston",2],["New Zealand","🇳🇿","Wellington",2],["Marokko","🇲🇦","Rabat",2],
+ ["Kroatia","🇭🇷","Zagreb",2],["Chile","🇨🇱","Santiago",2],["Vietnam","🇻🇳","Hanoi",2],
+];
+// [spørsmål, riktig, [feil...], nivå]
+const QBANK = {
+ historie:[
+  ["Hvilket år fikk Norge sin grunnlov?","1814",["1905","1945","1914"],1],
+  ["Hva feirer vi på 17. mai?","Grunnloven",["Kongens bursdag","At krigen sluttet","At sommeren starter"],1],
+  ["Hvem var det første mennesket på månen?","Neil Armstrong",["Yuri Gagarin","Buzz Lightyear","Roald Amundsen"],1],
+  ["Hvilket år landet mennesker på månen for første gang?","1969",["1959","1979","1989"],2],
+  ["Hvem kom først til Sydpolen?","Roald Amundsen",["Fridtjof Nansen","Robert Scott","Thor Heyerdahl"],1],
+  ["Hvilket år ble Norge selvstendig fra Sverige?","1905",["1814","1945","1890"],2],
+  ["Hvilket skip sank i 1912 etter å ha truffet et isfjell?","Titanic",["Fram","Kon-Tiki","Osebergskipet"],1],
+  ["I hvilket land ligger pyramidene i Giza?","Egypt",["Mexico","Hellas","India"],1],
+  ["Hva kaller vi nordboerne som dro på tokt for ca. 1200 år siden?","Vikinger",["Romere","Riddere","Cowboyer"],1],
+  ["Hvem regnes for å ha samlet Norge til ett rike?","Harald Hårfagre",["Olav den hellige","Haakon VII","Eirik Raude"],2],
+  ["Hvilken viking kom til Amerika rundt år 1000?","Leiv Eiriksson",["Harald Hardråde","Olav Tryggvason","Ragnar Lodbrok"],2],
+  ["Når var Norge okkupert under andre verdenskrig?","1940–1945",["1914–1918","1939–1941","1950–1955"],2],
+  ["Hva het flåten Thor Heyerdahl seilte over Stillehavet med?","Kon-Tiki",["Fram","Gjøa","Titanic"],2],
+  ["Hvilket kjent maleri laget Edvard Munch?","Skrik",["Mona Lisa","Stjernenatt","Brudeferden i Hardanger"],1],
+  ["Hvilken sykdom tok livet av veldig mange i Norge rundt 1349?","Svartedauden",["Vannkopper","Forkjølelse","Omgangssyke"],2],
+  ["Hvilket år falt Berlinmuren?","1989",["1969","1999","1945"],2],
+  ["Hva var hovedstaden i Romerriket?","Roma",["Athen","Paris","Kairo"],1],
+  ["Hva het Fridtjof Nansens polarskute?","Fram",["Titanic","Kon-Tiki","Oseberg"],2],
+  ["Hvem ble Norges konge i 1905?","Haakon VII",["Harald V","Olav V","Oscar II"],2],
+  ["Hva brukte vikingene som skrift?","Runer",["Hieroglyfer","Kinesiske tegn","Morsekode"],1],
+  ["Hvem skrev «Peer Gynt» og «Et dukkehjem»?","Henrik Ibsen",["Edvard Grieg","Henrik Wergeland","Roald Dahl"],2],
+  ["Levde dinosaurene samtidig med menneskene?","Nei, de døde ut lenge før",["Ja, med vikingene","Ja, med romerne","Ja, i steinalderen"],1],
+  ["Hvem var Norges første kvinnelige statsminister?","Gro Harlem Brundtland",["Erna Solberg","Dronning Sonja","Camilla Collett"],2],
+  ["Hva het vikingenes gud med hammeren Mjølner?","Tor",["Odin","Loke","Frøy"],1],
+ ],
+ boker:[
+  ["Hva heter skolen Harry Potter går på?","Galtvort",["Durmstrang","Beauxbatons","Galtvang"],1],
+  ["Hva heter Pippi Langstrømpes hest?","Lilla Gubben",["Svarten","Blakken","Sleipner"],1],
+  ["Hva heter Pippis apekatt?","Herr Nilsson",["Abu","Georg","Kong Julian"],1],
+  ["Hvem skrev bøkene om Pippi Langstrømpe?","Astrid Lindgren",["Roald Dahl","Thorbjørn Egner","J.K. Rowling"],1],
+  ["Hvem er de tre røverne i Kardemomme by?","Kasper, Jesper og Jonatan",["Karius, Baktus og Bastian","Ole, Dole og Doffen","Emil, Ida og Alfred"],1],
+  ["Hvem skrev «Karius og Baktus»?","Thorbjørn Egner",["Alf Prøysen","Astrid Lindgren","Anne-Cath. Vestly"],2],
+  ["Hva heter søsteren til Elsa i Frost?","Anna",["Vaiana","Ariel","Rapunzel"],1],
+  ["Hva heter snømannen i Frost?","Olaf",["Sven","Kristoff","Hans"],1],
+  ["Hvem skrev «Charlie og sjokoladefabrikken»?","Roald Dahl",["Astrid Lindgren","Jeff Kinney","Maria Parr"],2],
+  ["Hvilket land bor Bluey og familien i?","Australia",["Norge","USA","England"],1],
+  ["Hva heter den gule Pokémonen til Ash?","Pikachu",["Charmander","Squirtle","Jigglypuff"],1],
+  ["Hvilket grønt monster i Minecraft eksploderer?","Creeper",["Zombie","Enderman","Skeleton"],1],
+  ["Hvem skrev «Dagbok for pingler»?","Jeff Kinney",["Roald Dahl","J.K. Rowling","David Walliams"],2],
+  ["Hva heter skipet til Kaptein Sabeltann?","Den sorte dame",["Black Pearl","Titanic","Jolly Roger"],2],
+  ["I «Innsiden ut» – hvilken følelse er blå?","Tristhet",["Glede","Sinne","Avsky"],1],
+  ["Hvilken film handler om Mirabel og familien Madrigal?","Encanto",["Vaiana","Coco","Frost"],1],
+  ["Hva heter jentebandet i «KPop Demon Hunters»?","HUNTR/X",["Saja Boys","BLACKPINK","Spice Girls"],2],
+  ["Hvem skrev Harry Potter-bøkene?","J.K. Rowling",["Roald Dahl","Astrid Lindgren","Rick Riordan"],1],
+  ["Hva heter Harry Potters ugle?","Hedvig",["Skabbe","Fønix","Krokkskank"],2],
+  ["Hvem er Ole Brumms beste venn?","Nasse Nøff",["Tigergutt","Petter Sprett","Kristoffer Robin"],1],
+  ["Hva heter Mikke Mus sin hund?","Pluto",["Langbein","Snoopy","Fido"],1],
+  ["Hvilken farge har Shrek?","Grønn",["Blå","Brun","Lilla"],1],
+  ["Hva slags vesen er Stitch i «Lilo & Stitch»?","Et romvesen",["En hund","En koala","En kanin"],1],
+  ["Hva heter Ronja Røverdatters beste venn?","Birk",["Emil","Mattis","Skalle-Per"],2],
+  ["Hva heter bilen i «Flåklypa Grand Prix»?","Il Tempo Gigante",["Lynet McQueen","Kong Kjell","Gigantus"],2],
+  ["Hva heter løveungen i «Løvenes konge»?","Simba",["Nala","Mufasa","Scar"],1],
+  ["Hva heter racerbilen i filmen «Biler»?","Lynet McQueen",["Doc Hudson","Bill","Ramone"],1],
+  ["Hvem er broren til Mario i Super Mario?","Luigi",["Wario","Toad","Bowser"],1],
+ ],
+ natur:[
+  ["Hvor mange bein har en edderkopp?","8",["6","10","4"],1],
+  ["Hvilken planet er nærmest sola?","Merkur",["Venus","Mars","Jorda"],2],
+  ["Hvilken planet kalles den røde planeten?","Mars",["Jupiter","Venus","Saturn"],1],
+  ["Hva er det største dyret i verden?","Blåhval",["Elefant","Sjiraff","Hvithai"],1],
+  ["Hvilken gass tar plantene opp fra lufta?","Karbondioksid (CO₂)",["Oksygen","Helium","Nitrogen"],2],
+  ["Hvor mange dager er det i et vanlig år?","365",["360","366","350"],1],
+  ["Hva skjer med vann når det blir kaldere enn 0 °C?","Det fryser til is",["Det koker","Det blir til damp","Ingenting"],1],
+  ["Hva er Norges høyeste fjell?","Galdhøpiggen",["Glittertind","Snøhetta","Preikestolen"],2],
+  ["Hva er Norges lengste elv?","Glomma",["Numedalslågen","Altaelva","Drammenselva"],2],
+  ["Hva er verdens største hav?","Stillehavet",["Atlanterhavet","Indiahavet","Nordsjøen"],2],
+  ["Hva er verdens største land i areal?","Russland",["Kina","USA","Canada"],2],
+  ["Hva er Norges nasjonalfugl?","Fossekall",["Ørn","Måke","Spurv"],2],
+  ["Hvor mange farger har regnbuen?","7",["5","6","10"],1],
+  ["Hva heter stjernen jorda går rundt?","Sola",["Månen","Nordstjerna","Mars"],1],
+  ["Hva lager biene honning av?","Nektar fra blomster",["Blader","Sukker fra butikken","Vann"],1],
+  ["Hva slags dyr er en hval?","Et pattedyr",["En fisk","Et krypdyr","Et insekt"],2],
+  ["Hvilket organ pumper blodet rundt i kroppen?","Hjertet",["Lungene","Magen","Hjernen"],1],
+  ["Hva er verdens høyeste fjell?","Mount Everest",["Galdhøpiggen","Kilimanjaro","Mont Blanc"],1],
+  ["Hvilken gass trenger vi for å puste?","Oksygen",["Karbondioksid","Helium","Røyk"],1],
+  ["Hvor mange tenner har en voksen (med visdomstenner)?","32",["20","28","40"],2],
+  ["Hva kalles det når en larve blir til sommerfugl?","Forvandling (metamorfose)",["Fotosyntese","Fordøyelse","Fordampning"],2],
+  ["Hvilket dyr er verdens raskeste på land?","Gepard",["Løve","Hest","Struts"],1],
+ ],
+ aktuelt:[
+  ["Hvor ble vinter-OL 2026 arrangert?","Milano og Cortina (Italia)",["Oslo","Beijing","Lillehammer"],1],
+  ["Hvilke land arrangerte fotball-VM 2026?","USA, Canada og Mexico",["Qatar","Brasil","Norge og Sverige"],1],
+  ["Hvor mange lag var med i fotball-VM 2026?","48",["32","24","64"],2],
+  ["Hvilken norsk fotballspiss spiller for Manchester City?","Erling Haaland",["Martin Ødegaard","Sander Berge","Alexander Sørloth"],1],
+  ["Hvem er kaptein på Norges herrelandslag i fotball?","Martin Ødegaard",["Erling Haaland","Ada Hegerberg","Kristian Thorstvedt"],2],
+  ["Hvem er Norges konge?","Harald V",["Haakon VII","Olav V","Carl Gustaf"],1],
+  ["Hvem er kronprins i Norge?","Haakon",["Sverre Magnus","Harald","Marius"],1],
+  ["Hvem er nummer to i arverekkefølgen til Norges trone?","Prinsesse Ingrid Alexandra",["Prinsesse Märtha Louise","Dronning Sonja","Prins Sverre Magnus"],2],
+  ["Hvilket land vant Eurovision i 2025?","Østerrike",["Norge","Sverige","Italia"],2],
+  ["Hvilken sport driver Jakob Ingebrigtsen med?","Løping",["Skiskyting","Fotball","Svømming"],1],
+  ["Hvilken øvelse er Karsten Warholm kjent for?","400 meter hekk",["Spydkast","Lengdehopp","Maraton"],2],
+  ["Hvilken norsk langrennsløper tok mange gull i OL 2026?","Johannes Høsflot Klæbo",["Erling Haaland","Karsten Warholm","Jakob Ingebrigtsen"],1],
+  ["Hva står KI for?","Kunstig intelligens",["Kjempe internett","Kul info","Kongelig institusjon"],2],
+  ["Hva heter NRK sin kanal for barn?","NRK Super",["NRK Junior","Barne-TV Pluss","NRK Kids"],1],
+ ],
+};
+const CATS = [
+  {id:"matte",   name:"Matte",            e:"➗", bg:"#ffe1ef"},
+  {id:"flagg",   name:"Flagg",            e:"🏳️", bg:"#e1f0ff"},
+  {id:"hoved",   name:"Hovedsteder",      e:"🏙️", bg:"#e9e1ff"},
+  {id:"historie",name:"Historie",         e:"🏰", bg:"#fff1cc"},
+  {id:"boker",   name:"Bøker, film & TV", e:"📚", bg:"#dcf7e6"},
+  {id:"natur",   name:"Natur & geografi", e:"🌍", bg:"#d9f4ff"},
+  {id:"aktuelt", name:"Aktuelt",          e:"📰", bg:"#ffe6d6"},
+  {id:"mix",     name:"Bland alt!",       e:"🎲", bg:"#f3e8ff"},
+];
+
+/* =========================================================
+   STATE
+   ========================================================= */
+const KEY = "squishyTrade.v1";
+let S = load();
+function fresh(){ return {name:"", lvl:2, coins:200, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,trades:0,opened:0}, daily:""}; }
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.inv) return Object.assign(fresh(),s);}catch(e){} return fresh(); }
+function save(){ try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} }
+let _uc=0; const uid = ()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36)+(_uc++).toString(36);
+const rnd = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick = a=>a[Math.floor(Math.random()*a.length)];
+const shuffle = a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const esc = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $ = s=>document.querySelector(s);
+
+function value(it){ const d=DEF[it.id]; return d? Math.round(TIERS[d.tier].price*VARIANTS[it.v].mult) : 0; }
+function invValue(inv){ return inv.reduce((s,i)=>s+value(i),0); }
+function rollVariant(boost=1){
+  const r=Math.random()*100;
+  if(r<1*boost) return "gold";
+  if(r<(1+5)*boost) return "r";
+  if(r<(1+5+12)*boost) return "g";
+  return "n";
+}
+function makeItem(id,boost){ return {uid:uid(), id, v:rollVariant(boost), at:Date.now()}; }
+function addItem(it){ S.inv.push(it); S.dex[it.id]=true; }
+function setCoins(n){ S.coins=n; save(); $("#coinN").textContent=S.coins; const c=$("#coins"); c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
+
+/* =========================================================
+   UI helpers
+   ========================================================= */
+function card(it,opts={}){
+  const d=DEF[it.id]; if(!d) return "";
+  const t=TIERS[d.tier], v=VARIANTS[it.v];
+  return `<div class="card t${d.tier} v-${it.v} ${opts.cls||""}" data-uid="${it.uid||""}" data-id="${d.id}">
+    <span class="tier">${t.name}</span>${v.icon?`<span class="vtag">${v.icon}</span>`:""}
+    <div class="blob" style="--bc:${d.color}">${d.emoji}</div>
+    <div class="nm">${v.name?v.name+" ":""}${esc(d.name)}</div>
+    <div class="br">${esc(d.brand)}</div>
+    ${opts.noval?"":`<div class="val">🪙 ${opts.price??value(it)}</div>`}
+  </div>`;
+}
+function toast(msg,ms=2200){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),ms); }
+function modal(html,{center=false,onclose}={}){
+  const m=document.createElement("div"); m.className="modal"+(center?" center":"");
+  m.innerHTML=`<div class="sheet">${html}</div>`;
+  m.addEventListener("click",e=>{ if(e.target===m){ m.remove(); onclose&&onclose(); }});
+  document.body.appendChild(m); return m;
+}
+function confirmBox(text,yes="Ja",no="Avbryt"){
+  return new Promise(res=>{
+    const m=modal(`<h3 style="margin-top:0">${text}</h3><div class="row"><button class="btn sec grow" id="cn">${no}</button><button class="btn grow" id="cy">${yes}</button></div>`,{center:true,onclose:()=>res(false)});
+    m.querySelector("#cy").onclick=()=>{m.remove();res(true)}; m.querySelector("#cn").onclick=()=>{m.remove();res(false)};
+  });
+}
+function coinFly(x,y,txt){ const e=document.createElement("div"); e.className="coinfly"; e.textContent=txt; e.style.left=x+"px"; e.style.top=y+"px"; document.body.appendChild(e); setTimeout(()=>e.remove(),1000); }
+function squishOn(el){ el.classList.remove("squish"); void el.offsetWidth; el.classList.add("squish"); }
+
+/* =========================================================
+   ROUTER
+   ========================================================= */
+let view="samling";
+function go(v){ view=v; document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); window.scrollTo(0,0); }
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
+function render(){
+  $("#coinN").textContent=S.coins;
+  const m=$("#main");
+  ({samling:vSamling,oppgaver:vOppgaver,butikk:vButikk,trade:vTrade,meg:vMeg})[view](m);
+}
+
+/* ---------- SAMLING ---------- */
+let samTab="mine", sortBy="value";
+function vSamling(m){
+  const tot=invValue(S.inv), dexN=Object.keys(S.dex).length;
+  let html=`<div class="tabs"><button data-t="mine" class="${samTab==="mine"?"on":""}">Mine squishies (${S.inv.length})</button><button data-t="dex" class="${samTab==="dex"?"on":""}">Squishydex</button></div>`;
+  if(samTab==="mine"){
+    html+=`<div class="panel row"><div class="grow"><b>Samlingsverdi</b><div style="font-size:26px;font-weight:900">🪙 ${tot}</div></div>
+      <select id="sort" style="width:auto"><option value="value">Verdi</option><option value="new">Nyeste</option><option value="brand">Merke</option></select></div>`;
+    if(!S.inv.length) html+=`<div class="panel" style="text-align:center"><div style="font-size:60px">🥺</div><b>Du har ingen squishies ennå!</b><p class="muted">Løs oppgaver for å tjene mynter, og kjøp squishies i butikken.</p><button class="btn" onclick="go('oppgaver')">Start oppgaver</button></div>`;
+    const inv=S.inv.slice().sort(sortBy==="value"?(a,b)=>value(b)-value(a):sortBy==="new"?(a,b)=>b.at-a.at:(a,b)=>DEF[a.id].brand.localeCompare(DEF[b.id].brand)||value(b)-value(a));
+    html+=`<div class="grid">${inv.map(i=>card(i,{cls:"tap"+(isOffered(i.uid)?" locked":"")})).join("")}</div>`;
+  } else {
+    html+=`<div class="panel"><b>Samlet ${dexN} av ${CATALOG.length}</b><div class="dexbar"><div style="width:${dexN/CATALOG.length*100}%"></div></div><span class="muted">Grå = ikke funnet ennå</span></div>`;
+    for(const brand of [...new Set(CATALOG.map(d=>d.brand))]){
+      html+=`<h3>${brand}</h3><div class="grid small">${CATALOG.filter(d=>d.brand===brand).map(d=>card({id:d.id,v:"n"},{noval:true,cls:S.dex[d.id]?"":"unknown"})).join("")}</div>`;
+    }
+  }
+  m.innerHTML=html;
+  m.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{samTab=b.dataset.t;render();});
+  const so=m.querySelector("#sort"); if(so){ so.value=sortBy; so.onchange=()=>{sortBy=so.value;render();}; }
+  m.querySelectorAll(".grid .card[data-uid]").forEach(c=>c.onclick=()=>{ squishOn(c); if(c.dataset.uid) setTimeout(()=>itemDetail(c.dataset.uid),250); });
+}
+function itemDetail(u){
+  const it=S.inv.find(i=>i.uid===u); if(!it) return;
+  const d=DEF[it.id], sell=Math.round(value(it)*0.4);
+  const m=modal(`<div style="width:180px;margin:0 auto">${card(it)}</div>
+   <p style="text-align:center" class="muted">${TIERS[d.tier].name}${it.v!=="n"?" · "+VARIANTS[it.v].name+"-variant (x"+VARIANTS[it.v].mult+" verdi)":""}${it.from?"<br>Tradet fra "+esc(it.from):""}</p>
+   <div class="row"><button class="btn sec grow" id="cl">Lukk</button><button class="btn red grow" id="sl" ${isOffered(u)?"disabled":""}>Selg for 🪙 ${sell}</button></div>`,{center:true});
+  m.querySelector("#cl").onclick=()=>m.remove();
+  m.querySelector("#sl").onclick=async()=>{ m.remove(); if(await confirmBox(`Selge ${VARIANTS[it.v].name} ${esc(d.name)} for 🪙 ${sell}?`,"Selg")){ S.inv=S.inv.filter(i=>i.uid!==u); setCoins(S.coins+sell); sendInv(); render(); toast("Solgt! +"+sell+" 🪙"); } };
+}
+
+/* ---------- OPPGAVER ---------- */
+let quiz=null;
+function vOppgaver(m){
+  if(!quiz){
+    const today=new Date().toDateString();
+    m.innerHTML=`<h2>Tjen mynter 🧠</h2>
+     ${S.daily!==today?`<div class="panel row"><div class="grow"><b>Daglig bonus!</b><div class="muted">Hent 50 gratis mynter i dag</div></div><button class="btn green" id="daily">Hent 🪙 50</button></div>`:""}
+     <p class="muted">Riktig svar = 🪙 10. Fem riktige på rad = 🪙 25 ekstra! Nivå: <b>${S.lvl===1?"Lett":"Middels"}</b> (bytt under «Meg»)</p>
+     <div class="cats">${CATS.map(c=>`<button class="cat" data-c="${c.id}" style="background:${c.bg}"><span class="e">${c.e}</span>${c.name}</button>`).join("")}</div>`;
+    m.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{ quiz={cat:b.dataset.c,streak:0,n:0,right:0,earned:0,q:null,seen:new Set()}; nextQ(); render(); });
+    const d=m.querySelector("#daily"); if(d) d.onclick=(e)=>{ S.daily=today; setCoins(S.coins+50); coinFly(e.clientX,e.clientY,"+50 🪙"); render(); };
+    return;
+  }
+  const q=quiz.q, cat=CATS.find(c=>c.id===quiz.cat);
+  m.innerHTML=`<div class="panel qbox">
+    <div class="qhead"><button class="btn sec" id="back" style="padding:6px 12px">← Tilbake</button><span>${cat.e} ${cat.name}</span><span class="streak">🔥 ${quiz.streak}</span></div>
+    ${q.big?`<div class="qbig">${q.big}</div>`:""}
+    <div class="qtext">${esc(q.q)}</div>
+    <div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>
+    <p class="muted" style="margin-bottom:0">Denne runden: ${quiz.right}/${quiz.n} riktige · tjent 🪙 ${quiz.earned}</p>
+  </div>`;
+  m.querySelector("#back").onclick=()=>{ quiz=null; render(); };
+  let done=false;
+  m.querySelectorAll(".opt").forEach(b=>b.onclick=(e)=>{
+    if(done) return; done=true;
+    const ok=q.opts[+b.dataset.i]===q.a; quiz.n++; S.stats.answered++;
+    if(ok){ b.classList.add("ok"); quiz.right++; quiz.streak++; S.stats.correct++; S.stats.best=Math.max(S.stats.best,quiz.streak);
+      let gain=10; if(quiz.streak%5===0){ gain+=25; toast("🔥 "+quiz.streak+" på rad! +25 bonus"); }
+      quiz.earned+=gain; setCoins(S.coins+gain); coinFly(e.clientX-20,e.clientY-20,"+"+gain+" 🪙");
+    } else { b.classList.add("no"); quiz.streak=0; m.querySelectorAll(".opt").forEach(x=>{ if(q.opts[+x.dataset.i]===q.a) x.classList.add("ok"); }); }
+    save();
+    setTimeout(()=>{ nextQ(); render(); }, ok?700:1600);
+  });
+}
+function mcq(q,a,wrong,big){ return {q,a:String(a),opts:shuffle([String(a),...wrong.slice(0,3).map(String)]),big}; }
+function numWrong(a,spread){ const s=new Set(); while(s.size<3){ let w=a+rnd(-spread,spread); if(w!==a&&w>=0) s.add(w); } return [...s]; }
+function genMath(lvl){
+  const t = lvl===1 ? pick(["+","+","-","-","x"]) : pick(["+","-","x","x",":","halv","pst"]);
+  let q,a;
+  if(lvl===1){
+    if(t==="+"){ const x=rnd(2,30),y=rnd(2,20); q=`${x} + ${y}`; a=x+y; }
+    else if(t==="-"){ const x=rnd(10,50),y=rnd(1,x); q=`${x} − ${y}`; a=x-y; }
+    else { const x=rnd(2,5),y=rnd(1,10); q=`${x} × ${y}`; a=x*y; }
+  } else {
+    if(t==="+"){ const x=rnd(50,600),y=rnd(20,400); q=`${x} + ${y}`; a=x+y; }
+    else if(t==="-"){ const x=rnd(100,1000),y=rnd(10,x); q=`${x} − ${y}`; a=x-y; }
+    else if(t==="x"){ const x=rnd(3,12),y=rnd(3,12); q=`${x} × ${y}`; a=x*y; }
+    else if(t===":"){ const y=rnd(2,10),a0=rnd(2,12); q=`${y*a0} : ${y}`; a=a0; }
+    else if(t==="halv"){ const x=rnd(5,60)*2; q=`Hva er halvparten av ${x}?`; a=x/2; }
+    else { const x=rnd(1,30)*10; q=`Hva er 10 % av ${x}?`; a=x/10; }
+  }
+  return mcq(q.includes("?")?q:`Hva er ${q}?`, a, numWrong(a, Math.max(3,Math.round(a*0.15))));
+}
+function genQ(cat){
+  const lvl=S.lvl, cs=COUNTRIES.filter(c=>c[3]<=lvl);
+  if(cat==="mix") cat=pick(["matte","flagg","hoved","historie","boker","natur","aktuelt"]);
+  if(cat==="matte") return genMath(lvl);
+  if(cat==="flagg"||cat==="hoved"){
+    const c=pick(cs), others=shuffle(COUNTRIES.filter(x=>x!==c&&x[3]<=Math.max(lvl,1)+ (lvl===1?0:0)));
+    if(cat==="flagg") return mcq("Hvilket land har dette flagget?", c[0], others.map(o=>o[0]), c[1]);
+    return Math.random()<.5 ? mcq(`Hva er hovedstaden i ${c[0]}?`, c[2], others.map(o=>o[2]), c[1])
+                            : mcq(`${c[2]} er hovedstaden i hvilket land?`, c[0], others.map(o=>o[0]), "🏙️");
+  }
+  const bank=QBANK[cat].filter(q=>q[3]<=lvl);
+  let item, tries=0; do{ item=pick(bank); tries++; }while(quiz&&quiz.seen.has(item[0])&&tries<30);
+  if(quiz){ quiz.seen.add(item[0]); if(quiz.seen.size>=bank.length) quiz.seen.clear(); }
+  return mcq(item[0], item[1], item[2]);
+}
+function nextQ(){ quiz.q=genQ(quiz.cat); }
+
+/* ---------- BUTIKK ---------- */
+let shopBrand="Alle";
+function vButikk(m){
+  const brands=["Alle",...new Set(CATALOG.map(d=>d.brand))];
+  const items=CATALOG.filter(d=>d.tier<=2&&(shopBrand==="Alle"||d.brand===shopBrand));
+  m.innerHTML=`<h2>Butikken 🛍️</h2>
+   <h3>Mysteriebokser</h3>
+   <div class="boxes">${BOXES.map(b=>`<div class="box ${b.cls}"><span class="e">${b.e}</span>${b.name}<small>${b.desc}</small><button class="btn" data-box="${b.id}" ${S.coins<b.price?"disabled":""}>🪙 ${b.price}</button></div>`).join("")}</div>
+   <p class="muted" style="font-size:13px">Episke og legendariske squishies finnes bare i bokser! Alle kjøp kan bli <b>✨ Glitter</b>, <b>🌈 Regnbue</b> eller <b>👑 Gull</b> – da er de verdt mye mer.</p>
+   <h3>Kjøp squishies</h3>
+   <div class="chips">${brands.map(b=>`<button class="${b===shopBrand?"on":""}" data-b="${b}">${b}</button>`).join("")}</div>
+   <div class="grid">${items.map(d=>`<div class="shopitem">${card({id:d.id,v:"n"},{price:TIERS[d.tier].price})}<button class="btn" style="width:100%;padding:8px" data-buy="${d.id}" ${S.coins<TIERS[d.tier].price?"disabled":""}>Kjøp</button></div>`).join("")}</div>`;
+  m.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{shopBrand=b.dataset.b;render();});
+  m.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>buy(b.dataset.buy));
+  m.querySelectorAll("[data-box]").forEach(b=>b.onclick=()=>openBox(b.dataset.box));
+}
+function buy(id){
+  const d=DEF[id], p=TIERS[d.tier].price; if(S.coins<p) return toast("Ikke nok mynter 😅");
+  setCoins(S.coins-p); const it=makeItem(id,1); addItem(it); save(); sendInv();
+  reveal([it],"🛍️",()=>render());
+}
+function rollTier(odds){ let r=Math.random()*100; for(let i=0;i<odds.length;i++){ if(r<odds[i]) return i; r-=odds[i]; } return 0; }
+function openBox(bid){
+  const b=BOXES.find(x=>x.id===bid); if(S.coins<b.price) return toast("Ikke nok mynter 😅");
+  setCoins(S.coins-b.price); S.stats.opened++;
+  const items=[]; for(let i=0;i<b.count;i++){ const t=rollTier(b.odds); const d=pick(CATALOG.filter(c=>c.tier===t)); const it=makeItem(d.id,b.vboost); addItem(it); items.push(it); }
+  save(); sendInv(); reveal(items,b.e,()=>render());
+}
+
+/* ---------- REVEAL-ANIMASJON ---------- */
+function fanfare(it){ return Math.max(DEF[it.id].tier, VARIANTS[it.v].fan); }
+const FAN_COL=["#ffffff","#7cf2a8","#6fb6ff","#d68bff","#ffcc33"];
+function reveal(items,boxEmoji,done,title){
+  const R=$("#reveal"), box=$("#rbox"), ri=$("#ritem"), lab=$("#rlabel"), sub=$("#rsub"), nx=$("#rnext");
+  let i=0;
+  R.classList.add("show");
+  const step=()=>{
+    if(i>=items.length){ R.classList.remove("show","big"); done&&done(); return; }
+    const it=items[i], d=DEF[it.id], f=fanfare(it);
+    R.classList.remove("big"); ri.classList.remove("on"); ri.innerHTML=""; lab.textContent=title||""; lab.classList.remove("pop"); sub.textContent=items.length>1?`${i+1} av ${items.length}`:""; nx.style.display="none";
+    box.textContent=boxEmoji; box.style.display="block"; box.className="shake";
+    R.style.setProperty("--rc",FAN_COL[f]);
+    const shakeTime = 700 + f*450;
+    setTimeout(()=>{
+      box.className="boom";
+      setTimeout(()=>{
+        box.style.display="none";
+        ri.innerHTML=card(it); ri.classList.add("on");
+        if(f>=2){ R.classList.add("big"); confetti(f); try{navigator.vibrate&&navigator.vibrate(f>=4?[100,60,100,60,300]:[80,50,80]);}catch(e){} }
+        const v=VARIANTS[it.v];
+        let L = f>=4?"🌟 LEGENDARISK! 🌟": f===3?"💜 EPISK! 💜": f===2?"💙 SJELDEN! 💙": d.tier===1?"Uvanlig!":"Ny squishy!";
+        if(it.v!=="n") L = `${v.icon} ${v.name.toUpperCase()}-VARIANT! ${v.icon}`;
+        lab.textContent=L; if(f>=2) lab.classList.add("pop");
+        lab.style.color=FAN_COL[f];
+        sub.textContent=`${TIERS[d.tier].name}${it.v!=="n"?" · "+v.name:""} · verdi 🪙 ${value(it)}`+(items.length>1?`  (${i+1}/${items.length})`:"");
+        nx.style.display="inline-block"; nx.textContent = i<items.length-1?"Neste ➜":"Fortsett";
+      },300);
+    },shakeTime);
+  };
+  nx.onclick=()=>{ i++; step(); };
+  step();
+}
+function confetti(level){
+  const cv=$("#confetti"), cx=cv.getContext("2d"); cv.width=innerWidth; cv.height=innerHeight;
+  const cols= level>=4?["#ffd700","#ffec8b","#fff","#ffb300"]:["#ff8fc7","#a78bfa","#7dd3fc","#fde047","#86efac"];
+  const P=[]; const n=level>=4?260:level===3?170:110;
+  for(let k=0;k<n;k++) P.push({x:cv.width/2,y:cv.height/2,vx:(Math.random()-.5)*16,vy:Math.random()*-16-4,s:rnd(5,11),c:pick(cols),r:Math.random()*6,vr:(Math.random()-.5)*.4});
+  let t=0; (function f(){ cx.clearRect(0,0,cv.width,cv.height); P.forEach(p=>{p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr; cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);cx.restore();}); if(++t<170) requestAnimationFrame(f); else cx.clearRect(0,0,cv.width,cv.height); })();
+}
+
+/* =========================================================
+   ONLINE TRADE (PeerJS – direkte kobling mellom to mobiler)
+   ========================================================= */
+const PREFIX="squishytrade-pl26-";
+let peer=null, conn=null, isHost=false, roomCode="", opp=null /* {name, inv} */, chat=[], connecting=false;
+let trade=newTrade();
+function newTrade(){ return {offers:{host:[],guest:[]}, acc:{host:false,guest:false}}; }
+const myRole=()=>isHost?"host":"guest", oppRole=()=>isHost?"guest":"host";
+const isOffered=u=>trade.offers[myRole()].some(i=>i.uid===u);
+const connected=()=>conn&&conn.open;
+function send(o){ if(connected()) try{conn.send(o);}catch(e){} }
+function sendInv(){ send({t:"inv",inv:S.inv}); }
+function addChat(text,who){ chat.push({text,who}); if(chat.length>60) chat.shift(); if(view==="trade") render(); }
+
+function makeCode(){ const A="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; return Array.from({length:4},()=>pick(A.split(""))).join(""); }
+function hostRoom(){
+  if(typeof Peer==="undefined") return toast("Trenger internett for å spille online");
+  leave(true); isHost=true; roomCode=makeCode(); connecting=true; render();
+  peer=new Peer(PREFIX+roomCode);
+  peer.on("open",()=>{ connecting=false; render(); });
+  peer.on("connection",c=>{ if(connected()){ c.on("open",()=>{c.send({t:"full"}); setTimeout(()=>c.close(),300);}); return; } setupConn(c); });
+  peer.on("error",e=>{ if(e.type==="unavailable-id"){ hostRoom(); } else { toast("Feil: "+e.type); connecting=false; render(); } });
+  peer.on("disconnected",()=>{ try{peer.reconnect();}catch(e){} });
+}
+function joinRoom(code){
+  code=(code||"").toUpperCase().trim(); if(code.length<4) return toast("Skriv inn koden (4 tegn)");
+  if(typeof Peer==="undefined") return toast("Trenger internett for å spille online");
+  leave(true); isHost=false; roomCode=code; connecting=true; render();
+  peer=new Peer();
+  peer.on("open",()=>{ const c=peer.connect(PREFIX+code,{reliable:true}); setupConn(c);
+    setTimeout(()=>{ if(!connected()&&connecting){ connecting=false; toast("Fant ikke rommet. Sjekk koden!"); leave(); } },9000); });
+  peer.on("error",e=>{ connecting=false; toast(e.type==="peer-unavailable"?"Fant ikke rommet. Sjekk koden!":"Feil: "+e.type); leave(); });
+  peer.on("disconnected",()=>{ try{peer.reconnect();}catch(e){} });
+}
+function setupConn(c){
+  conn=c;
+  c.on("open",()=>{ connecting=false; send({t:"hello",name:S.name,inv:S.inv}); });
+  c.on("data",onMsg);
+  c.on("close",()=>{ if(conn===c){ conn=null; const n=opp?opp.name:"Motspilleren"; opp=null; trade=newTrade(); addChat(n+" forlot rommet","sys"); toast(n+" koblet fra"); render(); } });
+}
+function leave(silent){
+  try{ conn&&conn.close(); }catch(e){} try{ peer&&peer.destroy(); }catch(e){}
+  conn=null; peer=null; opp=null; trade=newTrade(); chat=[]; if(!silent){ roomCode=""; connecting=false; render(); }
+}
+function onMsg(m){
+  if(!m||!m.t) return;
+  switch(m.t){
+    case "full": toast("Rommet er fullt"); leave(); break;
+    case "hello": opp={name:m.name||"Venn",inv:m.inv||[]}; addChat(opp.name+" er med! 🎉","sys"); toast("Koblet til "+opp.name+"!"); if(isHost) broadcastState(); render(); break;
+    case "inv": if(opp){ opp.inv=m.inv||[]; if(view==="trade") render(); } break;
+    case "chat": addChat(m.text, "them"); if(view!=="trade") toast("💬 "+(opp?opp.name:"")+": "+m.text); break;
+    case "act": if(isHost) applyAct("guest",m); break;
+    case "state": trade=m.trade; if(view==="trade") render(); break;
+    case "declined": trade=newTrade(); toast(m.by===S.name?"Traden ble avslått":"❌ "+m.by+" avslo traden"); addChat(m.by+" avslo traden","sys"); render(); break;
+    case "commit": doCommit(m.trade); break;
+  }
+}
+function act(a,extra={}){ const msg=Object.assign({t:"act",a},extra); if(isHost) applyAct("host",msg); else send(msg); }
+function roleName(r){ return r===myRole()?S.name:(opp?opp.name:"Venn"); }
+function applyAct(role,m){ // kun verten (host) bestemmer
+  const o=trade.offers[role];
+  if(m.a==="add"){ if(m.item&&!o.some(i=>i.uid===m.item.uid)&&o.length<12){ o.push(m.item); trade.acc={host:false,guest:false}; } }
+  else if(m.a==="remove"){ trade.offers[role]=o.filter(i=>i.uid!==m.uid); trade.acc={host:false,guest:false}; }
+  else if(m.a==="accept"){ if(trade.offers.host.length+trade.offers.guest.length>0) trade.acc[role]=true; }
+  else if(m.a==="unaccept"){ trade.acc[role]=false; }
+  else if(m.a==="decline"){ const by=roleName(role); trade=newTrade(); send({t:"declined",by}); if(role!=="host"){ toast("❌ "+by+" avslo traden"); } addChat(by+" avslo traden","sys"); render(); return; }
+  if(trade.acc.host&&trade.acc.guest){ const t=trade; send({t:"commit",trade:t}); doCommit(t); return; }
+  broadcastState();
+}
+function broadcastState(){ send({t:"state",trade}); if(view==="trade") render(); }
+function doCommit(t){
+  const mine=t.offers[myRole()], theirs=t.offers[oppRole()];
+  const give=new Set(mine.map(i=>i.uid));
+  S.inv=S.inv.filter(i=>!give.has(i.uid));
+  const got=theirs.filter(i=>DEF[i.id]).map(i=>({uid:uid(),id:i.id,v:i.v,at:Date.now(),from:opp?opp.name:"venn"}));
+  got.forEach(addItem); S.stats.trades++; save();
+  trade=newTrade(); sendInv(); addChat("✅ Trade fullført!","sys");
+  if(got.length) reveal(got,"🤝",()=>render(),"Trade fullført!"); else { toast("✅ Trade fullført!"); render(); }
+}
+
+/* ---------- TRADE-VISNING ---------- */
+function vTrade(m){
+  if(!connected()){
+    m.innerHTML=`<h2>Trade 🤝</h2>
+    ${roomCode&&isHost?`<div class="panel" style="text-align:center"><b>Rommet ditt er klart!</b><p class="muted" style="margin:4px 0">Gi denne koden til den du vil trade med:</p>
+       <div class="code">${connecting?"…":roomCode}</div><p class="muted">⏳ Venter på at noen blir med… (hold appen åpen)</p><button class="btn sec" id="stop">Avbryt</button></div>`
+    : connecting?`<div class="panel" style="text-align:center"><div style="font-size:50px">🔌</div><b>Kobler til rom ${esc(roomCode)}…</b></div>`
+    :`<div class="panel"><h3 style="margin-top:0">Lag et rom</h3><p class="muted">Du får en kode som motspilleren skriver inn.</p><button class="btn purple" id="host" style="width:100%">✨ Lag rom</button></div>
+      <div class="panel"><h3 style="margin-top:0">Bli med i et rom</h3><div class="row"><input id="code" maxlength="4" placeholder="KODE" style="text-transform:uppercase;letter-spacing:6px;font-weight:900;text-align:center;flex:1"><button class="btn" id="join">Bli med</button></div></div>
+      <p class="muted" style="font-size:13px">Begge må ha spillet åpent og være på internett samtidig.</p>`}`;
+    const h=m.querySelector("#host"); if(h) h.onclick=hostRoom;
+    const j=m.querySelector("#join"); if(j) j.onclick=()=>joinRoom(m.querySelector("#code").value);
+    const ci=m.querySelector("#code"); if(ci) ci.onkeydown=e=>{ if(e.key==="Enter") joinRoom(ci.value); };
+    const s=m.querySelector("#stop"); if(s) s.onclick=()=>leave();
+    return;
+  }
+  const me=myRole(), them=oppRole(), on=opp?opp.name:"…";
+  const mine=trade.offers[me], theirs=trade.offers[them];
+  const vm=invValue(mine), vt=invValue(theirs);
+  const offeredTheirs=new Set(theirs.map(i=>i.uid));
+  m.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:10px"><div class="status"><span class="dot on"></span>Rom ${roomCode} · ${esc(on)}</div><button class="btn sec" id="lv" style="padding:6px 12px">Forlat</button></div>
+   <div class="board">
+     <div class="sides">
+       <div class="side ${trade.acc[me]?"acc":""}"><h4><span>Du gir</span>${trade.acc[me]?'<span class="accb">✅ Godtatt</span>':""}</h4>
+         ${mine.length?`<div class="grid small">${mine.map(i=>card(i,{cls:"tap"})).join("")}</div>`:`<div class="empty">Trykk «Legg til» for å legge squishies på bordet</div>`}</div>
+       <div class="side ${trade.acc[them]?"acc":""}"><h4><span>${esc(on)} gir</span>${trade.acc[them]?'<span class="accb">✅ Godtatt</span>':""}</h4>
+         ${theirs.length?`<div class="grid small">${theirs.map(i=>card(i,{cls:"them"})).join("")}</div>`:`<div class="empty">Ingenting ennå…</div>`}</div>
+     </div>
+     <div class="fair">Du gir 🪙 ${vm} · du får 🪙 ${vt} ${vm||vt? (vt>=vm?"😊":"🤔"):""}</div>
+     <div class="tbtns">
+       <button class="btn sec" id="add">➕ Legg til</button>
+       ${trade.acc[me]?`<button class="btn sec" id="unacc">↩️ Angre</button>`:`<button class="btn green" id="acc" ${mine.length+theirs.length?"":"disabled"}>✅ Godta</button>`}
+       <button class="btn red" id="dec" ${mine.length+theirs.length?"":"disabled"}>❌ Avslå</button>
+     </div>
+     <p class="muted" style="font-size:12px;text-align:center;margin:8px 0 0">Når begge trykker «Godta», byttes squishiene. Endres bordet, må begge godta på nytt.</p>
+   </div>
+   <div class="panel"><b>💬 Chat</b>
+     <div class="chat" id="chat">${chat.map(c=>`<div class="msg ${c.who==="me"?"me":c.who==="sys"?"sys":""}">${esc(c.text)}</div>`).join("")}</div>
+     <div class="row"><input id="ct" placeholder="Skriv en melding…" class="grow" style="flex:1"><button class="btn" id="cs">Send</button></div>
+   </div>
+   <div class="panel"><b>${esc(on)} sin samling</b> <span class="muted">(🪙 ${opp?invValue(opp.inv):0}) – trykk for å ønske deg en</span>
+     <div class="grid small" style="margin-top:8px">${opp&&opp.inv.length?opp.inv.slice().sort((a,b)=>value(b)-value(a)).map(i=>card(i,{cls:"wish"+(offeredTheirs.has(i.uid)?" locked":"")})).join(""):'<span class="muted">Tom samling</span>'}</div>
+   </div>`;
+  const ch=m.querySelector("#chat"); ch.scrollTop=ch.scrollHeight;
+  m.querySelector("#lv").onclick=async()=>{ if(await confirmBox("Forlate rommet?","Forlat")) leave(); };
+  m.querySelector("#add").onclick=pickForTrade;
+  const a=m.querySelector("#acc"); if(a) a.onclick=()=>act("accept");
+  const u=m.querySelector("#unacc"); if(u) u.onclick=()=>act("unaccept");
+  m.querySelector("#dec").onclick=()=>act("decline");
+  m.querySelectorAll(".side .card.tap").forEach(c=>c.onclick=()=>{ squishOn(c); act("remove",{uid:c.dataset.uid}); });
+  m.querySelectorAll(".card.wish").forEach(c=>c.onclick=()=>{ squishOn(c); const it=opp.inv.find(i=>i.uid===c.dataset.uid); if(!it) return; const d=DEF[it.id]; const txt=`Kan jeg få ${VARIANTS[it.v].name?VARIANTS[it.v].name+" ":""}${d.name}? 🥺`; send({t:"chat",text:txt}); addChat(txt,"me"); });
+  const sendChat=()=>{ const i=m.querySelector("#ct"); const t=i.value.trim().slice(0,200); if(!t) return; send({t:"chat",text:t}); addChat(t,"me"); };
+  m.querySelector("#cs").onclick=sendChat; m.querySelector("#ct").onkeydown=e=>{ if(e.key==="Enter") sendChat(); };
+}
+function pickForTrade(){
+  const avail=S.inv.filter(i=>!isOffered(i.uid)).sort((a,b)=>value(b)-value(a));
+  const m=modal(`<h3 style="margin-top:0">Velg squishies å legge på bordet</h3>
+    ${avail.length?`<div class="grid small">${avail.map(i=>card(i,{cls:"tap"})).join("")}</div>`:`<p class="muted">Du har ingen flere squishies å tilby.</p>`}
+    <button class="btn sec" id="cl" style="width:100%;margin-top:12px">Ferdig</button>`);
+  m.querySelector("#cl").onclick=()=>m.remove();
+  m.querySelectorAll(".card").forEach(c=>c.onclick=()=>{ const it=S.inv.find(i=>i.uid===c.dataset.uid); if(!it) return; act("add",{item:{uid:it.uid,id:it.id,v:it.v}}); c.style.transition="transform .25s, opacity .25s"; c.style.transform="scale(.3) translateY(-40px)"; c.style.opacity="0"; setTimeout(()=>c.remove(),250); });
+}
+
+/* ---------- MEG ---------- */
+function vMeg(m){
+  const st=S.stats;
+  m.innerHTML=`<h2>Hei, ${esc(S.name)}! ⭐</h2>
+   <div class="panel">
+     <div class="stat"><span>Squishies</span><b>${S.inv.length}</b></div>
+     <div class="stat"><span>Samlingsverdi</span><b>🪙 ${invValue(S.inv)}</b></div>
+     <div class="stat"><span>Squishydex</span><b>${Object.keys(S.dex).length}/${CATALOG.length}</b></div>
+     <div class="stat"><span>Riktige svar</span><b>${st.correct} av ${st.answered}</b></div>
+     <div class="stat"><span>Lengste rekke</span><b>🔥 ${st.best}</b></div>
+     <div class="stat"><span>Bokser åpnet</span><b>${st.opened}</b></div>
+     <div class="stat" style="border:0"><span>Trades</span><b>${st.trades}</b></div>
+   </div>
+   <div class="panel"><b>Innstillinger</b>
+     <p style="margin:10px 0 4px">Navn</p><input id="nm" value="${esc(S.name)}" maxlength="16">
+     <p style="margin:10px 0 4px">Nivå på oppgaver</p>
+     <select id="lv"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2">Middels (ca. 5.–7. trinn)</option></select>
+     <button class="btn" id="sv" style="width:100%;margin-top:12px">Lagre</button>
+   </div>
+   <div class="panel"><b>Odds i boksene</b><p class="muted" style="font-size:13px">${BOXES.map(b=>`${b.e} ${b.name}: `+b.odds.map((o,i)=>o?`${TIERS[i].name} ${o}%`:"").filter(Boolean).join(", ")).join("<br>")}<br>Varianter: ✨ Glitter ~12 %, 🌈 Regnbue ~5 %, 👑 Gull ~1 % (høyere i store bokser)</p></div>
+   <button class="btn red" id="rs" style="width:100%">Start helt på nytt</button>`;
+  m.querySelector("#lv").value=S.lvl;
+  m.querySelector("#sv").onclick=()=>{ const n=m.querySelector("#nm").value.trim(); if(n) S.name=n; S.lvl=+m.querySelector("#lv").value; save(); toast("Lagret ✅"); render(); };
+  m.querySelector("#rs").onclick=async()=>{ if(await confirmBox("Slette ALT og starte på nytt? Alle squishies forsvinner!","Slett alt")){ leave(true); S=fresh(); save(); onboard(); } };
+}
+
+/* ---------- OPPSTART ---------- */
+function onboard(){
+  const m=modal(`<div style="text-align:center"><div style="font-size:70px">🥟🐸🦄</div><h2>Velkommen til Squishy Trade!</h2>
+    <p class="muted">Løs oppgaver, tjen mynter, kjøp squishies og trade med venner.</p></div>
+    <p style="margin:10px 0 4px"><b>Hva heter du?</b></p><input id="on" maxlength="16" placeholder="Navnet ditt">
+    <p style="margin:10px 0 4px"><b>Nivå</b></p><select id="ol"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2" selected>Middels (ca. 5.–7. trinn)</option></select>
+    <button class="btn" id="og" style="width:100%;margin-top:14px">Start! 🎉</button>`,{center:true});
+  m.querySelector("#og").onclick=()=>{
+    const n=m.querySelector("#on").value.trim(); if(!n) return toast("Skriv navnet ditt 😊");
+    S.name=n; S.lvl=+m.querySelector("#ol").value; save(); m.remove(); go("samling");
+    // Velkomstgave
+    setTimeout(()=>{ const it=makeItem("tb-dumpling",1); addItem(it); save(); reveal([it],"🎁",()=>render(),"Velkomstgave!"); },300);
+  };
+}
+
+go("samling");
+if(!S.name) onboard();
+if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
