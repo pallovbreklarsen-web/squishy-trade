@@ -184,6 +184,41 @@ input,select{font-family:inherit;font-size:16px;padding:12px;border-radius:14px;
 .card.unknown{filter:grayscale(1) brightness(1.6);opacity:.55}
 nav button{position:relative}
 nav button[data-badge]:not([data-badge=""])::after{content:attr(data-badge);position:absolute;top:0;right:18%;background:#ff4d6d;color:#fff;font-size:11px;font-weight:900;border-radius:999px;min-width:18px;height:18px;line-height:18px;padding:0 4px}
+
+/* Tradingbrett */
+.tboard{display:grid;grid-template-columns:48px 1fr 1fr 48px;gap:6px;background:linear-gradient(#f9dfe9,#f3d0de);border-radius:24px;padding:9px;box-shadow:inset 0 2px 0 #fff9,0 6px 0 #e3a9bf,0 10px 24px #e3a9bf55;border:2px solid #edbccf}
+.tcol{display:flex;flex-direction:column;gap:7px}
+.tbtn{flex:1;min-height:70px;border-radius:16px;background:#fdf1f6;border:2px solid #e7b2c6;font-size:34px;font-weight:900;color:#d76d90;display:grid;place-items:center;box-shadow:0 3px 0 #e7b2c6;padding:0;line-height:1;font-family:system-ui}
+.tbtn.plus{color:#eaa5bd}
+button.tbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #e7b2c6}
+button.tbtn:disabled{opacity:.45}
+.tcol.them .tbtn{opacity:.55}
+.tbtn.arrow.on{background:#c9f7d9;color:#24a35a;border-color:#3fc77a;box-shadow:0 3px 0 #3fc77a;opacity:1!important;animation:glow 1.2s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 6px #3fc77a44,0 3px 0 #3fc77a}}
+.tpanel{background:#f5dce6;border:2px solid #e3a9bf;border-radius:16px;padding:6px;display:flex;flex-direction:column;gap:5px;min-width:0;position:relative}
+.tpanel.acc{border-color:#3fc77a;box-shadow:0 0 0 3px #3fc77a55}
+.tpanel .ph,.tpanel .pv{font-size:12px;font-weight:900;text-align:center;color:#9a5a75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot{height:56px;border-radius:12px;border:2px dashed #e6b3c6;display:flex;align-items:center;gap:5px;padding:3px 5px;background:#fbeef3;position:relative;min-width:0}
+.slot:not(.empty){border:2px solid var(--tc);background:#fff}
+.slot.v-gold{background:linear-gradient(150deg,#fff8d6,#ffe27a);box-shadow:0 0 8px #ffcf3f}
+.slot.v-r{background:linear-gradient(90deg,#ffe4e6,#fff4d6,#e3fbe9,#e0f0ff,#f1e4ff)}
+.slot.v-g{background:linear-gradient(150deg,#fff,#fff6d9)}
+.slot .sb{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--bc)}
+.slot .si{min-width:0;display:flex;flex-direction:column;line-height:1.1}
+.slot .si b{font-size:10px;line-height:1.1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.slot .si span{font-size:9.5px;color:var(--muted);font-weight:700;white-space:nowrap}
+.slot .sx{position:absolute;top:-6px;right:-6px;background:#ff6b6b;color:#fff;width:18px;height:18px;border-radius:50%;font-size:10px;display:grid;place-items:center;font-weight:900}
+.slot.pop{animation:drop .45s}
+.slot.out{animation:none;transform:scale(.2);opacity:0;transition:.2s}
+.tstatus{text-align:center;font-weight:900;margin:12px 0 2px;font-size:15px}
+.tstatus.hot{color:#24a35a;animation:hot 1s ease-in-out infinite}
+@keyframes hot{50%{transform:scale(1.04)}}
+.emotes{display:flex;justify-content:center;gap:8px;margin-top:6px}
+.emotes button{font-size:24px;border:2px solid var(--line);background:#fff;border-radius:14px;width:46px;height:46px;padding:0}
+.emotes button:active{transform:scale(.9)}
+.emote{position:fixed;font-size:60px;z-index:90;pointer-events:none;animation:emo 1.6s ease-out forwards}
+@keyframes emo{0%{transform:scale(0)}20%{transform:scale(1.3)}40%{transform:scale(1)}100%{transform:translateY(-120px) scale(1.1);opacity:0}}
+@media (max-width:360px){.tboard{grid-template-columns:44px 1fr 1fr 44px;gap:5px;padding:7px}.tbtn{font-size:28px;min-height:62px}.slot .sb{width:32px;height:32px;font-size:20px}}
 .stat{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line)}
 </style>
 </head>
@@ -483,7 +518,7 @@ function squishOn(el){ el.classList.remove("squish"); void el.offsetWidth; el.cl
    ROUTER
    ========================================================= */
 let view="samling";
-function go(v){ view=v; document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); window.scrollTo(0,0); }
+function go(v){ view=v; if(v==="trade"&&me&&db){ ensureOpp(); setTimeout(heartbeat,0); } document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); window.scrollTo(0,0); }
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
 function render(){
   $("#coinN").textContent=S.coins;
@@ -668,136 +703,151 @@ function confetti(level){
 }
 
 /* =========================================================
-   TRADE – tilbud lagres i skyen, den andre kan svare når hen vil
+   TRADINGBRETT – live, delt mellom to spillere (lagres i skyen)
+   Venstre side = deg, høyre side = motspilleren.
+   Knapper: ✕ avslå · ＋ legg til · pil = godta
    ========================================================= */
-let tv={mode:"list"}; // list | new | view
+const MAXB=5;
+let tv={opp:""}, BOARDS={}, hereTimer=null, shownNew=new Set(), firstBoards=true;
 const seen=new Set(JSON.parse(localStorage.getItem(SEEN_KEY)||"[]"));
 const markSeen=k=>{ seen.add(k); try{localStorage.setItem(SEEN_KEY,JSON.stringify([...seen].slice(-300)));}catch(e){} };
 const pname=p=>(PLAYERS[p]&&PLAYERS[p].name)||"?";
 const itemsOf=o=>Object.entries(o||{}).map(([uid,i])=>Object.assign({uid},i)).filter(i=>DEF[i.id]);
-const tradeList=()=>Object.entries(TRADES).map(([id,t])=>Object.assign({id},t)).sort((a,b)=>b.at-a.at);
-const incoming=()=>tradeList().filter(t=>t.to===me&&t.status==="pending");
-const outgoing=()=>tradeList().filter(t=>t.from===me&&t.status==="pending");
-function isOffered(u){ return outgoing().some(t=>t.give&&t.give[u]); }
-function updateBadge(){ const n=incoming().length; const b=document.querySelector('nav button[data-v="trade"]'); if(b) b.dataset.badge=n||""; }
-
-function onTrades(){
-  updateBadge();
-  for(const t of tradeList()){
-    const k=t.id+":"+t.status;
-    if(seen.has(k)) continue;
-    if(Date.now()-t.at>7*864e5){ markSeen(k); continue; }
-    if(t.to===me&&t.status==="pending"){ markSeen(k); toast("📬 Nytt trade-tilbud fra "+pname(t.from)+"!",3000); }
-    else if(t.from===me&&t.status==="accepted"){ markSeen(k); const got=itemsOf(t.get); if(got.length) reveal(got,"🤝",()=>render(),pname(t.to)+" godtok traden!"); else toast("✅ "+pname(t.to)+" godtok traden!"); }
-    else if(t.from===me&&t.status==="declined"){ markSeen(k); toast("❌ "+pname(t.to)+" avslo traden din",3000); }
-    else if(t.from===me&&t.status==="countered"){ markSeen(k); }
-    else markSeen(k);
+const bkey=(a,b)=>[a,b].sort().join("__");
+const others=()=>Object.keys(PLAYERS).filter(p=>p!==me);
+const myBoards=()=>Object.entries(BOARDS).filter(([k])=>k.split("__").includes(me));
+function isOffered(u){ return myBoards().some(([k,b])=>b.offers&&b.offers[me]&&b.offers[me][u]); }
+const isHere=(b,p)=>b&&b.here&&b.here[p]&&Date.now()-b.here[p]<45000;
+function updateBadge(){
+  // Prikk på Trade når noen har lagt noe på brettet / godtatt og du ikke ser på det
+  let n=0; for(const [k,b] of myBoards()){ const o=k.split("__").find(p=>p!==me); const has=Object.keys((b.offers||{})[o]||{}).length||(b.acc&&b.acc[o]); if(has&&!(view==="trade"&&tv.opp===o)&&(b.upd||0)>(+localStorage.getItem("sqv:"+k)||0)) n++; }
+  const btn=document.querySelector('nav button[data-v="trade"]'); if(btn) btn.dataset.badge=n?"!":"";
+}
+function onBoards(){
+  for(const [k,b] of myBoards()){
+    const o=k.split("__").find(p=>p!==me);
+    if(b.last&&!seen.has("L"+b.last.id)){ markSeen("L"+b.last.id); if(!firstBoards&&Date.now()-b.last.at<120000){ const got=itemsOf((b.last.got||{})[me]); swapAnim(o,()=>{ if(got.length) reveal(got,"🤝",()=>render(),"Byttet er gjort!"); else { toast("✅ Byttet er gjort!"); render(); } }); } }
+    if(b.ev&&!seen.has("E"+b.ev.id)){ markSeen("E"+b.ev.id); if(!firstBoards&&b.ev.by!==me&&Date.now()-b.ev.at<120000){ toast(b.ev.type==="declined"?"❌ "+pname(b.ev.by)+" avslo byttet":"😕 Byttet gikk ikke – noe er solgt",3000); } }
+    if(b.emote&&!seen.has("M"+b.emote.id)){ markSeen("M"+b.emote.id); if(!firstBoards&&b.emote.from!==me&&Date.now()-b.emote.at<20000) showEmote(b.emote.e,o); }
   }
+  firstBoards=false; updateBadge();
 }
-function sendTrade(){
-  const d=tv; if(!d.give.length&&!d.get.length) return;
-  const obj=a=>Object.fromEntries(a.map(i=>[i.uid,{id:i.id,v:i.v}]));
-  const r=FB.push(R("trades"));
-  const rec={from:me,to:d.to,give:obj(d.give),get:obj(d.get),status:"pending",at:Date.now(),msg:(d.msg||"").slice(0,120)};
-  markSeen(r.key+":pending");
-  FB.set(r,rec).then(()=>{ if(d.replaces) FB.update(R("trades/"+d.replaces),{status:"countered",doneAt:Date.now()}); toast("📨 Tilbud sendt til "+pname(d.to)+"!"); }).catch(fail);
-  tv={mode:"list"}; render();
+function ensureOpp(){ const os=others(); if(!os.includes(tv.opp)) tv.opp=os.length===1?os[0]:(os[0]||""); return tv.opp; }
+function heartbeat(){
+  clearInterval(hereTimer);
+  const beat=()=>{ if(view!=="trade"||!tv.opp||!me||!db) return clearInterval(hereTimer); FB.set(R(`boards/${bkey(me,tv.opp)}/here/${me}`),Date.now()).catch(()=>{}); localStorage.setItem("sqv:"+bkey(me,tv.opp),Date.now()); };
+  beat(); hereTimer=setInterval(beat,15000);
 }
-async function acceptTrade(id){
-  const t=TRADES[id]; if(!t||t.status!=="pending") return;
-  const give=Object.keys(t.give||{}), get=Object.keys(t.get||{});
-  let ok=false;
+// --- handlinger (transaksjoner, så to mobiler aldri ødelegger for hverandre) ---
+function boardTx(fn){ const k=bkey(me,tv.opp); return FB.runTransaction(R("boards/"+k),b=>{ b=b||{}; b.offers=b.offers||{}; b.acc=b.acc||{}; const r=fn(b); if(r===false) return; b.upd=Date.now(); return b; }).catch(fail); }
+function addToBoard(it){ return boardTx(b=>{ const m=b.offers[me]||{}; if(Object.keys(m).length>=MAXB) return false; m[it.uid]={id:it.id,v:it.v}; b.offers[me]=m; b.acc={}; }); }
+function removeFromBoard(u){ return boardTx(b=>{ const m=b.offers[me]||{}; delete m[u]; b.offers[me]=m; b.acc={}; }); }
+function declineBoard(){ return boardTx(b=>{ b.offers={}; b.acc={}; b.ev={id:uid(),type:"declined",by:me,at:Date.now()}; }); }
+function unaccept(){ return boardTx(b=>{ b.acc[me]=false; }); }
+function sendEmote(e){ const k=bkey(me,tv.opp); FB.set(R(`boards/${k}/emote`),{id:uid(),from:me,e,at:Date.now()}).catch(()=>{}); showEmote(e,me); }
+async function acceptBoard(){
+  const o=tv.opp, k=bkey(me,o);
   try{
-    const res=await FB.runTransaction(R("players"),players=>{
-      if(!players) return players;
-      const A=players[t.from], B=players[t.to]; if(!A||!B) return;
-      A.inv=A.inv||{}; B.inv=B.inv||{};
-      if(!give.every(u=>A.inv[u])||!get.every(u=>B.inv[u])) return; // noe er solgt/byttet bort → avbryt
-      const now=Date.now();
-      const move=(from,to,list)=>list.forEach(u=>{ const it=from.inv[u]; delete from.inv[u]; to.inv[uid()]={id:it.id,v:it.v,at:now,from:from.name||""}; to.dex=to.dex||{}; to.dex[it.id]=true; });
-      move(A,B,give); move(B,A,get);
-      return players;
+    await FB.runTransaction(FB.ref(db),root=>{
+      if(!root) return root;
+      const b=root.boards&&root.boards[k]; if(!b) return;
+      b.offers=b.offers||{}; b.acc=b.acc||{};
+      const mine=Object.keys(b.offers[me]||{}), theirs=Object.keys(b.offers[o]||{});
+      if(!mine.length&&!theirs.length) return;
+      b.acc[me]=true; b.upd=Date.now();
+      if(b.acc[o]){
+        const A=root.players[me], B=root.players[o]; if(!A||!B) return;
+        A.inv=A.inv||{}; B.inv=B.inv||{};
+        if(!mine.every(u=>A.inv[u])||!theirs.every(u=>B.inv[u])){ b.offers={}; b.acc={}; b.ev={id:uid(),type:"failed",by:me,at:Date.now()}; return root; }
+        const now=Date.now(), got={[me]:{},[o]:{}};
+        const move=(F,T,list,to)=>list.forEach(u=>{ const it=F.inv[u]; delete F.inv[u]; const nu=uid(); T.inv[nu]={id:it.id,v:it.v,at:now,from:F.name||""}; T.dex=T.dex||{}; T.dex[it.id]=true; got[to][nu]={id:it.id,v:it.v}; });
+        move(A,B,mine,o); move(B,A,theirs,me);
+        b.last={id:uid(),at:now,got}; b.offers={}; b.acc={};
+      }
+      return root;
     });
-    ok=res.committed;
-  }catch(e){ console.error(e); }
-  markSeen(id+":accepted");
-  if(ok){ await FB.update(R("trades/"+id),{status:"accepted",doneAt:Date.now()}); tv={mode:"list"}; const got=itemsOf(t.give); if(got.length) reveal(got,"🤝",()=>render(),"Trade fullført!"); else { toast("✅ Trade fullført!"); render(); } }
-  else { await FB.update(R("trades/"+id),{status:"failed",doneAt:Date.now()}).catch(()=>{}); toast("😕 Traden gikk ikke – noen av squishiene finnes ikke lenger",3500); tv={mode:"list"}; render(); }
+  }catch(e){ fail(e); }
 }
-function setStatus(id,status){ markSeen(id+":"+status); FB.update(R("trades/"+id),{status,doneAt:Date.now()}).catch(fail); tv={mode:"list"}; render(); }
-
-function boardHTML(leftTitle,left,rightTitle,right,editable){
-  const vl=invValue(left), vr=invValue(right);
-  const side=(title,items,which)=>`<div class="side"><h4><span>${title}</span><span class="muted">🪙 ${invValue(items)}</span></h4>
-     ${items.length?`<div class="grid small">${items.map(i=>card(i,{cls:editable?"tap rm-"+which:""})).join("")}</div>`:`<div class="empty">${editable?"Tomt":"Ingenting"}</div>`}
-     ${editable?`<button class="btn sec" style="width:100%;margin-top:8px;padding:8px" id="add-${which}">➕ Legg til</button>`:""}</div>`;
-  return `<div class="board"><div class="sides">${side(leftTitle,left,"l")}${side(rightTitle,right,"r")}</div>
-    <div class="fair">Du gir 🪙 ${vl} · du får 🪙 ${vr} ${vl||vr?(vr>=vl?"😊":"🤔"):""}</div></div>`;
+// --- animasjoner ---
+function swapAnim(o,done){
+  if(view!=="trade"||tv.opp!==o){ done(); return; }
+  const L=document.querySelector(".tpanel.me"), Rr=document.querySelector(".tpanel.them");
+  if(!L||!Rr){ done(); return; }
+  const d=Rr.getBoundingClientRect().left-L.getBoundingClientRect().left;
+  L.style.transition=Rr.style.transition="transform .7s cubic-bezier(.5,-0.3,.4,1.3)";
+  L.style.transform=`translateX(${d}px) rotate(4deg)`; Rr.style.transform=`translateX(${-d}px) rotate(-4deg)`;
+  try{navigator.vibrate&&navigator.vibrate([60,40,60]);}catch(e){}
+  setTimeout(done,800);
+}
+function showEmote(e,who){
+  const el=document.querySelector(who===me?".tpanel.me":".tpanel.them"); const r=el?el.getBoundingClientRect():{left:innerWidth/2,top:innerHeight/2,width:0,height:0};
+  const f=document.createElement("div"); f.className="emote"; f.textContent=e; f.style.left=(r.left+r.width/2-30)+"px"; f.style.top=(r.top+r.height/2-30)+"px"; document.body.appendChild(f); setTimeout(()=>f.remove(),1600);
+}
+// --- visning ---
+function slotHTML(it,mine){
+  if(!it) return `<div class="slot empty"></div>`;
+  const d=DEF[it.id], v=VARIANTS[it.v]; const isNew=!shownNew.has(it.uid); shownNew.add(it.uid);
+  return `<div class="slot t${d.tier} v-${it.v} ${isNew?"pop":""} ${mine?"rm":""}" data-uid="${it.uid}">
+     <div class="sb" style="--bc:${d.color}">${d.emoji}</div>
+     <div class="si"><b>${v.icon?v.icon+" ":""}${esc(d.name)}</b><span>🪙 ${value(it)}</span></div>${mine?'<span class="sx">✕</span>':""}</div>`;
 }
 function vTrade(m){
-  if(tv.mode==="new"){
-    const d=tv, other=pname(d.to);
-    m.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">Trade med ${esc(other)}</h2><button class="btn sec" id="cx" style="padding:6px 12px">Avbryt</button></div>
-      ${boardHTML("Du gir",d.give,"Du ber om",d.get,true)}
-      <input id="msg" maxlength="120" placeholder="Melding (valgfritt) – f.eks. «Bytte? 🥺»" value="${esc(d.msg||"")}">
-      <button class="btn green" id="send" style="width:100%;margin-top:10px" ${d.give.length+d.get.length?"":"disabled"}>📨 Send tilbud</button>
-      <p class="muted" style="font-size:12px;text-align:center">${esc(other)} kan godta, avslå eller endre tilbudet – også når du ikke er pålogget.</p>`;
-    m.querySelector("#cx").onclick=()=>{tv={mode:"list"};render();};
-    m.querySelector("#msg").oninput=e=>d.msg=e.target.value;
-    m.querySelector("#send").onclick=sendTrade;
-    m.querySelector("#add-l").onclick=()=>picker("Velg hva du vil gi",S.inv.filter(i=>!isOffered(i.uid)&&!d.give.some(g=>g.uid===i.uid)),it=>{d.give.push(it);render();});
-    m.querySelector("#add-r").onclick=()=>picker(`Velg fra ${esc(other)} sin samling`,invOf(d.to).filter(i=>!d.get.some(g=>g.uid===i.uid)),it=>{d.get.push(it);render();});
-    m.querySelectorAll(".rm-l").forEach(c=>c.onclick=()=>{d.give=d.give.filter(i=>i.uid!==c.dataset.uid);render();});
-    m.querySelectorAll(".rm-r").forEach(c=>c.onclick=()=>{d.get=d.get.filter(i=>i.uid!==c.dataset.uid);render();});
-    return;
-  }
-  if(tv.mode==="view"){
-    const t=TRADES[tv.id]; if(!t){ tv={mode:"list"}; return vTrade(m); }
-    const mine=t.to===me, other=pname(mine?t.from:t.to);
-    const youGet=itemsOf(mine?t.give:t.get), youGive=itemsOf(mine?t.get:t.give);
-    const st={pending:"⏳ Venter på svar",accepted:"✅ Godtatt",declined:"❌ Avslått",countered:"✏️ Endret (nytt tilbud sendt)",cancelled:"↩️ Trukket tilbake",failed:"😕 Gikk ikke"}[t.status]||t.status;
-    m.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">${mine?"Fra":"Til"} ${esc(other)}</h2><button class="btn sec" id="bk" style="padding:6px 12px">← Tilbake</button></div>
-      <p class="muted" style="margin-top:0">${st}</p>
-      ${t.msg?`<div class="panel" style="padding:10px">💬 «${esc(t.msg)}»</div>`:""}
-      ${boardHTML("Du gir",youGive,"Du får",youGet,false)}
-      ${t.status==="pending"? (mine?`<div class="tbtns"><button class="btn green" id="ac">✅ Godta</button><button class="btn sec" id="ed">✏️ Endre</button><button class="btn red" id="de">❌ Avslå</button></div>`
-          :`<button class="btn sec" id="cn" style="width:100%">↩️ Trekk tilbake tilbudet</button>`):""}`;
-    m.querySelector("#bk").onclick=()=>{tv={mode:"list"};render();};
-    const q=s=>m.querySelector(s);
-    if(q("#ac")) q("#ac").onclick=async()=>{ if(await confirmBox(`Godta traden med ${esc(other)}?`,"Godta ✅")) acceptTrade(tv.id); };
-    if(q("#de")) q("#de").onclick=()=>setStatus(tv.id,"declined");
-    if(q("#cn")) q("#cn").onclick=()=>setStatus(tv.id,"cancelled");
-    if(q("#ed")) q("#ed").onclick=()=>{ tv={mode:"new",to:t.from,give:youGive.filter(i=>S.inv.some(x=>x.uid===i.uid)),get:youGet,msg:"",replaces:tv.id}; render(); };
-    return;
-  }
-  // Liste
-  const others=Object.keys(PLAYERS).filter(p=>p!==me);
-  const inc=incoming(), out=outgoing(), hist=tradeList().filter(t=>(t.from===me||t.to===me)&&t.status!=="pending").slice(0,8);
-  const row=(t,label)=>{ const mine=t.to===me; const g=itemsOf(mine?t.give:t.get).length, gi=itemsOf(mine?t.get:t.give).length;
-    return `<div class="panel row tr" data-id="${t.id}" style="padding:10px;cursor:pointer"><div class="grow"><b>${label}</b><div class="muted" style="font-size:13px">Du får ${g} · du gir ${gi}${t.msg?" · 💬":""}</div></div><span>›</span></div>`; };
-  const icon={accepted:"✅",declined:"❌",countered:"✏️",cancelled:"↩️",failed:"😕"};
-  m.innerHTML=`<h2>Trade 🤝</h2>
-    ${inc.length?`<h3>📬 Til deg</h3>${inc.map(t=>row(t,"Fra "+esc(pname(t.from)))).join("")}`:""}
-    <h3>Start en ny trade</h3>
-    ${others.length?`<div class="cats">${others.map(p=>`<button class="cat" data-p="${p}" style="background:#f3e8ff"><span class="e">🧑‍🎤</span>${esc(pname(p))}<div class="muted" style="font-size:12px">🪙 ${invValue(invOf(p))} · ${invOf(p).length} stk</div></button>`).join("")}</div>`
-      :`<div class="panel muted">Ingen andre spillere ennå. Når søsteren din lager en spiller, dukker hun opp her.</div>`}
-    ${out.length?`<h3>📤 Sendt – venter på svar</h3>${out.map(t=>row(t,"Til "+esc(pname(t.to)))).join("")}`:""}
-    ${hist.length?`<h3>Historikk</h3>${hist.map(t=>row(t,(icon[t.status]||"")+" "+(t.to===me?"Fra ":"Til ")+esc(pname(t.to===me?t.from:t.to)))).join("")}`:""}`;
-  m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ tv={mode:"new",to:b.dataset.p,give:[],get:[],msg:""}; render(); });
-  m.querySelectorAll(".tr").forEach(r=>r.onclick=()=>{ tv={mode:"view",id:r.dataset.id}; render(); });
+  const os=others();
+  if(!os.length){ m.innerHTML=`<h2>Tradingbrett 🤝</h2><div class="panel muted">Ingen andre spillere ennå. Når søsteren din lager en spiller, kan dere trade her.</div>`; return; }
+  const o=ensureOpp(), k=bkey(me,o), b=BOARDS[k]||{}, offers=b.offers||{}, acc=b.acc||{};
+  const mine=itemsOf(offers[me]), theirs=itemsOf(offers[o]);
+  const vm=invValue(mine), vt=invValue(theirs), any=mine.length+theirs.length>0;
+  const slots=(items,mineSide)=>Array.from({length:MAXB},(_,i)=>slotHTML(items[i],mineSide)).join("");
+  let status = !any ? "Legg squishies på brettet med ＋" :
+    acc[me]&&acc[o] ? "Bytter…" :
+    acc[me] ? `Du har godtatt ✅ Venter på ${esc(pname(o))}…` :
+    acc[o] ? `🎉 ${esc(pname(o))} har godtatt! Trykk på pila for å godta du også` :
+    "Trykk på pila når du er fornøyd";
+  m.innerHTML=`
+   ${os.length>1?`<div class="chips">${os.map(p=>`<button class="${p===o?"on":""}" data-p="${p}">${esc(pname(p))}</button>`).join("")}</div>`:""}
+   <div class="row" style="justify-content:space-between;margin-bottom:8px">
+     <h2 style="margin:0">Tradingbrett</h2>
+     <div class="status"><span class="dot ${isHere(b,o)?"on":""}"></span>${esc(pname(o))} ${isHere(b,o)?"er på brettet":"er ikke her nå"}</div>
+   </div>
+   <div class="tboard">
+     <div class="tcol">
+       <button class="tbtn x" id="bx" ${any?"":"disabled"} aria-label="Avslå">✕</button>
+       <button class="tbtn plus" id="bp" ${mine.length>=MAXB?"disabled":""} aria-label="Legg til">＋</button>
+       <button class="tbtn arrow ${acc[me]?"on":""}" id="ba" ${any?"":"disabled"} aria-label="Godta">‹</button>
+     </div>
+     <div class="tpanel me ${acc[me]?"acc":""}"><div class="ph">Du ${acc[me]?"✅":""}</div>${slots(mine,true)}<div class="pv">🪙 ${vm}</div></div>
+     <div class="tpanel them ${acc[o]?"acc":""}"><div class="ph">${esc(pname(o))} ${acc[o]?"✅":""}</div>${slots(theirs,false)}<div class="pv">🪙 ${vt}</div></div>
+     <div class="tcol them">
+       <div class="tbtn arrow ${acc[o]?"on":""}">›</div>
+       <div class="tbtn plus">＋</div>
+       <div class="tbtn x">✕</div>
+     </div>
+   </div>
+   <div class="tstatus ${acc[o]&&!acc[me]?"hot":""}">${status}</div>
+   <div class="fair">Du gir 🪙 ${vm} · du får 🪙 ${vt} ${any?(vt>=vm?"😊":"🤔"):""}</div>
+   <div class="emotes">${["👍","🤔","😍","🙏","😂","😢"].map(e=>`<button data-e="${e}">${e}</button>`).join("")}</div>
+   <div class="panel" style="margin-top:12px"><b>${esc(pname(o))} sin samling</b> <span class="muted">(🪙 ${invValue(invOf(o))})</span>
+     <div class="grid small" style="margin-top:8px">${invOf(o).sort((a,b)=>value(b)-value(a)).map(i=>card(i,{cls:"peek"})).join("")||'<span class="muted">Tom</span>'}</div></div>`;
+  m.querySelectorAll(".chips [data-p]").forEach(x=>x.onclick=()=>{ tv.opp=x.dataset.p; heartbeat(); render(); });
+  m.querySelector("#bp").onclick=()=>picker("Legg på brettet",S.inv.filter(i=>!isOffered(i.uid)),it=>addToBoard(it));
+  m.querySelector("#ba").onclick=()=>{ squishOn(m.querySelector("#ba")); acc[me]?unaccept():acceptBoard(); };
+  m.querySelector("#bx").onclick=async()=>{ if(await confirmBox("Avslå og tøm brettet?","Avslå ❌")) declineBoard(); };
+  m.querySelectorAll(".tpanel.me .slot.rm").forEach(s=>s.onclick=()=>{ s.classList.add("out"); setTimeout(()=>removeFromBoard(s.dataset.uid),200); });
+  m.querySelectorAll(".emotes button").forEach(x=>x.onclick=()=>sendEmote(x.dataset.e));
+  localStorage.setItem("sqv:"+k,Date.now()); updateBadge();
 }
 function picker(title,items,onPick){
   items=items.slice().sort((a,b)=>value(b)-value(a));
   const m=modal(`<h3 style="margin-top:0">${title}</h3>
     ${items.length?`<div class="grid small">${items.map(i=>card(i,{cls:"tap"})).join("")}</div>`:`<p class="muted">Ingen squishies å velge.</p>`}
-    <button class="btn sec" id="cl" style="width:100%;margin-top:12px">Ferdig</button>`);
-  m.querySelector("#cl").onclick=()=>m.remove();
-  m.querySelectorAll(".card").forEach(c=>c.onclick=()=>{ const it=items.find(i=>i.uid===c.dataset.uid); if(!it) return; onPick({uid:it.uid,id:it.id,v:it.v}); c.style.transition="transform .25s, opacity .25s"; c.style.transform="scale(.3) translateY(-40px)"; c.style.opacity="0"; setTimeout(()=>c.remove(),250); });
+    <button class="btn sec" id="cl" style="width:100%;margin-top:12px">Lukk</button>`);
+  m.querySelector("#cl").onclick=()=>{ m.remove(); render(); };
+  m.querySelectorAll(".card").forEach(c=>c.onclick=()=>{ const it=items.find(i=>i.uid===c.dataset.uid); if(!it) return; squishOn(c); m.remove(); onPick({uid:it.uid,id:it.id,v:it.v}); });
 }
 
 /* ---------- MEG ---------- */
 function vMeg(m){
-  const st=S.stats, trades=tradeList().filter(t=>t.status==="accepted"&&(t.from===me||t.to===me)).length;
+  const st=S.stats, trades=S.inv.filter(i=>i.from).length;
   const board=Object.keys(PLAYERS).map(p=>({p,n:pname(p),v:invValue(invOf(p))})).sort((a,b)=>b.v-a.v);
   m.innerHTML=`<h2>Hei, ${esc(S.name)}! ⭐</h2>
    <div class="panel">
@@ -807,7 +857,7 @@ function vMeg(m){
      <div class="stat"><span>Riktige svar</span><b>${st.correct} av ${st.answered}</b></div>
      <div class="stat"><span>Lengste rekke</span><b>🔥 ${st.best}</b></div>
      <div class="stat"><span>Bokser åpnet</span><b>${st.opened}</b></div>
-     <div class="stat" style="border:0"><span>Trades</span><b>${trades}</b></div>
+     <div class="stat" style="border:0"><span>Squishies fått i bytte</span><b>${trades}</b></div>
    </div>
    <div class="panel"><b>🏆 Toppliste (samlingsverdi)</b>${board.map((x,i)=>`<div class="stat" ${i===board.length-1?'style="border:0"':""}><span>${["🥇","🥈","🥉"][i]||"·"} ${esc(x.n)}</span><b>🪙 ${x.v}</b></div>`).join("")}</div>
    <div class="panel"><b>Innstillinger</b>
@@ -852,7 +902,7 @@ function vLogin(m){
     login(p); setTimeout(()=>reveal([welcome],"🎁",()=>render(),"Velkomstgave!"),300);
   };
 }
-function login(p){ me=p; localStorage.setItem(ME_KEY,p); syncMe(); tv={mode:"list"}; go("samling"); onTrades(); }
+function login(p){ me=p; localStorage.setItem(ME_KEY,p); syncMe(); tv={opp:""}; firstBoards=true; go("samling"); onBoards(); }
 
 /* ---------- OPPSTART ---------- */
 function vLoading(m){
@@ -862,7 +912,6 @@ let rTimer=null;
 function softRender(){ // ikke forstyrr quiz-svar eller trade-utkast
   $("#coinN").textContent=S.coins; updateBadge();
   if(view==="oppgaver"&&quiz) return;
-  if(view==="trade"&&tv.mode==="new") return;
   if(document.querySelector(".modal")||$("#reveal").classList.contains("show")) return;
   clearTimeout(rTimer); rTimer=setTimeout(render,60);
 }
@@ -873,7 +922,7 @@ function boot(){
     FB.signInAnonymously(auth).then(()=>{
       FB.onValue(R("players"),snap=>{ PLAYERS=snap.val()||{}; if(me&&!PLAYERS[me]){ me=""; localStorage.removeItem(ME_KEY); } if(me) syncMe();
         const first=!ready; ready=true; if(first) render(); else softRender(); },e=>{ fbError="Ingen tilgang til databasen"; render(); });
-      FB.onValue(R("trades"),snap=>{ TRADES=snap.val()||{}; if(me){ onTrades(); softRender(); } });
+      FB.onValue(R("boards"),snap=>{ BOARDS=snap.val()||{}; if(me){ onBoards(); softRender(); } });
     }).catch(e=>{ console.error(e); fbError="Klarte ikke å koble til (er du på nett?)"; render(); });
   }catch(e){ console.error(e); fbError="Feil i Firebase-oppsettet"; render(); }
 }
