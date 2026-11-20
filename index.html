@@ -182,6 +182,8 @@ input,select{font-family:inherit;font-size:16px;padding:12px;border-radius:14px;
 .dexbar{height:14px;background:#f1dbe9;border-radius:999px;overflow:hidden;margin:6px 0}
 .dexbar div{height:100%;background:linear-gradient(90deg,var(--pink),var(--purple))}
 .card.unknown{filter:grayscale(1) brightness(1.6);opacity:.55}
+nav button{position:relative}
+nav button[data-badge]:not([data-badge=""])::after{content:attr(data-badge);position:absolute;top:0;right:18%;background:#ff4d6d;color:#fff;font-size:11px;font-weight:900;border-radius:999px;min-width:18px;height:18px;line-height:18px;padding:0 4px}
 .stat{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line)}
 </style>
 </head>
@@ -209,7 +211,6 @@ input,select{font-family:inherit;font-size:16px;padding:12px;border-radius:14px;
 </div>
 <canvas id="confetti"></canvas>
 
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 "use strict";
 /* =========================================================
@@ -401,21 +402,32 @@ const CATS = [
 ];
 
 /* =========================================================
-   STATE
+   STATE – alt lagres i Firebase (skyen)
    ========================================================= */
-const KEY = "squishyTrade.v1";
-let S = load();
-function fresh(){ return {name:"", lvl:2, coins:200, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,trades:0,opened:0}, daily:""}; }
-function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.inv) return Object.assign(fresh(),s);}catch(e){} return fresh(); }
-function save(){ try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} }
+// ⬇️ Fylles inn med Firebase-oppsettet
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDlG0Dyrc8KLiDWZxCGL3jKKNjR-W3CG3Y",
+  authDomain: "squishy-trade-b859e.firebaseapp.com",
+  databaseURL: "https://squishy-trade-b859e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "squishy-trade-b859e",
+  storageBucket: "squishy-trade-b859e.firebasestorage.app",
+  messagingSenderId: "1052131866044",
+  appId: "1:1052131866044:web:0fb81a48cb0564954ca7b9"
+};
+const ME_KEY = "squishyTrade.me", SEEN_KEY = "squishyTrade.seen";
+let db=null, me=localStorage.getItem(ME_KEY)||"", PLAYERS={}, TRADES={}, ready=false, fbError="";
+let S = fresh();
+function fresh(){ return {name:"", lvl:2, coins:0, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,opened:0}, daily:""}; }
 let _uc=0; const uid = ()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36)+(_uc++).toString(36);
 const rnd = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick = a=>a[Math.floor(Math.random()*a.length)];
 const shuffle = a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
 const esc = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $ = s=>document.querySelector(s);
+const R = p=>FB.ref(db,p);
+const fail = e=>{ console.error(e); toast("⚠️ Klarte ikke å lagre – er du på nett?"); };
 
-function value(it){ const d=DEF[it.id]; return d? Math.round(TIERS[d.tier].price*VARIANTS[it.v].mult) : 0; }
+function value(it){ const d=DEF[it.id]; return d&&VARIANTS[it.v]? Math.round(TIERS[d.tier].price*VARIANTS[it.v].mult) : 0; }
 function invValue(inv){ return inv.reduce((s,i)=>s+value(i),0); }
 function rollVariant(boost=1){
   const r=Math.random()*100;
@@ -425,8 +437,17 @@ function rollVariant(boost=1){
   return "n";
 }
 function makeItem(id,boost){ return {uid:uid(), id, v:rollVariant(boost), at:Date.now()}; }
-function addItem(it){ S.inv.push(it); S.dex[it.id]=true; }
+// Lagring: hver ting skrives for seg, så trades fra andre aldri blir overskrevet
+function save(){ if(!me||!db) return; FB.update(R("players/"+me),{coins:S.coins,lvl:S.lvl,name:S.name,stats:S.stats,daily:S.daily}).catch(fail); }
+function addItem(it){ S.inv.push(it); S.dex[it.id]=true; if(!me) return; FB.set(R(`players/${me}/inv/${it.uid}`),{id:it.id,v:it.v,at:it.at}).catch(fail); FB.set(R(`players/${me}/dex/${it.id}`),true).catch(fail); }
+function removeItem(u){ S.inv=S.inv.filter(i=>i.uid!==u); FB.remove(R(`players/${me}/inv/${u}`)).catch(fail); }
 function setCoins(n){ S.coins=n; save(); $("#coinN").textContent=S.coins; const c=$("#coins"); c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
+function sendInv(){}
+const invOf = p=>Object.entries((PLAYERS[p]&&PLAYERS[p].inv)||{}).map(([uid,i])=>Object.assign({uid},i)).filter(i=>DEF[i.id]);
+function syncMe(){
+  const P=PLAYERS[me]; if(!P) return;
+  S={name:P.name||"", lvl:P.lvl||2, coins:P.coins||0, inv:invOf(me), dex:P.dex||{}, stats:Object.assign(fresh().stats,P.stats||{}), daily:P.daily||""};
+}
 
 /* =========================================================
    UI helpers
@@ -467,6 +488,10 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.v)
 function render(){
   $("#coinN").textContent=S.coins;
   const m=$("#main");
+  $("#nav").style.display=(ready&&me)?"flex":"none"; $("#coins").style.visibility=me?"visible":"hidden";
+  if(!ready) return vLoading(m);
+  if(!me) return vLogin(m);
+  updateBadge();
   ({samling:vSamling,oppgaver:vOppgaver,butikk:vButikk,trade:vTrade,meg:vMeg})[view](m);
 }
 
@@ -499,7 +524,7 @@ function itemDetail(u){
    <p style="text-align:center" class="muted">${TIERS[d.tier].name}${it.v!=="n"?" · "+VARIANTS[it.v].name+"-variant (x"+VARIANTS[it.v].mult+" verdi)":""}${it.from?"<br>Tradet fra "+esc(it.from):""}</p>
    <div class="row"><button class="btn sec grow" id="cl">Lukk</button><button class="btn red grow" id="sl" ${isOffered(u)?"disabled":""}>Selg for 🪙 ${sell}</button></div>`,{center:true});
   m.querySelector("#cl").onclick=()=>m.remove();
-  m.querySelector("#sl").onclick=async()=>{ m.remove(); if(await confirmBox(`Selge ${VARIANTS[it.v].name} ${esc(d.name)} for 🪙 ${sell}?`,"Selg")){ S.inv=S.inv.filter(i=>i.uid!==u); setCoins(S.coins+sell); sendInv(); render(); toast("Solgt! +"+sell+" 🪙"); } };
+  m.querySelector("#sl").onclick=async()=>{ m.remove(); if(await confirmBox(`Selge ${VARIANTS[it.v].name} ${esc(d.name)} for 🪙 ${sell}?`,"Selg")){ removeItem(u); setCoins(S.coins+sell); render(); toast("Solgt! +"+sell+" 🪙"); } };
 }
 
 /* ---------- OPPGAVER ---------- */
@@ -643,151 +668,137 @@ function confetti(level){
 }
 
 /* =========================================================
-   ONLINE TRADE (PeerJS – direkte kobling mellom to mobiler)
+   TRADE – tilbud lagres i skyen, den andre kan svare når hen vil
    ========================================================= */
-const PREFIX="squishytrade-pl26-";
-let peer=null, conn=null, isHost=false, roomCode="", opp=null /* {name, inv} */, chat=[], connecting=false;
-let trade=newTrade();
-function newTrade(){ return {offers:{host:[],guest:[]}, acc:{host:false,guest:false}}; }
-const myRole=()=>isHost?"host":"guest", oppRole=()=>isHost?"guest":"host";
-const isOffered=u=>trade.offers[myRole()].some(i=>i.uid===u);
-const connected=()=>conn&&conn.open;
-function send(o){ if(connected()) try{conn.send(o);}catch(e){} }
-function sendInv(){ send({t:"inv",inv:S.inv}); }
-function addChat(text,who){ chat.push({text,who}); if(chat.length>60) chat.shift(); if(view==="trade") render(); }
+let tv={mode:"list"}; // list | new | view
+const seen=new Set(JSON.parse(localStorage.getItem(SEEN_KEY)||"[]"));
+const markSeen=k=>{ seen.add(k); try{localStorage.setItem(SEEN_KEY,JSON.stringify([...seen].slice(-300)));}catch(e){} };
+const pname=p=>(PLAYERS[p]&&PLAYERS[p].name)||"?";
+const itemsOf=o=>Object.entries(o||{}).map(([uid,i])=>Object.assign({uid},i)).filter(i=>DEF[i.id]);
+const tradeList=()=>Object.entries(TRADES).map(([id,t])=>Object.assign({id},t)).sort((a,b)=>b.at-a.at);
+const incoming=()=>tradeList().filter(t=>t.to===me&&t.status==="pending");
+const outgoing=()=>tradeList().filter(t=>t.from===me&&t.status==="pending");
+function isOffered(u){ return outgoing().some(t=>t.give&&t.give[u]); }
+function updateBadge(){ const n=incoming().length; const b=document.querySelector('nav button[data-v="trade"]'); if(b) b.dataset.badge=n||""; }
 
-function makeCode(){ const A="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; return Array.from({length:4},()=>pick(A.split(""))).join(""); }
-function hostRoom(){
-  if(typeof Peer==="undefined") return toast("Trenger internett for å spille online");
-  leave(true); isHost=true; roomCode=makeCode(); connecting=true; render();
-  peer=new Peer(PREFIX+roomCode);
-  peer.on("open",()=>{ connecting=false; render(); });
-  peer.on("connection",c=>{ if(connected()){ c.on("open",()=>{c.send({t:"full"}); setTimeout(()=>c.close(),300);}); return; } setupConn(c); });
-  peer.on("error",e=>{ if(e.type==="unavailable-id"){ hostRoom(); } else { toast("Feil: "+e.type); connecting=false; render(); } });
-  peer.on("disconnected",()=>{ try{peer.reconnect();}catch(e){} });
-}
-function joinRoom(code){
-  code=(code||"").toUpperCase().trim(); if(code.length<4) return toast("Skriv inn koden (4 tegn)");
-  if(typeof Peer==="undefined") return toast("Trenger internett for å spille online");
-  leave(true); isHost=false; roomCode=code; connecting=true; render();
-  peer=new Peer();
-  peer.on("open",()=>{ const c=peer.connect(PREFIX+code,{reliable:true}); setupConn(c);
-    setTimeout(()=>{ if(!connected()&&connecting){ connecting=false; toast("Fant ikke rommet. Sjekk koden!"); leave(); } },9000); });
-  peer.on("error",e=>{ connecting=false; toast(e.type==="peer-unavailable"?"Fant ikke rommet. Sjekk koden!":"Feil: "+e.type); leave(); });
-  peer.on("disconnected",()=>{ try{peer.reconnect();}catch(e){} });
-}
-function setupConn(c){
-  conn=c;
-  c.on("open",()=>{ connecting=false; send({t:"hello",name:S.name,inv:S.inv}); });
-  c.on("data",onMsg);
-  c.on("close",()=>{ if(conn===c){ conn=null; const n=opp?opp.name:"Motspilleren"; opp=null; trade=newTrade(); addChat(n+" forlot rommet","sys"); toast(n+" koblet fra"); render(); } });
-}
-function leave(silent){
-  try{ conn&&conn.close(); }catch(e){} try{ peer&&peer.destroy(); }catch(e){}
-  conn=null; peer=null; opp=null; trade=newTrade(); chat=[]; if(!silent){ roomCode=""; connecting=false; render(); }
-}
-function onMsg(m){
-  if(!m||!m.t) return;
-  switch(m.t){
-    case "full": toast("Rommet er fullt"); leave(); break;
-    case "hello": opp={name:m.name||"Venn",inv:m.inv||[]}; addChat(opp.name+" er med! 🎉","sys"); toast("Koblet til "+opp.name+"!"); if(isHost) broadcastState(); render(); break;
-    case "inv": if(opp){ opp.inv=m.inv||[]; if(view==="trade") render(); } break;
-    case "chat": addChat(m.text, "them"); if(view!=="trade") toast("💬 "+(opp?opp.name:"")+": "+m.text); break;
-    case "act": if(isHost) applyAct("guest",m); break;
-    case "state": trade=m.trade; if(view==="trade") render(); break;
-    case "declined": trade=newTrade(); toast(m.by===S.name?"Traden ble avslått":"❌ "+m.by+" avslo traden"); addChat(m.by+" avslo traden","sys"); render(); break;
-    case "commit": doCommit(m.trade); break;
+function onTrades(){
+  updateBadge();
+  for(const t of tradeList()){
+    const k=t.id+":"+t.status;
+    if(seen.has(k)) continue;
+    if(Date.now()-t.at>7*864e5){ markSeen(k); continue; }
+    if(t.to===me&&t.status==="pending"){ markSeen(k); toast("📬 Nytt trade-tilbud fra "+pname(t.from)+"!",3000); }
+    else if(t.from===me&&t.status==="accepted"){ markSeen(k); const got=itemsOf(t.get); if(got.length) reveal(got,"🤝",()=>render(),pname(t.to)+" godtok traden!"); else toast("✅ "+pname(t.to)+" godtok traden!"); }
+    else if(t.from===me&&t.status==="declined"){ markSeen(k); toast("❌ "+pname(t.to)+" avslo traden din",3000); }
+    else if(t.from===me&&t.status==="countered"){ markSeen(k); }
+    else markSeen(k);
   }
 }
-function act(a,extra={}){ const msg=Object.assign({t:"act",a},extra); if(isHost) applyAct("host",msg); else send(msg); }
-function roleName(r){ return r===myRole()?S.name:(opp?opp.name:"Venn"); }
-function applyAct(role,m){ // kun verten (host) bestemmer
-  const o=trade.offers[role];
-  if(m.a==="add"){ if(m.item&&!o.some(i=>i.uid===m.item.uid)&&o.length<12){ o.push(m.item); trade.acc={host:false,guest:false}; } }
-  else if(m.a==="remove"){ trade.offers[role]=o.filter(i=>i.uid!==m.uid); trade.acc={host:false,guest:false}; }
-  else if(m.a==="accept"){ if(trade.offers.host.length+trade.offers.guest.length>0) trade.acc[role]=true; }
-  else if(m.a==="unaccept"){ trade.acc[role]=false; }
-  else if(m.a==="decline"){ const by=roleName(role); trade=newTrade(); send({t:"declined",by}); if(role!=="host"){ toast("❌ "+by+" avslo traden"); } addChat(by+" avslo traden","sys"); render(); return; }
-  if(trade.acc.host&&trade.acc.guest){ const t=trade; send({t:"commit",trade:t}); doCommit(t); return; }
-  broadcastState();
+function sendTrade(){
+  const d=tv; if(!d.give.length&&!d.get.length) return;
+  const obj=a=>Object.fromEntries(a.map(i=>[i.uid,{id:i.id,v:i.v}]));
+  const r=FB.push(R("trades"));
+  const rec={from:me,to:d.to,give:obj(d.give),get:obj(d.get),status:"pending",at:Date.now(),msg:(d.msg||"").slice(0,120)};
+  markSeen(r.key+":pending");
+  FB.set(r,rec).then(()=>{ if(d.replaces) FB.update(R("trades/"+d.replaces),{status:"countered",doneAt:Date.now()}); toast("📨 Tilbud sendt til "+pname(d.to)+"!"); }).catch(fail);
+  tv={mode:"list"}; render();
 }
-function broadcastState(){ send({t:"state",trade}); if(view==="trade") render(); }
-function doCommit(t){
-  const mine=t.offers[myRole()], theirs=t.offers[oppRole()];
-  const give=new Set(mine.map(i=>i.uid));
-  S.inv=S.inv.filter(i=>!give.has(i.uid));
-  const got=theirs.filter(i=>DEF[i.id]).map(i=>({uid:uid(),id:i.id,v:i.v,at:Date.now(),from:opp?opp.name:"venn"}));
-  got.forEach(addItem); S.stats.trades++; save();
-  trade=newTrade(); sendInv(); addChat("✅ Trade fullført!","sys");
-  if(got.length) reveal(got,"🤝",()=>render(),"Trade fullført!"); else { toast("✅ Trade fullført!"); render(); }
+async function acceptTrade(id){
+  const t=TRADES[id]; if(!t||t.status!=="pending") return;
+  const give=Object.keys(t.give||{}), get=Object.keys(t.get||{});
+  let ok=false;
+  try{
+    const res=await FB.runTransaction(R("players"),players=>{
+      if(!players) return players;
+      const A=players[t.from], B=players[t.to]; if(!A||!B) return;
+      A.inv=A.inv||{}; B.inv=B.inv||{};
+      if(!give.every(u=>A.inv[u])||!get.every(u=>B.inv[u])) return; // noe er solgt/byttet bort → avbryt
+      const now=Date.now();
+      const move=(from,to,list)=>list.forEach(u=>{ const it=from.inv[u]; delete from.inv[u]; to.inv[uid()]={id:it.id,v:it.v,at:now,from:from.name||""}; to.dex=to.dex||{}; to.dex[it.id]=true; });
+      move(A,B,give); move(B,A,get);
+      return players;
+    });
+    ok=res.committed;
+  }catch(e){ console.error(e); }
+  markSeen(id+":accepted");
+  if(ok){ await FB.update(R("trades/"+id),{status:"accepted",doneAt:Date.now()}); tv={mode:"list"}; const got=itemsOf(t.give); if(got.length) reveal(got,"🤝",()=>render(),"Trade fullført!"); else { toast("✅ Trade fullført!"); render(); } }
+  else { await FB.update(R("trades/"+id),{status:"failed",doneAt:Date.now()}).catch(()=>{}); toast("😕 Traden gikk ikke – noen av squishiene finnes ikke lenger",3500); tv={mode:"list"}; render(); }
 }
+function setStatus(id,status){ markSeen(id+":"+status); FB.update(R("trades/"+id),{status,doneAt:Date.now()}).catch(fail); tv={mode:"list"}; render(); }
 
-/* ---------- TRADE-VISNING ---------- */
+function boardHTML(leftTitle,left,rightTitle,right,editable){
+  const vl=invValue(left), vr=invValue(right);
+  const side=(title,items,which)=>`<div class="side"><h4><span>${title}</span><span class="muted">🪙 ${invValue(items)}</span></h4>
+     ${items.length?`<div class="grid small">${items.map(i=>card(i,{cls:editable?"tap rm-"+which:""})).join("")}</div>`:`<div class="empty">${editable?"Tomt":"Ingenting"}</div>`}
+     ${editable?`<button class="btn sec" style="width:100%;margin-top:8px;padding:8px" id="add-${which}">➕ Legg til</button>`:""}</div>`;
+  return `<div class="board"><div class="sides">${side(leftTitle,left,"l")}${side(rightTitle,right,"r")}</div>
+    <div class="fair">Du gir 🪙 ${vl} · du får 🪙 ${vr} ${vl||vr?(vr>=vl?"😊":"🤔"):""}</div></div>`;
+}
 function vTrade(m){
-  if(!connected()){
-    m.innerHTML=`<h2>Trade 🤝</h2>
-    ${roomCode&&isHost?`<div class="panel" style="text-align:center"><b>Rommet ditt er klart!</b><p class="muted" style="margin:4px 0">Gi denne koden til den du vil trade med:</p>
-       <div class="code">${connecting?"…":roomCode}</div><p class="muted">⏳ Venter på at noen blir med… (hold appen åpen)</p><button class="btn sec" id="stop">Avbryt</button></div>`
-    : connecting?`<div class="panel" style="text-align:center"><div style="font-size:50px">🔌</div><b>Kobler til rom ${esc(roomCode)}…</b></div>`
-    :`<div class="panel"><h3 style="margin-top:0">Lag et rom</h3><p class="muted">Du får en kode som motspilleren skriver inn.</p><button class="btn purple" id="host" style="width:100%">✨ Lag rom</button></div>
-      <div class="panel"><h3 style="margin-top:0">Bli med i et rom</h3><div class="row"><input id="code" maxlength="4" placeholder="KODE" style="text-transform:uppercase;letter-spacing:6px;font-weight:900;text-align:center;flex:1"><button class="btn" id="join">Bli med</button></div></div>
-      <p class="muted" style="font-size:13px">Begge må ha spillet åpent og være på internett samtidig.</p>`}`;
-    const h=m.querySelector("#host"); if(h) h.onclick=hostRoom;
-    const j=m.querySelector("#join"); if(j) j.onclick=()=>joinRoom(m.querySelector("#code").value);
-    const ci=m.querySelector("#code"); if(ci) ci.onkeydown=e=>{ if(e.key==="Enter") joinRoom(ci.value); };
-    const s=m.querySelector("#stop"); if(s) s.onclick=()=>leave();
+  if(tv.mode==="new"){
+    const d=tv, other=pname(d.to);
+    m.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">Trade med ${esc(other)}</h2><button class="btn sec" id="cx" style="padding:6px 12px">Avbryt</button></div>
+      ${boardHTML("Du gir",d.give,"Du ber om",d.get,true)}
+      <input id="msg" maxlength="120" placeholder="Melding (valgfritt) – f.eks. «Bytte? 🥺»" value="${esc(d.msg||"")}">
+      <button class="btn green" id="send" style="width:100%;margin-top:10px" ${d.give.length+d.get.length?"":"disabled"}>📨 Send tilbud</button>
+      <p class="muted" style="font-size:12px;text-align:center">${esc(other)} kan godta, avslå eller endre tilbudet – også når du ikke er pålogget.</p>`;
+    m.querySelector("#cx").onclick=()=>{tv={mode:"list"};render();};
+    m.querySelector("#msg").oninput=e=>d.msg=e.target.value;
+    m.querySelector("#send").onclick=sendTrade;
+    m.querySelector("#add-l").onclick=()=>picker("Velg hva du vil gi",S.inv.filter(i=>!isOffered(i.uid)&&!d.give.some(g=>g.uid===i.uid)),it=>{d.give.push(it);render();});
+    m.querySelector("#add-r").onclick=()=>picker(`Velg fra ${esc(other)} sin samling`,invOf(d.to).filter(i=>!d.get.some(g=>g.uid===i.uid)),it=>{d.get.push(it);render();});
+    m.querySelectorAll(".rm-l").forEach(c=>c.onclick=()=>{d.give=d.give.filter(i=>i.uid!==c.dataset.uid);render();});
+    m.querySelectorAll(".rm-r").forEach(c=>c.onclick=()=>{d.get=d.get.filter(i=>i.uid!==c.dataset.uid);render();});
     return;
   }
-  const me=myRole(), them=oppRole(), on=opp?opp.name:"…";
-  const mine=trade.offers[me], theirs=trade.offers[them];
-  const vm=invValue(mine), vt=invValue(theirs);
-  const offeredTheirs=new Set(theirs.map(i=>i.uid));
-  m.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:10px"><div class="status"><span class="dot on"></span>Rom ${roomCode} · ${esc(on)}</div><button class="btn sec" id="lv" style="padding:6px 12px">Forlat</button></div>
-   <div class="board">
-     <div class="sides">
-       <div class="side ${trade.acc[me]?"acc":""}"><h4><span>Du gir</span>${trade.acc[me]?'<span class="accb">✅ Godtatt</span>':""}</h4>
-         ${mine.length?`<div class="grid small">${mine.map(i=>card(i,{cls:"tap"})).join("")}</div>`:`<div class="empty">Trykk «Legg til» for å legge squishies på bordet</div>`}</div>
-       <div class="side ${trade.acc[them]?"acc":""}"><h4><span>${esc(on)} gir</span>${trade.acc[them]?'<span class="accb">✅ Godtatt</span>':""}</h4>
-         ${theirs.length?`<div class="grid small">${theirs.map(i=>card(i,{cls:"them"})).join("")}</div>`:`<div class="empty">Ingenting ennå…</div>`}</div>
-     </div>
-     <div class="fair">Du gir 🪙 ${vm} · du får 🪙 ${vt} ${vm||vt? (vt>=vm?"😊":"🤔"):""}</div>
-     <div class="tbtns">
-       <button class="btn sec" id="add">➕ Legg til</button>
-       ${trade.acc[me]?`<button class="btn sec" id="unacc">↩️ Angre</button>`:`<button class="btn green" id="acc" ${mine.length+theirs.length?"":"disabled"}>✅ Godta</button>`}
-       <button class="btn red" id="dec" ${mine.length+theirs.length?"":"disabled"}>❌ Avslå</button>
-     </div>
-     <p class="muted" style="font-size:12px;text-align:center;margin:8px 0 0">Når begge trykker «Godta», byttes squishiene. Endres bordet, må begge godta på nytt.</p>
-   </div>
-   <div class="panel"><b>💬 Chat</b>
-     <div class="chat" id="chat">${chat.map(c=>`<div class="msg ${c.who==="me"?"me":c.who==="sys"?"sys":""}">${esc(c.text)}</div>`).join("")}</div>
-     <div class="row"><input id="ct" placeholder="Skriv en melding…" class="grow" style="flex:1"><button class="btn" id="cs">Send</button></div>
-   </div>
-   <div class="panel"><b>${esc(on)} sin samling</b> <span class="muted">(🪙 ${opp?invValue(opp.inv):0}) – trykk for å ønske deg en</span>
-     <div class="grid small" style="margin-top:8px">${opp&&opp.inv.length?opp.inv.slice().sort((a,b)=>value(b)-value(a)).map(i=>card(i,{cls:"wish"+(offeredTheirs.has(i.uid)?" locked":"")})).join(""):'<span class="muted">Tom samling</span>'}</div>
-   </div>`;
-  const ch=m.querySelector("#chat"); ch.scrollTop=ch.scrollHeight;
-  m.querySelector("#lv").onclick=async()=>{ if(await confirmBox("Forlate rommet?","Forlat")) leave(); };
-  m.querySelector("#add").onclick=pickForTrade;
-  const a=m.querySelector("#acc"); if(a) a.onclick=()=>act("accept");
-  const u=m.querySelector("#unacc"); if(u) u.onclick=()=>act("unaccept");
-  m.querySelector("#dec").onclick=()=>act("decline");
-  m.querySelectorAll(".side .card.tap").forEach(c=>c.onclick=()=>{ squishOn(c); act("remove",{uid:c.dataset.uid}); });
-  m.querySelectorAll(".card.wish").forEach(c=>c.onclick=()=>{ squishOn(c); const it=opp.inv.find(i=>i.uid===c.dataset.uid); if(!it) return; const d=DEF[it.id]; const txt=`Kan jeg få ${VARIANTS[it.v].name?VARIANTS[it.v].name+" ":""}${d.name}? 🥺`; send({t:"chat",text:txt}); addChat(txt,"me"); });
-  const sendChat=()=>{ const i=m.querySelector("#ct"); const t=i.value.trim().slice(0,200); if(!t) return; send({t:"chat",text:t}); addChat(t,"me"); };
-  m.querySelector("#cs").onclick=sendChat; m.querySelector("#ct").onkeydown=e=>{ if(e.key==="Enter") sendChat(); };
+  if(tv.mode==="view"){
+    const t=TRADES[tv.id]; if(!t){ tv={mode:"list"}; return vTrade(m); }
+    const mine=t.to===me, other=pname(mine?t.from:t.to);
+    const youGet=itemsOf(mine?t.give:t.get), youGive=itemsOf(mine?t.get:t.give);
+    const st={pending:"⏳ Venter på svar",accepted:"✅ Godtatt",declined:"❌ Avslått",countered:"✏️ Endret (nytt tilbud sendt)",cancelled:"↩️ Trukket tilbake",failed:"😕 Gikk ikke"}[t.status]||t.status;
+    m.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">${mine?"Fra":"Til"} ${esc(other)}</h2><button class="btn sec" id="bk" style="padding:6px 12px">← Tilbake</button></div>
+      <p class="muted" style="margin-top:0">${st}</p>
+      ${t.msg?`<div class="panel" style="padding:10px">💬 «${esc(t.msg)}»</div>`:""}
+      ${boardHTML("Du gir",youGive,"Du får",youGet,false)}
+      ${t.status==="pending"? (mine?`<div class="tbtns"><button class="btn green" id="ac">✅ Godta</button><button class="btn sec" id="ed">✏️ Endre</button><button class="btn red" id="de">❌ Avslå</button></div>`
+          :`<button class="btn sec" id="cn" style="width:100%">↩️ Trekk tilbake tilbudet</button>`):""}`;
+    m.querySelector("#bk").onclick=()=>{tv={mode:"list"};render();};
+    const q=s=>m.querySelector(s);
+    if(q("#ac")) q("#ac").onclick=async()=>{ if(await confirmBox(`Godta traden med ${esc(other)}?`,"Godta ✅")) acceptTrade(tv.id); };
+    if(q("#de")) q("#de").onclick=()=>setStatus(tv.id,"declined");
+    if(q("#cn")) q("#cn").onclick=()=>setStatus(tv.id,"cancelled");
+    if(q("#ed")) q("#ed").onclick=()=>{ tv={mode:"new",to:t.from,give:youGive.filter(i=>S.inv.some(x=>x.uid===i.uid)),get:youGet,msg:"",replaces:tv.id}; render(); };
+    return;
+  }
+  // Liste
+  const others=Object.keys(PLAYERS).filter(p=>p!==me);
+  const inc=incoming(), out=outgoing(), hist=tradeList().filter(t=>(t.from===me||t.to===me)&&t.status!=="pending").slice(0,8);
+  const row=(t,label)=>{ const mine=t.to===me; const g=itemsOf(mine?t.give:t.get).length, gi=itemsOf(mine?t.get:t.give).length;
+    return `<div class="panel row tr" data-id="${t.id}" style="padding:10px;cursor:pointer"><div class="grow"><b>${label}</b><div class="muted" style="font-size:13px">Du får ${g} · du gir ${gi}${t.msg?" · 💬":""}</div></div><span>›</span></div>`; };
+  const icon={accepted:"✅",declined:"❌",countered:"✏️",cancelled:"↩️",failed:"😕"};
+  m.innerHTML=`<h2>Trade 🤝</h2>
+    ${inc.length?`<h3>📬 Til deg</h3>${inc.map(t=>row(t,"Fra "+esc(pname(t.from)))).join("")}`:""}
+    <h3>Start en ny trade</h3>
+    ${others.length?`<div class="cats">${others.map(p=>`<button class="cat" data-p="${p}" style="background:#f3e8ff"><span class="e">🧑‍🎤</span>${esc(pname(p))}<div class="muted" style="font-size:12px">🪙 ${invValue(invOf(p))} · ${invOf(p).length} stk</div></button>`).join("")}</div>`
+      :`<div class="panel muted">Ingen andre spillere ennå. Når søsteren din lager en spiller, dukker hun opp her.</div>`}
+    ${out.length?`<h3>📤 Sendt – venter på svar</h3>${out.map(t=>row(t,"Til "+esc(pname(t.to)))).join("")}`:""}
+    ${hist.length?`<h3>Historikk</h3>${hist.map(t=>row(t,(icon[t.status]||"")+" "+(t.to===me?"Fra ":"Til ")+esc(pname(t.to===me?t.from:t.to)))).join("")}`:""}`;
+  m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ tv={mode:"new",to:b.dataset.p,give:[],get:[],msg:""}; render(); });
+  m.querySelectorAll(".tr").forEach(r=>r.onclick=()=>{ tv={mode:"view",id:r.dataset.id}; render(); });
 }
-function pickForTrade(){
-  const avail=S.inv.filter(i=>!isOffered(i.uid)).sort((a,b)=>value(b)-value(a));
-  const m=modal(`<h3 style="margin-top:0">Velg squishies å legge på bordet</h3>
-    ${avail.length?`<div class="grid small">${avail.map(i=>card(i,{cls:"tap"})).join("")}</div>`:`<p class="muted">Du har ingen flere squishies å tilby.</p>`}
+function picker(title,items,onPick){
+  items=items.slice().sort((a,b)=>value(b)-value(a));
+  const m=modal(`<h3 style="margin-top:0">${title}</h3>
+    ${items.length?`<div class="grid small">${items.map(i=>card(i,{cls:"tap"})).join("")}</div>`:`<p class="muted">Ingen squishies å velge.</p>`}
     <button class="btn sec" id="cl" style="width:100%;margin-top:12px">Ferdig</button>`);
   m.querySelector("#cl").onclick=()=>m.remove();
-  m.querySelectorAll(".card").forEach(c=>c.onclick=()=>{ const it=S.inv.find(i=>i.uid===c.dataset.uid); if(!it) return; act("add",{item:{uid:it.uid,id:it.id,v:it.v}}); c.style.transition="transform .25s, opacity .25s"; c.style.transform="scale(.3) translateY(-40px)"; c.style.opacity="0"; setTimeout(()=>c.remove(),250); });
+  m.querySelectorAll(".card").forEach(c=>c.onclick=()=>{ const it=items.find(i=>i.uid===c.dataset.uid); if(!it) return; onPick({uid:it.uid,id:it.id,v:it.v}); c.style.transition="transform .25s, opacity .25s"; c.style.transform="scale(.3) translateY(-40px)"; c.style.opacity="0"; setTimeout(()=>c.remove(),250); });
 }
 
 /* ---------- MEG ---------- */
 function vMeg(m){
-  const st=S.stats;
+  const st=S.stats, trades=tradeList().filter(t=>t.status==="accepted"&&(t.from===me||t.to===me)).length;
+  const board=Object.keys(PLAYERS).map(p=>({p,n:pname(p),v:invValue(invOf(p))})).sort((a,b)=>b.v-a.v);
   m.innerHTML=`<h2>Hei, ${esc(S.name)}! ⭐</h2>
    <div class="panel">
      <div class="stat"><span>Squishies</span><b>${S.inv.length}</b></div>
@@ -796,39 +807,87 @@ function vMeg(m){
      <div class="stat"><span>Riktige svar</span><b>${st.correct} av ${st.answered}</b></div>
      <div class="stat"><span>Lengste rekke</span><b>🔥 ${st.best}</b></div>
      <div class="stat"><span>Bokser åpnet</span><b>${st.opened}</b></div>
-     <div class="stat" style="border:0"><span>Trades</span><b>${st.trades}</b></div>
+     <div class="stat" style="border:0"><span>Trades</span><b>${trades}</b></div>
    </div>
+   <div class="panel"><b>🏆 Toppliste (samlingsverdi)</b>${board.map((x,i)=>`<div class="stat" ${i===board.length-1?'style="border:0"':""}><span>${["🥇","🥈","🥉"][i]||"·"} ${esc(x.n)}</span><b>🪙 ${x.v}</b></div>`).join("")}</div>
    <div class="panel"><b>Innstillinger</b>
-     <p style="margin:10px 0 4px">Navn</p><input id="nm" value="${esc(S.name)}" maxlength="16">
      <p style="margin:10px 0 4px">Nivå på oppgaver</p>
      <select id="lv"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2">Middels (ca. 5.–7. trinn)</option></select>
      <button class="btn" id="sv" style="width:100%;margin-top:12px">Lagre</button>
    </div>
    <div class="panel"><b>Odds i boksene</b><p class="muted" style="font-size:13px">${BOXES.map(b=>`${b.e} ${b.name}: `+b.odds.map((o,i)=>o?`${TIERS[i].name} ${o}%`:"").filter(Boolean).join(", ")).join("<br>")}<br>Varianter: ✨ Glitter ~12 %, 🌈 Regnbue ~5 %, 👑 Gull ~1 % (høyere i store bokser)</p></div>
-   <button class="btn red" id="rs" style="width:100%">Start helt på nytt</button>`;
+   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller</button>`;
   m.querySelector("#lv").value=S.lvl;
-  m.querySelector("#sv").onclick=()=>{ const n=m.querySelector("#nm").value.trim(); if(n) S.name=n; S.lvl=+m.querySelector("#lv").value; save(); toast("Lagret ✅"); render(); };
-  m.querySelector("#rs").onclick=async()=>{ if(await confirmBox("Slette ALT og starte på nytt? Alle squishies forsvinner!","Slett alt")){ leave(true); S=fresh(); save(); onboard(); } };
+  m.querySelector("#sv").onclick=()=>{ S.lvl=+m.querySelector("#lv").value; save(); toast("Lagret ✅"); };
+  m.querySelector("#lo").onclick=async()=>{ if(await confirmBox("Logge ut? Samlingen ligger trygt lagret.","Logg ut")){ me=""; localStorage.removeItem(ME_KEY); S=fresh(); render(); } };
 }
 
-/* ---------- OPPSTART ---------- */
-function onboard(){
-  const m=modal(`<div style="text-align:center"><div style="font-size:70px">🥟🐸🦄</div><h2>Velkommen til Squishy Trade!</h2>
-    <p class="muted">Løs oppgaver, tjen mynter, kjøp squishies og trade med venner.</p></div>
-    <p style="margin:10px 0 4px"><b>Hva heter du?</b></p><input id="on" maxlength="16" placeholder="Navnet ditt">
-    <p style="margin:10px 0 4px"><b>Nivå</b></p><select id="ol"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2" selected>Middels (ca. 5.–7. trinn)</option></select>
-    <button class="btn" id="og" style="width:100%;margin-top:14px">Start! 🎉</button>`,{center:true});
-  m.querySelector("#og").onclick=()=>{
-    const n=m.querySelector("#on").value.trim(); if(!n) return toast("Skriv navnet ditt 😊");
-    S.name=n; S.lvl=+m.querySelector("#ol").value; save(); m.remove(); go("samling");
-    // Velkomstgave
-    setTimeout(()=>{ const it=makeItem("tb-dumpling",1); addItem(it); save(); reveal([it],"🎁",()=>render(),"Velkomstgave!"); },300);
+/* ---------- INNLOGGING ---------- */
+async function hashPin(p,pin){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("sq|"+p+"|"+pin)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+const slug=n=>n.toLowerCase().normalize("NFKD").replace(/[^a-z0-9æøå]+/g,"-").replace(/^-|-$/g,"")||"spiller";
+function vLogin(m){
+  const ps=Object.keys(PLAYERS);
+  m.innerHTML=`<div style="text-align:center;margin-top:10px"><div style="font-size:64px">🥟🐸🦄</div><h2>Velkommen til Squishy Trade!</h2><p class="muted">Løs oppgaver, tjen mynter, kjøp squishies og trade med hverandre.</p></div>
+    ${ps.length?`<h3>Hvem er du?</h3><div class="cats">${ps.map(p=>`<button class="cat" data-p="${p}" style="background:#ffe1ef"><span class="e">🧑‍🎤</span>${esc(pname(p))}</button>`).join("")}</div>`:""}
+    <div class="panel" style="margin-top:14px"><h3 style="margin-top:0">✨ Ny spiller</h3>
+      <input id="nn" maxlength="16" placeholder="Navnet ditt">
+      <input id="np" maxlength="4" inputmode="numeric" placeholder="Velg en PIN-kode (4 tall)" style="margin-top:8px">
+      <select id="nl" style="margin-top:8px"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2" selected>Middels (ca. 5.–7. trinn)</option></select>
+      <button class="btn" id="nb" style="width:100%;margin-top:10px">Lag spiller 🎉</button></div>`;
+  m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
+    const p=b.dataset.p;
+    const md=modal(`<h3 style="margin-top:0">Hei ${esc(pname(p))}! 👋</h3><p class="muted">Skriv PIN-koden din</p><input id="pp" maxlength="4" inputmode="numeric" type="password" style="font-size:28px;text-align:center;letter-spacing:10px"><button class="btn" id="pg" style="width:100%;margin-top:10px">Logg inn</button>`,{center:true});
+    const go2=async()=>{ const h=await hashPin(p,md.querySelector("#pp").value.trim()); if(h===PLAYERS[p].pin){ md.remove(); login(p); } else { toast("Feil PIN 🙈"); md.querySelector("#pp").value=""; } };
+    md.querySelector("#pg").onclick=go2; md.querySelector("#pp").onkeydown=e=>{ if(e.key==="Enter") go2(); }; md.querySelector("#pp").focus();
+  });
+  m.querySelector("#nb").onclick=async()=>{
+    const n=m.querySelector("#nn").value.trim(), pin=m.querySelector("#np").value.trim();
+    if(!n) return toast("Skriv navnet ditt 😊");
+    if(!/^\d{4}$/.test(pin)) return toast("PIN må være 4 tall");
+    let p=slug(n); if(PLAYERS[p]) return toast("Det navnet er tatt – velg et annet");
+    const welcome=makeItem("tb-dumpling",1);
+    const rec={name:n, pin:await hashPin(p,pin), lvl:+m.querySelector("#nl").value, coins:200, created:Date.now(),
+      stats:fresh().stats, daily:"", dex:{"tb-dumpling":true}, inv:{[welcome.uid]:{id:welcome.id,v:welcome.v,at:welcome.at}}};
+    try{ await FB.set(R("players/"+p),rec); }catch(e){ return fail(e); }
+    login(p); setTimeout(()=>reveal([welcome],"🎁",()=>render(),"Velkomstgave!"),300);
   };
 }
+function login(p){ me=p; localStorage.setItem(ME_KEY,p); syncMe(); tv={mode:"list"}; go("samling"); onTrades(); }
 
+/* ---------- OPPSTART ---------- */
+function vLoading(m){
+  m.innerHTML=`<div style="text-align:center;margin-top:60px"><div style="font-size:64px;animation:float 1.5s infinite">🥟</div><h3>${fbError?"😕 "+esc(fbError):"Kobler til…"}</h3>${fbError?`<button class="btn" onclick="location.reload()">Prøv igjen</button>`:""}</div>`;
+}
+let rTimer=null;
+function softRender(){ // ikke forstyrr quiz-svar eller trade-utkast
+  $("#coinN").textContent=S.coins; updateBadge();
+  if(view==="oppgaver"&&quiz) return;
+  if(view==="trade"&&tv.mode==="new") return;
+  if(document.querySelector(".modal")||$("#reveal").classList.contains("show")) return;
+  clearTimeout(rTimer); rTimer=setTimeout(render,60);
+}
+function boot(){
+  if(!FIREBASE_CONFIG||!FIREBASE_CONFIG.apiKey){ fbError="Firebase er ikke satt opp ennå"; return render(); }
+  try{
+    const app=FB.initializeApp(FIREBASE_CONFIG); const auth=FB.getAuth(app); db=FB.getDatabase(app);
+    FB.signInAnonymously(auth).then(()=>{
+      FB.onValue(R("players"),snap=>{ PLAYERS=snap.val()||{}; if(me&&!PLAYERS[me]){ me=""; localStorage.removeItem(ME_KEY); } if(me) syncMe();
+        const first=!ready; ready=true; if(first) render(); else softRender(); },e=>{ fbError="Ingen tilgang til databasen"; render(); });
+      FB.onValue(R("trades"),snap=>{ TRADES=snap.val()||{}; if(me){ onTrades(); softRender(); } });
+    }).catch(e=>{ console.error(e); fbError="Klarte ikke å koble til (er du på nett?)"; render(); });
+  }catch(e){ console.error(e); fbError="Feil i Firebase-oppsettet"; render(); }
+}
 go("samling");
-if(!S.name) onboard();
+if(window.FB) boot(); else window.addEventListener("fb-ready",boot,{once:true});
+setTimeout(()=>{ if(!window.FB&&!fbError){ fbError="Klarte ikke å laste Firebase (er du på nett?)"; render(); } },12000);
 if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth, signInAnonymously} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getDatabase, ref, onValue, set, update, remove, push, runTransaction} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+window.FB={initializeApp,getAuth,signInAnonymously,getDatabase,ref,onValue,set,update,remove,push,runTransaction};
+window.dispatchEvent(new Event("fb-ready"));
 </script>
 </body>
 </html>
