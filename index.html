@@ -1224,7 +1224,7 @@ const ME_KEY = "squishyTrade.me", SEEN_KEY = "squishyTrade.seen", FAM_KEY="squis
 let famOK=!!localStorage.getItem(FAM_KEY), famHash=null;
 let db=null, me=localStorage.getItem(ME_KEY)||"", PLAYERS={}, TRADES={}, ready=false, fbError="";
 let S = fresh();
-function fresh(){ return {name:"", lvl:2, coins:0, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,opened:0}, daily:""}; }
+function fresh(){ return {name:"", lvl:2, round:1, cnt:{}, coins:0, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,opened:0}, daily:""}; }
 let _uc=0; const uid = ()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36)+(_uc++).toString(36);
 const rnd = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -1255,7 +1255,7 @@ function rollVariant(boost=1){
 }
 function makeItem(id,boost){ return {uid:uid(), id, v:(DEF[id]&&DEF[id].fake)?"n":rollVariant(boost), k:rollColor(DEF[id]), at:Date.now()}; }
 // Lagring: hver ting skrives for seg, så trades fra andre aldri blir overskrevet
-function save(){ if(!me||!db) return; retryWrite(()=>FB.update(R("players/"+me),{coins:S.coins,lvl:S.lvl,name:S.name,stats:S.stats,daily:S.daily})).catch(fail); }
+function save(){ if(!me||!db) return; retryWrite(()=>FB.update(R("players/"+me),{coins:S.coins,lvl:S.lvl,round:S.round,cnt:S.cnt,name:S.name,stats:S.stats,daily:S.daily})).catch(fail); }
 function addItem(it){ S.inv.push(it); S.dex[it.id]=true; if(!me) return; FB.set(R(`players/${me}/inv/${it.uid}`),{id:it.id,v:it.v,k:it.k||DEF[it.id].col||"",at:it.at}).catch(fail); FB.set(R(`players/${me}/dex/${it.id}`),true).catch(fail); }
 function removeItem(u){ S.inv=S.inv.filter(i=>i.uid!==u); FB.remove(R(`players/${me}/inv/${u}`)).catch(fail); }
 function setCoins(n){ S.coins=n; save(); $("#coinN").textContent=S.coins; const c=$("#coins"); c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
@@ -1263,7 +1263,7 @@ function sendInv(){}
 const invOf = p=>Object.entries((PLAYERS[p]&&PLAYERS[p].inv)||{}).map(([uid,i])=>Object.assign({uid},i)).filter(i=>DEF[i.id]);
 function syncMe(){
   const P=PLAYERS[me]; if(!P) return;
-  S={name:P.name||"", lvl:P.lvl||2, coins:P.coins||0, inv:invOf(me), dex:P.dex||{}, stats:Object.assign(fresh().stats,P.stats||{}), daily:P.daily||""};
+  S={name:P.name||"", lvl:P.lvl||2, coins:P.coins||0, inv:invOf(me), dex:P.dex||{}, stats:Object.assign(fresh().stats,P.stats||{}), daily:P.daily||"", round:P.round||1, cnt:P.cnt||{}};
 }
 
 /* =========================================================
@@ -1351,22 +1351,47 @@ function itemDetail(u){
   m.querySelector("#sl").onclick=async()=>{ m.remove(); if(await confirmBox(`Selge ${VARIANTS[it.v].name} ${esc(d.name)} for 🪙 ${sell}?`,"Selg")){ removeItem(u); setCoins(S.coins+sell); render(); toast("Solgt! +"+sell+" 🪙"); } };
 }
 
-/* ---------- OPPGAVER ---------- */
-let quiz=null;
+/* ---------- OPPGAVER (nivåer) ----------
+   Nivå R er felles for alle kategorier. Klar på nivå R = LEVEL_GOAL riktige i kategorien.
+   Når alle kategoriene er klare, får man én mystery box og nivå R+1 låses opp.
+   Lavere nivåer kan spilles på nytt for mindre penger. Nivå 1 kan spilles på nytt først når R > 1. */
+const LEVEL_GOAL=5;
+const PROG_CATS=CATS.filter(c=>c.id!=="mix");
+const lvlReward=L=>10*2**(L-1);
+const catDone=id=>(S.cnt[id]||0)>=LEVEL_GOAL;
+let quiz=null, levelPick=null;
 function vOppgaver(m){
-  if(!quiz){
-    const today=new Date().toDateString();
+  const R=S.round||1;
+  if(!quiz && !levelPick){
+    const today=new Date().toDateString(), klare=PROG_CATS.filter(c=>catDone(c.id)).length;
     m.innerHTML=`<h2>Tjen mynter 🧠</h2>
      ${S.daily!==today?`<div class="panel row"><div class="grow"><b>Daglig bonus!</b><div class="muted">Hent 50 gratis mynter i dag</div></div><button class="btn green" id="daily">Hent 🪙 50</button></div>`:""}
-     <p class="muted">Riktig svar = 🪙 10. Fem riktige på rad = 🪙 25 ekstra! Nivå: <b>${["","Lett","Middels","Voksen"][S.lvl]||"Middels"}</b> (bytt under «Meg»)</p>
-     <div class="cats">${CATS.map(c=>`<button class="cat" data-c="${c.id}" style="background:${c.bg}"><span class="e">${c.e}</span>${c.name}</button>`).join("")}</div>`;
-    m.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{ quiz={cat:b.dataset.c,streak:0,n:0,right:0,earned:0,q:null,seen:new Set()}; nextQ(); render(); });
+     <div class="panel"><b>Nivå ${R}</b><div class="muted">Klar i ${klare} av ${PROG_CATS.length} kategorier. Når alle er klare får du en mystery box, og nivå ${R+1} låses opp.</div>
+       <div style="background:#e5e7eb;border-radius:8px;height:10px;margin-top:8px;overflow:hidden"><div style="background:#7dd3fc;height:10px;width:${klare/PROG_CATS.length*100}%"></div></div></div>
+     <p class="muted">Riktig svar gir mer jo høyere nivå: nivå 1 = 🪙 10, nivå 2 = 🪙 20, nivå 3 = 🪙 40 osv. Velg kategori:</p>
+     <div class="cats">${CATS.map(c=>{const ok=c.id!=="mix"&&catDone(c.id); return `<button class="cat" data-c="${c.id}" style="background:${c.bg}"><span class="e">${c.e}</span>${c.name}${ok?" ✅":""}</button>`;}).join("")}</div>`;
+    m.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{ levelPick=b.dataset.c; render(); });
     const d=m.querySelector("#daily"); if(d) d.onclick=(e)=>{ S.daily=today; setCoins(S.coins+50); coinFly(e.clientX,e.clientY,"+50 🪙"); render(); };
     return;
   }
-  const q=quiz.q, cat=CATS.find(c=>c.id===quiz.cat);
+  if(!quiz){
+    const cat=CATS.find(c=>c.id===levelPick), mix=levelPick==="mix";
+    const levels=Array.from({length:R},(_,i)=>i+1);
+    m.innerHTML=`<div class="panel qbox">
+      <div class="qhead"><button class="btn sec" id="back" style="padding:6px 12px">← Tilbake</button><span>${cat.e} ${cat.name}</span><span></span></div>
+      <p class="muted">Velg nivå:</p>
+      <div class="cats">${levels.map(L=>{
+        const cur=L===R, done=!mix&&cur&&catDone(levelPick);
+        const info=mix?(cur?"Blandede spørsmål, teller mot kategoriene":"Spill for å tjene mindre"):done?"✅ Klar, venter på de andre":cur?`Klar: ${S.cnt[levelPick]||0}/${LEVEL_GOAL}`:"Spill for å tjene mindre";
+        return `<button class="cat" data-l="${L}" ${done?"disabled":""} style="background:${cat.bg}"><span class="e">${L}</span>Nivå ${L}<br><small>🪙 ${lvlReward(L)} per riktig · ${info}</small></button>`;
+      }).join("")}</div></div>`;
+    m.querySelector("#back").onclick=()=>{ levelPick=null; render(); };
+    m.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{ quiz={cat:levelPick,lvl:+b.dataset.l,streak:0,n:0,right:0,earned:0,q:null}; levelPick=null; nextQ(); render(); });
+    return;
+  }
+  const q=quiz.q, cat=CATS.find(c=>c.id===(q.sub||quiz.cat));
   m.innerHTML=`<div class="panel qbox">
-    <div class="qhead"><button class="btn sec" id="back" style="padding:6px 12px">← Tilbake</button><span>${cat.e} ${cat.name}</span><span class="streak">🔥 ${quiz.streak}</span></div>
+    <div class="qhead"><button class="btn sec" id="back" style="padding:6px 12px">← Tilbake</button><span>${cat.e} ${cat.name} · nivå ${quiz.lvl}</span><span class="streak">🔥 ${quiz.streak}</span></div>
     ${q.big?`<div class="qbig">${q.big}</div>`:""}
     <div class="qtext">${esc(q.q)}</div>
     <div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>
@@ -1377,13 +1402,29 @@ function vOppgaver(m){
   m.querySelectorAll(".opt").forEach(b=>b.onclick=(e)=>{
     if(done) return; done=true;
     const ok=q.opts[+b.dataset.i]===q.a; quiz.n++; S.stats.answered++;
+    let roundDone=false, catJust=false;
     if(ok){ b.classList.add("ok"); quiz.right++; quiz.streak++; S.stats.correct++; S.stats.best=Math.max(S.stats.best,quiz.streak);
-      let gain=10; if(quiz.streak%5===0){ gain+=25; toast("🔥 "+quiz.streak+" på rad! +25 bonus"); }
+      let gain=lvlReward(quiz.lvl); if(quiz.streak%5===0){ gain+=25; toast("🔥 "+quiz.streak+" på rad! +25 bonus"); }
       quiz.earned+=gain; setCoins(S.coins+gain); coinFly(e.clientX-20,e.clientY-20,"+"+gain+" 🪙");
+      const qc=q.sub||quiz.cat;
+      if(quiz.lvl===R && !catDone(qc)){
+        S.cnt[qc]=(S.cnt[qc]||0)+1;
+        if(catDone(qc)){ catJust=true; toast(`✅ ${cat.name} klar på nivå ${R}!`); }
+        roundDone=PROG_CATS.every(c=>catDone(c.id));
+      }
     } else { b.classList.add("no"); quiz.streak=0; m.querySelectorAll(".opt").forEach(x=>{ if(q.opts[+x.dataset.i]===q.a) x.classList.add("ok"); }); }
     save();
-    setTimeout(()=>{ nextQ(); render(); }, ok?700:1600);
+    setTimeout(()=>{
+      if(roundDone){ quiz=null; levelUp(R); return; }
+      if(catJust && quiz.cat!=="mix"){ quiz=null; render(); return; }
+      nextQ(); render();
+    }, ok?700:1600);
   });
+}
+function levelUp(R){
+  S.round=R+1; S.cnt={}; save();
+  const it=makeItem(rollMystery().id,1); addItem(it); save();
+  reveal([it],"🎁",()=>render(),`Nivå ${R} klart i alle kategorier!`);
 }
 function mcq(q,a,wrong,big){ return {q,a:String(a),opts:shuffle([String(a),...wrong.slice(0,3).map(String)]),big}; }
 function numWrong(a,spread){ const s=new Set(); while(s.size<3){ let w=a+rnd(-spread,spread); if(w!==a&&w>=0) s.add(w); } return [...s]; }
@@ -1423,8 +1464,8 @@ function genMath(lvl){
 // husker hvilke spørsmål spilleren har fått, så de ikke går igjen før alle i temaet er brukt opp
 function qSeenSet(){ const k="squishyTrade.qseen."+(me||"x"); if(qSeenSet.k!==k){ qSeenSet.k=k; try{ qSeenSet.s=new Set(JSON.parse(localStorage.getItem(k)||"[]")); }catch(e){ qSeenSet.s=new Set(); } } return qSeenSet.s; }
 function qSeenSave(){ try{ localStorage.setItem(qSeenSet.k,JSON.stringify([...qSeenSet.s].slice(-2000))); }catch(e){} }
-function genQ(cat){
-  const lvl=S.lvl, cs=COUNTRIES.filter(c=>lvl>=3?c[3]>=2:c[3]<=lvl);
+function genQ(cat,lvl){
+  const cs=COUNTRIES.filter(c=>lvl>=3?c[3]>=2:c[3]<=lvl);
   if(cat==="mix") cat=pick(["matte","flagg","hoved","historie","boker","natur","kropp","sprak","aktuelt"]);
   if(cat==="matte") return genMath(lvl);
   if(cat==="flagg"||cat==="hoved"){
@@ -1440,7 +1481,12 @@ function genQ(cat){
   const item=pick(fresh); SS.add(item[0]); qSeenSave();
   return mcq(item[0], item[1], item[2]);
 }
-function nextQ(){ quiz.q=genQ(quiz.cat); }
+function nextQ(){
+  if(quiz.cat!=="mix"){ quiz.q=genQ(quiz.cat,quiz.lvl); return; }
+  const R=S.round||1, open=PROG_CATS.filter(c=>!catDone(c.id));
+  const pool=quiz.lvl===R&&open.length?open:PROG_CATS;
+  const sub=pick(pool).id; quiz.q=genQ(sub,quiz.lvl); quiz.q.sub=sub;
+}
 
 /* ---------- BUTIKK ---------- */
 let shopBrand="Alle", shopOnly=false;
@@ -1725,15 +1771,8 @@ function vMeg(m){
      <div class="stat" style="border:0"><span>Squishies fått i bytte</span><b>${trades}</b></div>
    </div>
    <div class="panel"><b>🏆 Toppliste (samlingsverdi)</b>${board.map((x,i)=>`<div class="stat" ${i===board.length-1?'style="border:0"':""}><span>${["🥇","🥈","🥉"][i]||"·"} ${esc(x.n)}</span><b>🪙 ${x.v}</b></div>`).join("")}</div>
-   <div class="panel"><b>Innstillinger</b>
-     <p style="margin:10px 0 4px">Nivå på oppgaver</p>
-     <select id="lv"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2">Middels (ca. 5.–7. trinn)</option><option value="3">Voksen (vanskelig)</option></select>
-     <button class="btn" id="sv" style="width:100%;margin-top:12px">Lagre</button>
-   </div>
    <div class="panel"><b>Odds i boksene</b><p class="muted" style="font-size:13px">${BOXES.map(b=>`${b.e} ${b.name}: `+b.odds.map((o,i)=>o?`${TIERS[i].name} ${o}%`:"").filter(Boolean).join(", ")).join("<br>")}<br>Varianter: ✨ Glitter ~12 %, 🌈 Regnbue ~5 %, 👑 Gull ~1 % (høyere i store bokser)</p></div>
    <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 10 · flere squishies</p>`;
-  m.querySelector("#lv").value=S.lvl;
-  m.querySelector("#sv").onclick=()=>{ S.lvl=+m.querySelector("#lv").value; save(); toast("Lagret ✅"); };
   m.querySelector("#lo").onclick=async()=>{ if(await confirmBox("Bytte spiller? Samlingen ligger trygt lagret.","Bytt")){ me=""; localStorage.removeItem(ME_KEY); S=fresh(); render(); } };
 }
 
