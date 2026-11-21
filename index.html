@@ -449,7 +449,8 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "1052131866044",
   appId: "1:1052131866044:web:0fb81a48cb0564954ca7b9"
 };
-const ME_KEY = "squishyTrade.me", SEEN_KEY = "squishyTrade.seen";
+const ME_KEY = "squishyTrade.me", SEEN_KEY = "squishyTrade.seen", FAM_KEY="squishyTrade.fam";
+let famOK=!!localStorage.getItem(FAM_KEY), famHash=null;
 let db=null, me=localStorage.getItem(ME_KEY)||"", PLAYERS={}, TRADES={}, ready=false, fbError="";
 let S = fresh();
 function fresh(){ return {name:"", lvl:2, coins:0, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,opened:0}, daily:""}; }
@@ -533,8 +534,10 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.v)
 function render(){
   $("#coinN").textContent=S.coins;
   const m=$("#main");
-  $("#nav").style.display=(ready&&me)?"flex":"none"; $("#coins").style.visibility=me?"visible":"hidden";
+  $("#nav").style.display=(ready&&famOK&&me&&PLAYERS[me])?"flex":"none"; $("#coins").style.visibility=me?"visible":"hidden";
   if(!ready) return vLoading(m);
+  if(!famOK) return vFamily(m);
+  if(me&&!PLAYERS[me]) return vLoading(m);
   if(!me) return vLogin(m);
   updateBadge();
   ({samling:vSamling,oppgaver:vOppgaver,butikk:vButikk,trade:vTrade,meg:vMeg})[view](m);
@@ -876,37 +879,41 @@ function vMeg(m){
      <button class="btn" id="sv" style="width:100%;margin-top:12px">Lagre</button>
    </div>
    <div class="panel"><b>Odds i boksene</b><p class="muted" style="font-size:13px">${BOXES.map(b=>`${b.e} ${b.name}: `+b.odds.map((o,i)=>o?`${TIERS[i].name} ${o}%`:"").filter(Boolean).join(", ")).join("<br>")}<br>Varianter: ✨ Glitter ~12 %, 🌈 Regnbue ~5 %, 👑 Gull ~1 % (høyere i store bokser)</p></div>
-   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller</button><p class="muted" style="text-align:center;font-size:12px">Versjon 5 · tradingbrett</p>`;
+   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 6 · familiekode</p>`;
   m.querySelector("#lv").value=S.lvl;
   m.querySelector("#sv").onclick=()=>{ S.lvl=+m.querySelector("#lv").value; save(); toast("Lagret ✅"); };
-  m.querySelector("#lo").onclick=async()=>{ if(await confirmBox("Logge ut? Samlingen ligger trygt lagret.","Logg ut")){ me=""; localStorage.removeItem(ME_KEY); S=fresh(); render(); } };
+  m.querySelector("#lo").onclick=async()=>{ if(await confirmBox("Bytte spiller? Samlingen ligger trygt lagret.","Bytt")){ me=""; localStorage.removeItem(ME_KEY); S=fresh(); render(); } };
 }
 
 /* ---------- INNLOGGING ---------- */
 async function hashPin(p,pin){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("sq|"+p+"|"+pin)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
 const slug=n=>n.toLowerCase().normalize("NFKD").replace(/[^a-z0-9æøå]+/g,"-").replace(/^-|-$/g,"")||"spiller";
+async function famH(c){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("fam|"+c.trim().toLowerCase())); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+function vFamily(m){
+  m.innerHTML=`<div style="text-align:center;margin-top:10px"><div style="font-size:64px">🥟🐸🦄</div><h2>Squishy Trade</h2><p class="muted">Skriv familiekoden for å spille sammen med de andre.</p></div>
+   <div class="panel"><input id="fc" placeholder="Familiekode" autocapitalize="none" autocomplete="off" style="font-size:22px;text-align:center"><button class="btn" id="fb" style="width:100%;margin-top:10px">Kom inn 🎉</button></div>`;
+  const go2=async()=>{ const c=m.querySelector("#fc").value; if(!c.trim()) return toast("Skriv koden");
+    const h=await famH(c);
+    if(!famHash){ try{ await retryWrite(()=>FB.set(R("meta/code"),h)); famHash=h; }catch(e){ return fail(e); } toast("Familiekoden er satt ✅",3000); }
+    else if(h!==famHash){ m.querySelector("#fc").value=""; return toast("Feil kode 🙈"); }
+    localStorage.setItem(FAM_KEY,h); famOK=true; render(); };
+  m.querySelector("#fb").onclick=go2; m.querySelector("#fc").onkeydown=e=>{ if(e.key==="Enter") go2(); };
+}
 function vLogin(m){
   const ps=Object.keys(PLAYERS);
   m.innerHTML=`<div style="text-align:center;margin-top:10px"><div style="font-size:64px">🥟🐸🦄</div><h2>Velkommen til Squishy Trade!</h2><p class="muted">Løs oppgaver, tjen mynter, kjøp squishies og trade med hverandre.</p></div>
-    ${ps.length?`<h3>Hvem er du?</h3><div class="cats">${ps.map(p=>`<button class="cat" data-p="${p}" style="background:#ffe1ef"><span class="e">🧑‍🎤</span>${esc(pname(p))}</button>`).join("")}</div>`:""}
+    ${ps.length?`<h3>Hvem spiller nå?</h3><div class="cats">${ps.map(p=>`<button class="cat" data-p="${p}" style="background:#ffe1ef"><span class="e">🧑‍🎤</span>${esc(pname(p))}</button>`).join("")}</div>`:""}
     <div class="panel" style="margin-top:14px"><h3 style="margin-top:0">✨ Ny spiller</h3>
       <input id="nn" maxlength="16" placeholder="Navnet ditt">
-      <input id="np" maxlength="4" inputmode="numeric" placeholder="Velg en PIN-kode (4 tall)" style="margin-top:8px">
       <select id="nl" style="margin-top:8px"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2" selected>Middels (ca. 5.–7. trinn)</option></select>
       <button class="btn" id="nb" style="width:100%;margin-top:10px">Lag spiller 🎉</button></div>`;
-  m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
-    const p=b.dataset.p;
-    const md=modal(`<h3 style="margin-top:0">Hei ${esc(pname(p))}! 👋</h3><p class="muted">Skriv PIN-koden din</p><input id="pp" maxlength="4" inputmode="numeric" type="password" style="font-size:28px;text-align:center;letter-spacing:10px"><button class="btn" id="pg" style="width:100%;margin-top:10px">Logg inn</button>`,{center:true});
-    const go2=async()=>{ const h=await hashPin(p,md.querySelector("#pp").value.trim()); if(h===PLAYERS[p].pin){ md.remove(); login(p); } else { toast("Feil PIN 🙈"); md.querySelector("#pp").value=""; } };
-    md.querySelector("#pg").onclick=go2; md.querySelector("#pp").onkeydown=e=>{ if(e.key==="Enter") go2(); }; md.querySelector("#pp").focus();
-  });
+  m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>login(b.dataset.p));
   m.querySelector("#nb").onclick=async()=>{
-    const n=m.querySelector("#nn").value.trim(), pin=m.querySelector("#np").value.trim();
+    const n=m.querySelector("#nn").value.trim();
     if(!n) return toast("Skriv navnet ditt 😊");
-    if(!/^\d{4}$/.test(pin)) return toast("PIN må være 4 tall");
     let p=slug(n); if(PLAYERS[p]) return toast("Det navnet er tatt – velg et annet");
     const welcome=makeItem("tb-dumpling",1);
-    const rec={name:n, pin:await hashPin(p,pin), lvl:+m.querySelector("#nl").value, coins:200, created:Date.now(),
+    const rec={name:n, lvl:+m.querySelector("#nl").value, coins:200, created:Date.now(),
       stats:fresh().stats, daily:"", dex:{"tb-dumpling":true}, inv:{[welcome.uid]:{id:welcome.id,v:welcome.v,at:welcome.at}}};
     if(!navigator.onLine) return toast("Ingen internett akkurat nå 📵",4000);
     const btn=m.querySelector("#nb"); btn.disabled=true; btn.textContent="Lager spiller…";
@@ -932,8 +939,9 @@ function boot(){
   try{
     const app=FB.initializeApp(FIREBASE_CONFIG); const auth=FB.getAuth(app); db=FB.getDatabase(app);
     FB.signInAnonymously(auth).then(()=>{
-      FB.onValue(R("players"),snap=>{ PLAYERS=snap.val()||{}; if(me&&!PLAYERS[me]){ me=""; localStorage.removeItem(ME_KEY); } if(me) syncMe();
+      FB.onValue(R("players"),snap=>{ PLAYERS=snap.val()||{}; if(me) syncMe();
         const first=!ready; ready=true; if(first) render(); else softRender(); },e=>{ fbError="Ingen tilgang til databasen"; render(); });
+      FB.onValue(R("meta/code"),snap=>{ famHash=snap.val(); const st=localStorage.getItem(FAM_KEY); if(st&&famHash&&st!==famHash){ localStorage.removeItem(FAM_KEY); famOK=false; render(); } });
       FB.onValue(R("boards"),snap=>{ BOARDS=snap.val()||{}; if(me){ onBoards(); softRender(); } });
     }).catch(e=>{ console.error(e); fbError="Klarte ikke å koble til (er du på nett?)"; render(); });
   }catch(e){ console.error(e); fbError="Feil i Firebase-oppsettet"; render(); }
