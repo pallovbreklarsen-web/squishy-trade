@@ -460,7 +460,17 @@ const shuffle = a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor
 const esc = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $ = s=>document.querySelector(s);
 const R = p=>FB.ref(db,p);
-const fail = e=>{ console.error(e); toast("⚠️ Klarte ikke å lagre – er du på nett?"); };
+const errTxt=e=>String((e&&(e.code||e.message))||e||"ukjent").slice(0,60);
+const fail = e=>{ console.error(e); toast("⚠️ Klarte ikke å lagre ("+errTxt(e)+"). Prøv igjen om litt.",6000); };
+// Prøver en skriving på nytt (og logger inn på nytt hvis tilgangen har falt ut)
+async function retryWrite(fn){
+  try{ return await fn(); }catch(e1){
+    console.warn("skriving feilet, prøver igjen",e1);
+    try{ await FB.signInAnonymously(FB.getAuth()); }catch(e){}
+    await new Promise(r=>setTimeout(r,1200));
+    return await fn();
+  }
+}
 
 function value(it){ const d=DEF[it.id]; return d&&VARIANTS[it.v]? Math.round(TIERS[d.tier].price*VARIANTS[it.v].mult) : 0; }
 function invValue(inv){ return inv.reduce((s,i)=>s+value(i),0); }
@@ -473,7 +483,7 @@ function rollVariant(boost=1){
 }
 function makeItem(id,boost){ return {uid:uid(), id, v:rollVariant(boost), at:Date.now()}; }
 // Lagring: hver ting skrives for seg, så trades fra andre aldri blir overskrevet
-function save(){ if(!me||!db) return; FB.update(R("players/"+me),{coins:S.coins,lvl:S.lvl,name:S.name,stats:S.stats,daily:S.daily}).catch(fail); }
+function save(){ if(!me||!db) return; retryWrite(()=>FB.update(R("players/"+me),{coins:S.coins,lvl:S.lvl,name:S.name,stats:S.stats,daily:S.daily})).catch(fail); }
 function addItem(it){ S.inv.push(it); S.dex[it.id]=true; if(!me) return; FB.set(R(`players/${me}/inv/${it.uid}`),{id:it.id,v:it.v,at:it.at}).catch(fail); FB.set(R(`players/${me}/dex/${it.id}`),true).catch(fail); }
 function removeItem(u){ S.inv=S.inv.filter(i=>i.uid!==u); FB.remove(R(`players/${me}/inv/${u}`)).catch(fail); }
 function setCoins(n){ S.coins=n; save(); $("#coinN").textContent=S.coins; const c=$("#coins"); c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
@@ -866,7 +876,7 @@ function vMeg(m){
      <button class="btn" id="sv" style="width:100%;margin-top:12px">Lagre</button>
    </div>
    <div class="panel"><b>Odds i boksene</b><p class="muted" style="font-size:13px">${BOXES.map(b=>`${b.e} ${b.name}: `+b.odds.map((o,i)=>o?`${TIERS[i].name} ${o}%`:"").filter(Boolean).join(", ")).join("<br>")}<br>Varianter: ✨ Glitter ~12 %, 🌈 Regnbue ~5 %, 👑 Gull ~1 % (høyere i store bokser)</p></div>
-   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller</button>`;
+   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller</button><p class="muted" style="text-align:center;font-size:12px">Versjon 5 · tradingbrett</p>`;
   m.querySelector("#lv").value=S.lvl;
   m.querySelector("#sv").onclick=()=>{ S.lvl=+m.querySelector("#lv").value; save(); toast("Lagret ✅"); };
   m.querySelector("#lo").onclick=async()=>{ if(await confirmBox("Logge ut? Samlingen ligger trygt lagret.","Logg ut")){ me=""; localStorage.removeItem(ME_KEY); S=fresh(); render(); } };
@@ -898,7 +908,9 @@ function vLogin(m){
     const welcome=makeItem("tb-dumpling",1);
     const rec={name:n, pin:await hashPin(p,pin), lvl:+m.querySelector("#nl").value, coins:200, created:Date.now(),
       stats:fresh().stats, daily:"", dex:{"tb-dumpling":true}, inv:{[welcome.uid]:{id:welcome.id,v:welcome.v,at:welcome.at}}};
-    try{ await FB.set(R("players/"+p),rec); }catch(e){ return fail(e); }
+    if(!navigator.onLine) return toast("Ingen internett akkurat nå 📵",4000);
+    const btn=m.querySelector("#nb"); btn.disabled=true; btn.textContent="Lager spiller…";
+    try{ await retryWrite(()=>FB.set(R("players/"+p),rec)); }catch(e){ btn.disabled=false; btn.textContent="Lag spiller 🎉"; return fail(e); }
     login(p); setTimeout(()=>reveal([welcome],"🎁",()=>render(),"Velkomstgave!"),300);
   };
 }
@@ -929,7 +941,7 @@ function boot(){
 go("samling");
 if(window.FB) boot(); else window.addEventListener("fb-ready",boot,{once:true});
 setTimeout(()=>{ if(!window.FB&&!fbError){ fbError="Klarte ikke å laste Firebase (er du på nett?)"; render(); } },12000);
-if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator && location.protocol.startsWith("http")) { navigator.serviceWorker.register("sw.js").then(r=>r.update()).catch(()=>{}); let rl=false; navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(!rl){ rl=true; location.reload(); } }); }
 </script>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
