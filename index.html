@@ -210,6 +210,16 @@ button.tbtn:disabled{opacity:.45}
 .slot .sx{position:absolute;top:-6px;right:-6px;background:#ff6b6b;color:#fff;width:18px;height:18px;border-radius:50%;font-size:10px;display:grid;place-items:center;font-weight:900}
 .slot.pop{animation:drop .45s}
 .slot.out{animation:none;transform:scale(.2);opacity:0;transition:.2s}
+.cw{position:relative}
+.shopitem.oos .card{filter:grayscale(1);opacity:.5}
+.oosr{position:absolute;top:42%;left:-4px;right:-4px;text-align:center;background:#ff6b6b;color:#fff;font-weight:900;font-size:13px;padding:3px 0;transform:rotate(-8deg);box-shadow:0 2px 6px #0003;letter-spacing:1px}
+.rs{position:absolute;top:-6px;left:-4px;background:#24a35a;color:#fff;font-weight:900;font-size:10px;padding:3px 7px;border-radius:10px;animation:glow2 1.2s ease-in-out infinite;z-index:3}
+@keyframes glow2{50%{box-shadow:0 0 0 5px #3fc77a55}}
+.cdl{font-size:11px;font-weight:800;color:var(--muted);text-align:center;margin:2px 0 4px;min-height:14px}
+.restock{background:#c9f7d9;border:2px solid #3fc77a;border-radius:14px;padding:8px 12px;margin:6px 0;font-size:14px;animation:glow2 1.4s ease-in-out infinite}
+.box.oosb{filter:grayscale(.8);opacity:.7}
+.faketag{position:absolute;bottom:34px;right:-2px;background:#777;color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:6px;transform:rotate(8deg);z-index:2}
+.card .faketag{bottom:auto;top:30px}
 .tstatus{text-align:center;font-weight:900;margin:12px 0 2px;font-size:15px}
 .tstatus.hot{color:#24a35a;animation:hot 1s ease-in-out infinite}
 @keyframes hot{50%{transform:scale(1.04)}}
@@ -301,8 +311,108 @@ const CATALOG = [
   ["tb-cake","Strawberry Cake Squishy","Taba Squishy","🍰","#ffe0e6",2],
   ["tb-dragon","Dragon Dumpling","Taba Squishy","🐲","#d7f7e3",3],
   ["tb-king","Kongedumplingen","Taba Squishy","🫅","#fff1b3",4],
-].map(([id,name,brand,emoji,color,tier])=>({id,name,brand,emoji,color,tier}));
+  ["tb-bear","Bear Taba Squishy","Taba Squishy","🐻","#f1dcc4",0],
+  ["tb-chick","Chick Taba Squishy","Taba Squishy","🐥","#fff3a8",0],
+  ["tb-bao","Bao Squishy","Taba Squishy","🍞","#fff6ea",0],
+  ["tb-paw","Paw Taba Squishy","Taba Squishy","🐾","#ffd9ec",1],
+  ["tb-pudding","Pudding Taba Squishy","Taba Squishy","🍮","#ffe9b8",1],
+  ["tb-cat","Cat Taba Squishy","Taba Squishy","🐱","#ffe1c4",2],
+
+  ["sq-leonard","Leonard the Rainbow Lion","Squishmallows","🦁","#ffe6c9",1],
+  ["sq-gordon","Gordon the Shark","Squishmallows","🦈","#d4ecff",1],
+  ["sq-rosie","Rosie the Pig","Squishmallows","🐷","#ffd6df",0],
+  ["sq-avery","Avery the Duck","Squishmallows","🦆","#fff3b0",0],
+  ["sq-sheldon","Sheldon the Snail","Squishmallows","🐌","#e9ddc9",1],
+  ["sq-hanna","Hanna the Hippo","Squishmallows","🦛","#e6d3ff",2],
+  ["sq-cinna","Cinnamoroll Squishmallow","Squishmallows","☁️","#e3f3ff",2],
+  ["sq-hk","Hello Kitty Squishmallow","Squishmallows","🎀","#ffe0ea",3],
+
+  ["jc-pizza","Amuseables Slice of Pizza","Jellycat","🍕","#ffe3b8",0],
+  ["jc-doughnut","Amuseables Doughnut","Jellycat","🍩","#ffe0e8",0],
+  ["jc-lemon","Amuseables Lemon","Jellycat","🍋","#fff7b3",0],
+  ["jc-burger","Amuseables Burger","Jellycat","🍔","#ffe0b0",1],
+  ["jc-bagel","Amuseables Bagel","Jellycat","🥯","#f1deb8",1],
+  ["jc-pretzel","Amuseables Pretzel","Jellycat","🥨","#f0d9b8",1],
+  ["jc-cloud","Amuseables Cloud","Jellycat","☁️","#e6f1ff",2],
+  ["jc-sun","Amuseables Sun","Jellycat","☀️","#fff0a8",2],
+
+  ["nd-glob","NeeDoh Groovy Glob","NeeDoh","🔮","#e8dcff",0],
+  ["nd-cone","NeeDoh Nice Cream Cone","NeeDoh","🍦","#ffe9f2",1],
+  ["nd-gummy","NeeDoh Gummy Bear","NeeDoh","🧸","#ffd9d9",1],
+  ["nd-fuzz","NeeDoh Fuzz Ball","NeeDoh","🧶","#f3dcff",1],
+  ["nd-banana","NeeDoh Boss Banana","NeeDoh","🍌","#fff3a8",2],
+  ["nd-dream","NeeDoh Dream Drop","NeeDoh","💧","#dff2ff",2],
+
+  ["sh-kitty","Hello Kitty Mochi SquiSHU","Sanrio SquiSHU","🎀","#ffe0ea",0],
+  ["sh-melody","My Melody Mochi SquiSHU","Sanrio SquiSHU","🐰","#ffdbe9",0],
+  ["sh-kuromi","Kuromi Mochi SquiSHU","Sanrio SquiSHU","😈","#e6d9ff",1],
+  ["sh-cinna","Cinnamoroll Mochi SquiSHU","Sanrio SquiSHU","☁️","#e3f3ff",1],
+  ["sh-keroppi","Keroppi Mochi SquiSHU","Sanrio SquiSHU","🐸","#d9f5cf",1],
+  ["sh-pochacco","Pochacco Mochi SquiSHU","Sanrio SquiSHU","🐶","#f2f2f2",2],
+  ["sh-pompom","Pompompurin Mochi SquiSHU","Sanrio SquiSHU","🍮","#ffeeb0",2],
+  ["sh-badtz","Badtz-Maru Mochi SquiSHU","Sanrio SquiSHU","🐧","#d6d6e8",3],
+
+  ["ls-waffle","Waffle Bunny","La Squish","🐰","#fff0d6",0],
+  ["ls-pudding","Pudding Bear","La Squish","🐻","#ffe9b8",0],
+  ["ls-cookie","Cookie Cat","La Squish","🍪","#eadbc4",1],
+  ["ls-donut","Donut Duck","La Squish","🦆","#ffe0e8",1],
+
+  ["md-pink","Pink Mystery Dumpling","Mystery Dumpling","🥟","#ffd6ea",0,{blind:1}],
+  ["md-blue","Blue Mystery Dumpling","Mystery Dumpling","🥟","#d6ecff",0,{blind:1}],
+  ["md-yellow","Yellow Mystery Dumpling","Mystery Dumpling","🥟","#fff3b0",0,{blind:1}],
+  ["md-green","Green Mystery Dumpling","Mystery Dumpling","🥟","#d9f5cf",0,{blind:1}],
+  ["md-purple","Purple Mystery Dumpling","Mystery Dumpling","🥟","#e6d9ff",0,{blind:1}],
+  ["md-white","White Steamed Dumpling","Mystery Dumpling","🥟","#ffffff",0,{blind:1}],
+  ["md-panda","Panda Dumpling","Mystery Dumpling","🐼","#eeeeee",1,{blind:1}],
+  ["md-bear","Bear Dumpling","Mystery Dumpling","🐻","#f1dcc4",1,{blind:1}],
+  ["md-cat","Cat Dumpling","Mystery Dumpling","🐱","#ffe1c4",1,{blind:1}],
+  ["md-glitter","Glitter Rainbow Dumpling","Mystery Dumpling","🌈","#fde8ff",2,{blind:1}],
+  ["md-galaxy","Galaxy Dumpling","Mystery Dumpling","🌌","#2b2d55",2,{blind:1}],
+  ["md-gold","Golden Dumpling","Mystery Dumpling","🥟","#ffe27a",4,{blind:1}],
+
+  ["fk-dump","Fake Dumpling","Fake Dumplings","🥟","#e4e4e4",0,{fake:1}],
+  ["fk-bao","Fake Bao (billigkopi)","Fake Dumplings","🍞","#ececec",0,{fake:1}],
+  ["fk-mystery","Fake Mystery Dumpling","Fake Dumplings","❓","#e8e8f0",0,{fake:1}],
+  ["fk-taba","Fake Taba Dumpling","Fake Dumplings","🥟","#eae6dc",0,{fake:1}],
+  ["fk-gold","Fake Golden Dumpling","Fake Dumplings","🥟","#f1e9b8",0,{fake:1}],
+
+  ["bt-stick","Butter Stick Squishy","Butter Squishy","🧈","#fff3a3",0],
+  ["bt-straw","Strawberry Butter Squishy","Butter Squishy","🧈","#ffd6df",0],
+  ["bt-blue","Blueberry Butter Squishy","Butter Squishy","🧈","#dfe6ff",0],
+  ["bt-tiedye","Tie-Dye Butter Squishy","Butter Squishy","🧈","#ffd9f0",1],
+  ["bt-xl","Butter Squishy XL","Butter Squishy","🧈","#fff0a0",1],
+  ["bt-matcha","Matcha Butter Squishy","Butter Squishy","🧈","#e1f3c7",1],
+  ["bt-choc","Chocolate Butter Squishy","Butter Squishy","🧈","#ead7c3",1],
+  ["bt-honey","Honey Butter Squishy","Butter Squishy","🧈","#ffe6a0",2],
+  ["bt-rainbow","Rainbow Butter Squishy","Butter Squishy","🧈","#f3e8ff",3],
+  ["bt-gold","Golden Butter Squishy","Butter Squishy","🧈","#ffe27a",4],
+].map(([id,name,brand,emoji,color,tier,x])=>({id,name,brand,emoji,color,tier,...(x||{})}));
 const DEF = Object.fromEntries(CATALOG.map(d=>[d.id,d]));
+if(CATALOG.length!==99) console.warn("Katalog har",CATALOG.length,"squishies");
+const FAKE_PRICE=15, FAKE_VALUE=10;
+const priceOf=d=>d.fake?FAKE_PRICE:TIERS[d.tier].price;
+
+/* ---------- LAGERSTATUS (felles for alle, regnes ut av klokka) ---------- */
+const SLOT=3*3600*1000, STOCK_P=[0.9,0.75,0.55,0.3,0];
+const PERMA=new Set(["sq-jack","jc-odell","nd-glow"]);   // alltid utsolgt (i tillegg til alle legendariske)
+const MD_KEY="md-blind", MD_P=0.6;
+function hsh(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function stockP(d){ return d.fake?1 : (PERMA.has(d.id)||d.tier>=4)?0 : STOCK_P[d.tier]; }
+function inStockAt(key,p,t){ if(p>=1) return true; if(p<=0) return false; const off=hsh(key)%SLOT, slot=Math.floor((t-off)/SLOT); return (hsh(key+"|"+slot)%1000)/1000<p; }
+function stockInfo(key,p,t=Date.now()){
+  if(p>=1) return {on:true};
+  if(p<=0) return {on:false,never:true};
+  const off=hsh(key)%SLOT, slot=Math.floor((t-off)/SLOT);
+  if(!inStockAt(key,p,t)){
+    for(let k=1;k<=80;k++){ if(inStockAt(key,p,off+(slot+k)*SLOT+1)) return {on:false,next:off+(slot+k)*SLOT}; }
+    return {on:false,never:true};
+  }
+  const start=off+slot*SLOT, fresh=!inStockAt(key,p,start-1)&&(t-start)<45*60*1000;
+  let end=null; for(let k=1;k<=80;k++){ if(!inStockAt(key,p,off+(slot+k)*SLOT+1)){ end=off+(slot+k)*SLOT; break; } }
+  return {on:true,fresh,start,end};
+}
+const stockOf=d=>stockInfo(d.id,stockP(d));
+function fmtCd(ms){ ms=Math.max(0,ms); const t=Math.ceil(ms/1000), h=Math.floor(t/3600), m=Math.floor(t%3600/60), sec=t%60; return h?`${h}t ${String(m).padStart(2,"0")}m`:`${m}m ${String(sec).padStart(2,"0")}s`; }
 
 const BOXES = [
   {id:"liten", name:"Mysterieboks", e:"🎁", cls:"b1", price:100, count:1, odds:[70,25,5,0,0], vboost:1, desc:"1 squishy · mest vanlige"},
@@ -314,6 +424,341 @@ const BOXES = [
    QUIZ
    ========================================================= */
 // [navn, flagg, hovedstad, nivå]
+const QEXTRA = {
+ historie:[
+  ["Hvilken tid levde vikingene i?","Vikingtiden",["Steinalderen","Renessansen","Bronsealderen"],1],
+  ["Hvilket år ble Norge frigjort etter andre verdenskrig?","1945",["1940","1950","1918"],2],
+  ["Hva feirer vi 8. mai i Norge?","Frigjøringsdagen",["Arbeidernes dag","Kongens fødselsdag","Nyttårsaften"],2],
+  ["Hvilket år ble Norge okkupert av Tyskland?","1940",["1914","1945","1905"],2],
+  ["Hvem ledet Kon-Tiki-ekspedisjonen i 1947?","Thor Heyerdahl",["Roald Amundsen","Fridtjof Nansen","Helge Ingstad"],2],
+  ["Hvem ble Norges første konge etter selvstendigheten i 1905?","Haakon VII",["Olav V","Harald V","Oscar II"],2],
+  ["Hvem var USAs første president?","George Washington",["Abraham Lincoln","Thomas Jefferson","Benjamin Franklin"],2],
+  ["Hvem malte Mona Lisa?","Leonardo da Vinci",["Michelangelo","Edvard Munch","Pablo Picasso"],2],
+  ["Hvilket år oppdaget Columbus Amerika?","1492",["1066","1776","1620"],2],
+  ["Hvilket år falt Berlinmuren?","1989",["1961","1975","2001"],2],
+  ["Hvilken by var sentrum i Romerriket?","Roma",["Athen","Kairo","Istanbul"],2],
+  ["Hvilket år begynte første verdenskrig?","1914",["1905","1939","1918"],3],
+  ["Hvilket år begynte den franske revolusjonen?","1789",["1689","1815","1914"],3],
+  ["Hvem oppfant trykkpressen med løse bokstaver i Europa rundt 1450?","Johannes Gutenberg",["Leonardo da Vinci","Isaac Newton","Galileo Galilei"],3],
+  ["Hvem ledet Fram-ekspedisjonen over polhavet 1893–96?","Fridtjof Nansen",["Roald Amundsen","Otto Sverdrup","Thor Heyerdahl"],3],
+  ["Hvilket år ble Norge medlem av NATO?","1949",["1945","1957","1994"],3],
+  ["Hvem var Norges første kvinnelige statsminister?","Gro Harlem Brundtland",["Erna Solberg","Kåre Willoch","Anne-Grete Strøm-Erichsen"],3],
+  ["Hvilket år fikk alle norske kvinner stemmerett?","1913",["1814","1905","1945"],3],
+  ["Hvilket år startet oljeeventyret med funnet av Ekofisk?","1969",["1945","1980","1905"],3],
+  ["Hva kalte vi motstandsbevegelsen i Norge under krigen?","Hjemmefronten",["Heimevernet","Milorg-hæren","Forsvarsfronten"],3],
+  ["Hvilket år ble FN stiftet?","1945",["1919","1957","1989"],3],
+  ["Hvilket år kollapset Sovjetunionen?","1991",["1989","1975","2001"],3],
+  ["Hvor lenge var Norge i union med Danmark?","Ca. 400 år",["Ca. 100 år","Ca. 50 år","Ca. 1000 år"],3],
+  ["Hvilken krig sto mellom Nord- og Sørstatene i USA?","Den amerikanske borgerkrigen",["Uavhengighetskrigen","Koreakrigen","Krimkrigen"],3],
+ ],
+ boker:[
+  ["Hva heter snømannen i Frost?","Olaf",["Kristoff","Sven","Hans"],1],
+  ["Hva heter Nemos pappa i «Oppdrag Nemo»?","Marlin",["Dory","Bruce","Gill"],1],
+  ["Hva heter løven i «Løvenes konge»?","Simba",["Mufasa","Timon","Scar"],1],
+  ["Hva heter rørleggeren med rød lue i Nintendo-spillene?","Mario",["Luigi","Sonic","Link"],1],
+  ["I hvilket spill bygger man med blokker og møter creepers?","Minecraft",["Fortnite","Roblox","Zelda"],1],
+  ["Hvilken norsk maler laget «Skrik»?","Edvard Munch",["Christian Krohg","Harald Sohlberg","Theodor Kittelsen"],1],
+  ["Hva heter hovedpersonen i Harry Potter-bøkene til etternavn?","Potter",["Weasley","Granger","Malfoy"],1],
+  ["Hvem skrev «Doktor Proktors prompepulver»?","Jo Nesbø",["Roald Dahl","Jostein Gaarder","Thorbjørn Egner"],1],
+  ["Hva heter Pippi Langstrømpes hest?","Lille Gubben",["Blakken","Svarten","Skjoldmøy"],2],
+  ["Hvem skrev «Hobbiten» og «Ringenes herre»?","J.R.R. Tolkien",["C.S. Lewis","J.K. Rowling","Roald Dahl"],2],
+  ["Hvem skrev «Et dukkehjem»?","Henrik Ibsen",["Knut Hamsun","Bjørnstjerne Bjørnson","Sigrid Undset"],2],
+  ["Hvem komponerte musikken til «Peer Gynt»?","Edvard Grieg",["Johan Halvorsen","Ole Bull","Johan Svendsen"],2],
+  ["Hva heter Peter Parker som superhelt?","Spider-Man",["Batman","Iron Man","Hulk"],2],
+  ["Hva heter Bulles venninne i «Doktor Proktor»?","Lise",["Nina","Petra","Siri"],2],
+  ["Hvem skrev «Alice i Eventyrland»?","Lewis Carroll",["Roald Dahl","A.A. Milne","Astrid Lindgren"],3],
+  ["Hvem skrev romanen «Sult» fra 1890?","Knut Hamsun",["Henrik Ibsen","Jon Fosse","Dag Solstad"],3],
+  ["Hvem skrev «Krig og fred»?","Leo Tolstoj",["Fjodor Dostojevskij","Anton Tsjekhov","Boris Pasternak"],3],
+  ["Hvem skrev «1984»?","George Orwell",["Aldous Huxley","Ray Bradbury","H.G. Wells"],3],
+  ["Hvem regisserte «Jurassic Park» (1993)?","Steven Spielberg",["James Cameron","George Lucas","Peter Jackson"],3],
+  ["Hvem vant Nobelprisen i litteratur i 2023?","Jon Fosse",["Karl Ove Knausgård","Annie Ernaux","Abdulrazak Gurnah"],3],
+ ],
+ natur:[
+  ["Hva er verdens største hav?","Stillehavet",["Atlanterhavet","Indiahavet","Nordsjøen"],1],
+  ["Hvilket dyr er størst på land?","Elefant",["Neshorn","Giraff","Flodhest"],1],
+  ["Hva er Norges høyeste fjell?","Galdhøpiggen",["Glittertind","Store Skagastølstind","Snøhetta"],1],
+  ["Hva er Norges største innsjø?","Mjøsa",["Femunden","Tyrifjorden","Røssvatnet"],1],
+  ["Hva er verdens høyeste fjell?","Mount Everest",["K2","Mont Blanc","Kilimanjaro"],1],
+  ["Hvor mange kontinenter er det?","7",["5","6","8"],1],
+  ["Hvilken planet kalles den røde planeten?","Mars",["Venus","Jupiter","Merkur"],1],
+  ["Hvilken gass puster vi inn for å leve?","Oksygen",["Karbondioksid","Helium","Nitrogen"],1],
+  ["Hvor mange bein har en edderkopp?","8",["6","10","12"],1],
+  ["Hvilket dyr løper raskest på land?","Gepard",["Løve","Hest","Antilope"],1],
+  ["Hva kalles et dyr som bare spiser planter?","Planteeter",["Kjøttetter","Altetende","Åtseleter"],1],
+  ["Hvilket organ pumper blodet rundt i kroppen?","Hjertet",["Lungene","Leveren","Magen"],1],
+  ["Hvilket pattedyr kan fly?","Flaggermus",["Ugle","Ekorn","Mus"],1],
+  ["Hva kalles lysfenomenet på nordhimmelen?","Nordlys",["Midnattssol","Regnbue","Stjerneskudd"],1],
+  ["Hva heter Norges nest største by?","Bergen",["Trondheim","Stavanger","Tromsø"],1],
+  ["Hva er verdens lengste elv (vanligvis regnet)?","Nilen",["Amazonas","Mississippi","Donau"],2],
+  ["Hva er Norges lengste elv?","Glomma",["Numedalslågen","Tana","Drammenselva"],2],
+  ["Hvilken planet er nærmest solen?","Merkur",["Venus","Mars","Jorden"],2],
+  ["Hva heter galaksen vi bor i?","Melkeveien",["Andromeda","Sirius","Orion"],2],
+  ["Hva er den kjemiske formelen for vann?","H₂O",["CO₂","O₂","NaCl"],2],
+  ["Hvilken gass tar planter opp når de gjør fotosyntese?","Karbondioksid",["Oksygen","Nitrogen","Hydrogen"],2],
+  ["Hva er verdens største varme ørken?","Sahara",["Gobi","Kalahari","Arabia"],2],
+  ["Hvor mange tenner har en voksen normalt (med visdomstenner)?","32",["28","30","36"],2],
+  ["Hva heter hovedbyen på Svalbard?","Longyearbyen",["Tromsø","Ny-Ålesund","Barentsburg"],2],
+  ["Hva er pi omtrent?","3,14",["2,71","1,61","3,41"],2],
+  ["Hvilket grunnstoff har symbolet Fe?","Jern",["Fluor","Fosfor","Kobber"],3],
+  ["Omtrent hvor fort går lyset?","300 000 km/s",["30 000 km/s","3 000 km/s","3 000 000 km/s"],3],
+  ["Hva er den dypeste havgrøften vi kjenner?","Marianegrøften",["Puerto Rico-grøften","Tonga-grøften","Java-grøften"],3],
+  ["Hvilket land har flest innbyggere?","India",["Kina","USA","Indonesia"],3],
+  ["Hva kalles det når magma kommer opp på overflaten?","Vulkanutbrudd",["Jordskjelv","Tsunami","Skred"],2],
+  ["Hvilken celletype frakter oksygen i blodet?","Røde blodceller",["Hvite blodceller","Blodplater","Nerveceller"],3],
+  ["Hva måler vi med Richters skala?","Jordskjelv",["Vindstyrke","Temperatur","Lufttrykk"],3],
+ ],
+ aktuelt:[
+  ["Hvem er Norges konge?","Haakon",["Harald V","Olav V","Carl XVI Gustaf"],1],
+  ["Hvem er Norges kronprinsesse?","Ingrid Alexandra",["Mette-Marit","Märtha Louise","Sonja"],1],
+  ["Hva heter Norges dronning (kongens kone)?","Mette-Marit",["Sonja","Ingrid Alexandra","Märtha Louise"],1],
+  ["Hvem er nummer to i arverekkefølgen til den norske tronen?","Prins Sverre Magnus",["Prinsesse Märtha Louise","Dronning Sonja","Kong Harald"],2],
+  ["Hvem var Norges konge i 35 år, fra 1991 til 2026?","Harald V",["Olav V","Haakon VII","Haakon VIII"],2],
+  ["Hvem er Norges statsminister?","Jonas Gahr Støre",["Erna Solberg","Jens Stoltenberg","Bjørnar Moxnes"],1],
+  ["Hvilket land vant fotball-VM 2026?","Spania",["Argentina","Frankrike","Brasil"],1],
+  ["Hvilket land tapte finalen i fotball-VM 2026?","Argentina",["Frankrike","England","Tyskland"],2],
+  ["Hvor mange mål var det i VM-finalen i 2026 (Spania–Argentina)?","1–0 etter ekstraomganger",["3–2 etter straffer","2–2","4–0"],3],
+  ["Hvilket land vant Eurovision i 2026?","Bulgaria",["Israel","Norge","Italia"],2],
+  ["Hva heter vinnerlåten i Eurovision 2026?","Bangaranga",["Wasted Love","Tattoo","Euphoria"],3],
+  ["Hvilket land fikk flest gullmedaljer i vinter-OL 2026?","Norge",["USA","Sverige","Italia"],1],
+  ["Hvor mange gullmedaljer tok Norge i vinter-OL 2026?","18",["12","16","25"],2],
+  ["Hvor mange gull tok Klæbo i vinter-OL 2026?","6",["3","4","2"],2],
+  ["Hvem er USAs president?","Donald Trump",["Joe Biden","Barack Obama","Kamala Harris"],1],
+  ["Hvem er Storbritannias statsminister (fra juli 2026)?","Andy Burnham",["Keir Starmer","Boris Johnson","Rishi Sunak"],3],
+  ["Hvem er Storbritannias konge?","Charles III",["William","Harry","George VI"],1],
+  ["Hvem er president i Ukraina?","Volodymyr Zelenskyj",["Vladimir Putin","Petro Porosjenko","Emmanuel Macron"],2],
+  ["Hvem er Canadas statsminister?","Mark Carney",["Justin Trudeau","Stephen Harper","Jean Chrétien"],3],
+  ["Hvem er Finlands president?","Alexander Stubb",["Sauli Niinistö","Sanna Marin","Petteri Orpo"],3],
+  ["Hvem er borgermester i New York (fra 2026)?","Zohran Mamdani",["Eric Adams","Bill de Blasio","Michael Bloomberg"],3],
+  ["Hva står AI for?","Artificial intelligence",["Automatic internet","Advanced input","Android interface"],2],
+  ["Hvilket land var vertskap for vinter-OL i 2022?","Kina",["Norge","Japan","Sør-Korea"],3],
+ ]
+};
+
+const QEXTRA2 = {
+ historie:[
+  ["Hva kalte vikingene de store skipene sine?","Langskip",["Karaveller","Galeier","Hurtigruter"],1],
+  ["Hva er Eidsvoll kjent for?","Her ble grunnloven skrevet i 1814",["Her ble Norge frigjort","Her ligger kongeslottet","Her er Norges høyeste fjell"],1],
+  ["Hva brukte egypterne til å skrive?","Hieroglyfer",["Runer","Latin","Kileskrift"],1],
+  ["Hva kalte vikingene skriften sin?","Runer",["Hieroglyfer","Kileskrift","Latin"],1],
+  ["Hvor ligger Colosseum?","Roma",["Athen","Paris","Kairo"],1],
+  ["Hva er Den kinesiske mur?","En svært lang forsvarsmur",["Et slott","En kanal","En motorvei"],1],
+  ["Hvilket land har Eiffeltårnet?","Frankrike",["Italia","Belgia","Tyskland"],1],
+  ["Hvem var Olav den hellige?","En norsk konge som ble helgen",["En dansk pirat","En svensk maler","Norges første statsminister"],2],
+  ["Hvem utviklet relativitetsteorien?","Albert Einstein",["Isaac Newton","Marie Curie","Niels Bohr"],2],
+  ["Hvem fant opp glødelampen på 1870-tallet?","Thomas Edison",["Alexander Graham Bell","Isaac Newton","Albert Einstein"],2],
+  ["Hvilken by var delt av en mur fra 1961 til 1989?","Berlin",["Wien","Budapest","Praha"],2],
+  ["Hvem var Kleopatra?","Dronning av Egypt",["Romersk keiser","Gresk gudinne","Persisk prinsesse"],2],
+  ["Hva er en pyramide i Egypt egentlig?","En grav for en farao",["Et tempel for sola","Et slott","Et lagerhus"],2],
+  ["Hvilket land ga Frihetsgudinnen til USA?","Frankrike",["England","Spania","Italia"],2],
+  ["Hva kaller vi tiden før skriftspråket ble oppfunnet?","Forhistorien",["Middelalderen","Renessansen","Antikken"],2],
+  ["Hva er en saga?","En fortelling fra vikingtiden og middelalderen",["En type skip","Et sverd","En dans"],2],
+  ["Hva heter museet i Oslo som viser vikingskip?","Vikingskipshuset",["Kon-Tiki-museet","Fram-museet","Nasjonalmuseet"],2],
+  ["Hvilken tidsalder kom etter steinalderen?","Bronsealderen",["Vikingtiden","Middelalderen","Renessansen"],3],
+  ["Hvem foreslo at jorden går rundt sola (1543)?","Nikolaus Kopernikus",["Isaac Newton","Albert Einstein","Johannes Kepler"],3],
+  ["Hvem fikk patent på telefonen i 1876?","Alexander Graham Bell",["Thomas Edison","Nikola Tesla","Samuel Morse"],3],
+  ["Hva heter Norges eldste jernbane (åpnet 1854)?","Hovedbanen",["Bergensbanen","Ofotbanen","Dovrebanen"],3],
+  ["Hva het den greske gudinnen for visdom?","Athene",["Afrodite","Hera","Artemis"],3],
+  ["Hvem fløy som første kvinne alene over Atlanterhavet i 1932?","Amelia Earhart",["Bessie Coleman","Harriet Quimby","Jacqueline Cochran"],3],
+  ["Hvilken ekspedisjon fullførte den første jordomseilingen (1519–22)?","Magellans ekspedisjon",["Columbus' ekspedisjon","Cooks ekspedisjon","Amundsens ekspedisjon"],3],
+  ["Hvilket fengsel ble stormet i Paris i 1789?","Bastillen",["Louvre","Versailles","Notre-Dame"],3],
+  ["Hvem skrev kongesagaene (Heimskringla)?","Snorre Sturluson",["Henrik Ibsen","Ari Frode","Saxo Grammaticus"],3],
+  ["Hva het Olav Tryggvasons store skip?","Ormen Lange",["Fram","Gokstad","Kon-Tiki"],3],
+  ["Hvilket språk snakket romerne?","Latin",["Gresk","Italiensk","Etruskisk"],2],
+  ["Hvem var Gutenberg?","Mannen som utviklet trykkekunsten i Europa",["Maleren av Mona Lisa","Norges første konge","Oppfinneren av dampmaskinen"],3],
+  ["Hvilken oppfinnelse gjorde at bøker kunne lages raskt og billig i Europa?","Trykkpressen",["Dampmaskinen","Skrivemaskinen","Papiret"],3],
+  ["Hvem var Marie Curie?","Forsker som fikk to Nobelpriser",["Dronning av Frankrike","Kjent maler","Første kvinne på månen"],3],
+  ["Hva het det største skipet som sank i 1912?","Titanic",["Lusitania","Bismarck","Britannic"],1],
+ ],
+ boker:[
+  ["Hvem skrev «Pippi Langstrømpe»?","Astrid Lindgren",["Roald Dahl","Thorbjørn Egner","Anne-Cath. Vestly"],1],
+  ["Hvem skrev «Folk og røvere i Kardemomme by»?","Thorbjørn Egner",["Alf Prøysen","Jo Nesbø","Astrid Lindgren"],1],
+  ["Hva heter de tre røverne i Kardemomme by?","Kasper, Jesper og Jonatan",["Ole, Dole og Doffen","Knoll og Tott","Pål, Peter og Espen"],1],
+  ["Hva heter bamsen som elsker honning i bøkene av A.A. Milne?","Ole Brumm",["Paddington","Bamse","Teddy"],1],
+  ["Hva heter Mikke Mus' hund?","Pluto",["Fant","Rolf","Dollar"],1],
+  ["Hva heter Donald Ducks tre nevøer?","Ole, Dole og Doffen",["Knoll og Tott","Pelle og Pål","Tick, Trick og Track"],1],
+  ["Hvem bor under brua i eventyret om de tre bukkene Bruse?","Et troll",["En drage","En heks","En ulv"],1],
+  ["Hva heter Harry Potters skole på norsk?","Galtvort",["Beauxbatons","Durmstrang","Ilvermorny"],1],
+  ["Hvem skrev «Charlie og sjokoladefabrikken»?","Roald Dahl",["Astrid Lindgren","C.S. Lewis","Enid Blyton"],1],
+  ["Hva heter den blå piggsvinet i dataspill?","Sonic",["Mario","Pikachu","Kirby"],1],
+  ["Hva heter den gule Pokémon-figuren med lyn?","Pikachu",["Charmander","Bulbasaur","Eevee"],1],
+  ["Hva heter Elsas søster i Frost?","Anna",["Belle","Mulan","Rapunsel"],1],
+  ["Hva heter bjørnen i Jungelboken?","Balu",["Bagheera","Shere Khan","Mowgli"],1],
+  ["Hvilket instrument har 88 tangenter?","Piano",["Gitar","Fiolin","Trommer"],1],
+  ["Hva heter Norges nasjonalsang?","Ja, vi elsker",["Sønner av Norge","Norge i rødt, hvitt og blått","Gud signe vårt dyre fedreland"],1],
+  ["Hva heter Harry Potters ugle?","Hedwig",["Errol","Hermes","Pigwidgeon"],2],
+  ["Hva heter løven i Narnia-bøkene?","Aslan",["Simba","Mufasa","Leo"],2],
+  ["Hva heter hobbiten i «Hobbiten»?","Bilbo Lommelun",["Frodo","Samvis","Gandalf"],2],
+  ["Hvem samlet norske folkeeventyr på 1800-tallet?","Asbjørnsen og Moe",["Brødrene Grimm","Henrik Ibsen","Thorbjørn Egner"],2],
+  ["Hvem skrev «Den lille havfrue»?","H.C. Andersen",["Brødrene Grimm","Astrid Lindgren","Roald Dahl"],2],
+  ["Hvem skrev «Romeo og Julie»?","William Shakespeare",["Charles Dickens","Homer","Molière"],2],
+  ["Hvem skrev «Sofies verden»?","Jostein Gaarder",["Jo Nesbø","Karl Ove Knausgård","Anne B. Ragde"],2],
+  ["Hvem skrev «Ronja Røverdatter»?","Astrid Lindgren",["Thorbjørn Egner","Roald Dahl","Tove Jansson"],2],
+  ["Hvem skapte Mummitrollet?","Tove Jansson",["Astrid Lindgren","Alf Prøysen","Selma Lagerlöf"],2],
+  ["Hvem skrev «Teskjekjerringa»?","Alf Prøysen",["Thorbjørn Egner","Jo Nesbø","Astrid Lindgren"],2],
+  ["Hvor mange strenger har en vanlig gitar?","6",["4","5","8"],2],
+  ["Hvem skrev «Skatten på sjørøverøya»?","Robert Louis Stevenson",["Jules Verne","Mark Twain","Daniel Defoe"],3],
+  ["Hvem skrev «Jorden rundt på 80 dager»?","Jules Verne",["H.G. Wells","Mark Twain","Charles Dickens"],3],
+  ["Hvem skrev «Oliver Twist»?","Charles Dickens",["Jane Austen","Mark Twain","Oscar Wilde"],3],
+  ["Hvem skrev «Stolthet og fordom»?","Jane Austen",["Emily Brontë","Charlotte Brontë","Virginia Woolf"],3],
+  ["Hvem komponerte «Måneskinnssonaten»?","Ludwig van Beethoven",["Wolfgang Amadeus Mozart","Johann Sebastian Bach","Edvard Grieg"],3],
+  ["Hvem komponerte «Fire årstider»?","Antonio Vivaldi",["Johann Sebastian Bach","Frédéric Chopin","Joseph Haydn"],3],
+  ["Hvem skrev «Moby Dick»?","Herman Melville",["Mark Twain","Jack London","Ernest Hemingway"],3],
+  ["Hvem skrev «Don Quijote»?","Miguel de Cervantes",["Dante Alighieri","Molière","Gabriel García Márquez"],3],
+  ["Hvem malte «Stjernenatt» (Starry Night)?","Vincent van Gogh",["Claude Monet","Pablo Picasso","Edvard Munch"],2],
+  ["Hvem skrev skuespillet «Peer Gynt»?","Henrik Ibsen",["Bjørnstjerne Bjørnson","Knut Hamsun","Jon Fosse"],3],
+  ["Hva heter den smilende katten i «Alice i Eventyrland»?","Cheshirekatten",["Pluto","Garfield","Tom"],3],
+  ["Hvem skrev «Dagbok for en pingle»?","Jeff Kinney",["Roald Dahl","David Walliams","J.K. Rowling"],1],
+ ],
+ natur:[
+  ["Hva heter en kus unge?","Kalv",["Føll","Lam","Kje"],1],
+  ["Hva heter en hests unge?","Føll",["Kalv","Lam","Kje"],1],
+  ["Hva heter en sauens unge?","Lam",["Føll","Kje","Kalv"],1],
+  ["Hva kalles en liten frosk som lever i vann?","Rumpetroll",["Larve","Pjokk","Pupp"],1],
+  ["Hva spiser pandaer nesten bare?","Bambus",["Fisk","Gress","Frukt"],1],
+  ["Hvilket dyr har lengst hals?","Giraff",["Elefant","Struts","Kamel"],1],
+  ["Hvilken fugl kan ikke fly og lever på Sydpolen?","Pingvin",["Ugle","Måke","Ørn"],1],
+  ["Hvilke farger har det norske flagget?","Rød, hvit og blå",["Rød og hvit","Blå og gul","Rød, hvit og grønn"],1],
+  ["Hvilket kontinent er størst?","Asia",["Afrika","Nord-Amerika","Europa"],1],
+  ["Hvilket land har formen som en støvel?","Italia",["Hellas","Spania","Portugal"],1],
+  ["Hvilket hav ligger mellom Europa og Amerika?","Atlanterhavet",["Stillehavet","Indiahavet","Nordishavet"],1],
+  ["Hva kalles stjernen midt i solsystemet vårt?","Sola",["Sirius","Månen","Mars"],1],
+  ["Hvor mange planeter er det i solsystemet?","8",["7","9","10"],1],
+  ["Hva er den største planeten?","Jupiter",["Saturn","Neptun","Jorden"],1],
+  ["Hvilken planet er kjent for ringene sine?","Saturn",["Mars","Venus","Merkur"],1],
+  ["Hvor lang tid bruker jorden rundt sola?","Ett år",["En måned","En dag","Ti år"],1],
+  ["Ved hvilken temperatur fryser vann?","0 grader",["10 grader","–10 grader","100 grader"],1],
+  ["Ved hvilken temperatur koker vann (ved havnivå)?","100 grader",["50 grader","90 grader","120 grader"],1],
+  ["Hva måler et termometer?","Temperatur",["Vekt","Lengde","Tid"],1],
+  ["Hva kalles det sørligste punktet på jorda?","Sydpolen",["Nordpolen","Ekvator","Tropene"],1],
+  ["Hva er et dyr som lever både på land og i vann kalt?","Amfibium",["Reptil","Pattedyr","Fisk"],2],
+  ["Hva er et pattedyr?","Et dyr som gir melk til ungene",["Et dyr med fjær","Et dyr som legger egg","Et dyr uten ben"],2],
+  ["Hva kalles et dyr som spiser både planter og kjøtt?","Altetende",["Planteeter","Kjøttetter","Åtseleter"],2],
+  ["Hva er verdens største dyr?","Blåhval",["Elefant","Hvalhai","Spermhval"],2],
+  ["Hva kalles det når dyr sover gjennom vinteren?","Dvale",["Trekk","Hamstring","Hekking"],2],
+  ["Hva er Norges største rovdyr?","Brunbjørn",["Ulv","Gaupe","Jerv"],2],
+  ["Hvilket dyr kan skifte farge for å gjemme seg?","Kameleon",["Sebra","Elefant","Hest"],1],
+  ["Hva heter Norges lengste fjord?","Sognefjorden",["Hardangerfjorden","Oslofjorden","Trondheimsfjorden"],2],
+  ["Hva heter havet vest for Norge?","Norskehavet",["Østersjøen","Middelhavet","Svartehavet"],2],
+  ["Hvilken linje deler jorda i en nordlig og en sørlig halvkule?","Ekvator",["Polarsirkelen","Vendekretsen","Nullmeridianen"],2],
+  ["Hva heter fjellkjeden i Sør-Amerika?","Andesfjellene",["Alpene","Himalaya","Rocky Mountains"],2],
+  ["Hva heter elven som renner gjennom Paris?","Seinen",["Rhinen","Donau","Themsen"],2],
+  ["Hva heter elven som renner gjennom London?","Themsen",["Seinen","Rhinen","Tiberen"],2],
+  ["Hva er hardest av naturlige stoffer?","Diamant",["Jern","Kvarts","Gull"],2],
+  ["Hva kalles kraften som trekker ting mot jorda?","Tyngdekraften",["Magnetisme","Friksjon","Elektrisitet"],2],
+  ["Hva er kjemisk symbol for oksygen?","O",["Ox","Og","Om"],2],
+  ["Hva er kjemisk symbol for gull?","Au",["Ag","Gd","Go"],3],
+  ["Hva er kjemisk symbol for natrium?","Na",["N","Ne","Sa"],3],
+  ["Hvilken gass er det mest av i lufta?","Nitrogen",["Oksygen","Karbondioksid","Hydrogen"],3],
+  ["Hva er verdens største øy (som ikke er et kontinent)?","Grønland",["Madagaskar","Island","Borneo"],3],
+  ["Hva er verdens minste kontinent?","Oseania (Australia)",["Europa","Antarktis","Sør-Amerika"],2],
+  ["Hva er Afrikas høyeste fjell?","Kilimanjaro",["Mount Kenya","Table Mountain","Atlasfjellene"],3],
+  ["Hvilken fjellkjede skiller Europa og Asia i Russland?","Uralfjellene",["Alpene","Pyreneene","Karpatene"],3],
+  ["Hva er Norges høyeste foss?","Vinnufossen",["Langfoss","Vøringsfossen","Kjosfossen"],3],
+  ["Hva er verdens største ørken (alle typer)?","Antarktis",["Sahara","Gobi","Arabia"],3],
+  ["Hvor mange hjerter har en blekksprut?","3",["1","2","4"],3],
+  ["Hvilket land har flest øyer i verden?","Sverige",["Norge","Filippinene","Indonesia"],3],
+  ["Hva kalles en stor, flytende isbre i havet?","Isfjell",["Snøskred","Istapp","Fjellvegg"],1],
+  ["Hva kalles det når jordskorpeplatene brått flytter seg?","Jordskjelv",["Vulkan","Orkan","Flom"],2],
+ ],
+ kropp:[
+  ["Hvor mange fingre har en vanlig person til sammen?","10",["8","12","20"],1],
+  ["Hva bruker vi for å høre?","Ørene",["Øynene","Nesen","Tunga"],1],
+  ["Hva bruker vi for å se?","Øynene",["Ørene","Nesen","Tunga"],1],
+  ["Hva bruker vi for å lukte?","Nesen",["Ørene","Øynene","Hendene"],1],
+  ["Hva kalles de harde, hvite tingene i munnen vi tygger med?","Tenner",["Tunger","Lepper","Gommer"],1],
+  ["Hva trenger kroppen for å hvile og hente seg inn?","Søvn",["Brus","Godteri","Mer lys"],1],
+  ["Hva bør du ha på hodet når du sykler?","Hjelm",["Caps","Lue","Briller"],1],
+  ["Hva smører vi på huden når sola er sterk?","Solkrem",["Smør","Maling","Såpe"],1],
+  ["Hva puster vi med?","Lungene",["Hjertet","Magen","Nyrene"],1],
+  ["Hvilket organ bruker vi til å tenke?","Hjernen",["Hjertet","Magen","Leveren"],1],
+  ["Hvor mange sanser har vi (de klassiske)?","5",["3","4","7"],1],
+  ["Hvilken del av kroppen beskytter hjernen?","Hodeskallen",["Ryggraden","Ribbeina","Kjeven"],1],
+  ["Hva bør vi drikke mest av?","Vann",["Brus","Saft","Kaffe"],1],
+  ["Hvor ofte bør du pusse tennene?","To ganger om dagen",["Én gang i uka","Bare før jul","Ti ganger om dagen"],1],
+  ["Hva bør du gjøre før du spiser?","Vaske hendene",["Hoppe","Synge","Sove"],1],
+  ["Hva er det største organet vi har?","Huden",["Leveren","Hjernen","Magen"],2],
+  ["Hvor mange bein har en voksen?","206",["106","306","150"],2],
+  ["Hva heter det største beinet i kroppen?","Lårbeinet",["Skinnebeinet","Ryggraden","Kragebeinet"],2],
+  ["Hvilket vitamin lager huden når den får sol?","D",["A","B","C"],2],
+  ["Hva heter det svarte hullet midt i øyet?","Pupillen",["Iris","Netthinnen","Linsen"],2],
+  ["Hvilke blodårer fører blod bort fra hjertet?","Arterier",["Vener","Hårrør","Nerver"],2],
+  ["I hvilken del av kroppen sitter hammeren, ambolten og stigbøylen?","Øret",["Nesen","Kneet","Halsen"],2],
+  ["Hva er normal kroppstemperatur?","Omtrent 37 grader",["Omtrent 30 grader","Omtrent 42 grader","Omtrent 25 grader"],2],
+  ["Hva er en vaksine til for?","Gi kroppen beskyttelse mot sykdom",["Gjøre deg høyere","Gi deg bedre syn","Lage deg sulten"],2],
+  ["Hvilket vitamin finnes det mye av i appelsiner?","C",["D","K","B12"],2],
+  ["Hvor mange melketenner har et barn til slutt?","20",["12","28","32"],2],
+  ["Hvor mange timer søvn trenger voksne vanligvis?","7–9 timer",["2–3 timer","4–5 timer","12–14 timer"],2],
+  ["Hva trenger musklene for å vokse og repareres?","Protein",["Sukker","Salt","Vann alene"],2],
+  ["Hva gir kroppen mest rask energi?","Karbohydrater",["Vitaminer","Mineraler","Fiber"],2],
+  ["Hva gjør leveren blant annet?","Renser blodet for skadelige stoffer",["Pumper blod","Hjelper oss å puste","Styrer synet"],2],
+  ["Hvor mange kromosomer har et menneske vanligvis?","46",["23","44","48"],3],
+  ["Hva heter kroppens største pulsåre?","Aorta",["Vena cava","Halspulsåren","Lårarterien"],3],
+  ["Hvilket organ lager insulin?","Bukspyttkjertelen",["Leveren","Milten","Nyrene"],3],
+  ["Hva er DNA?","Arvestoffet vårt",["Et vitamin","En muskel","En blodtype"],3],
+  ["Hvilken del av øyet er farget?","Iris",["Pupillen","Hornhinnen","Netthinnen"],3],
+  ["Hvilken muskel hjelper oss å puste og ligger under lungene?","Mellomgulvet",["Magemuskelen","Hjertemuskelen","Ryggmuskelen"],3],
+  ["Hva er kroppens største muskel?","Setemuskelen",["Lårmuskelen","Magemuskelen","Overarmsmuskelen"],3],
+  ["Hvor mye blod har en voksen omtrent?","5 liter",["1 liter","12 liter","20 liter"],3],
+  ["Hvilket vitamin mangler man ved skjørbuk?","C",["A","D","B12"],3],
+  ["Hva er insulin?","Et hormon som regulerer blodsukker",["Et vitamin","En bakterie","En muskel"],3],
+  ["Hva heter hjertets fire rom?","To forkamre og to hjertekamre",["Fire lunger","To nyrer og to lever","Tre kamre og en port"],3],
+  ["Hvilken blodtype regnes som universalgiver?","O negativ",["AB positiv","A positiv","B negativ"],3],
+  ["Hva heter hudens ytterste lag?","Overhuden",["Lærhuden","Underhuden","Fettlaget"],3],
+  ["Hva kalles små organismer som kan gi sykdom og som antibiotika virker mot?","Bakterier",["Virus","Sopp","Alger"],3],
+  ["Hvor mange tenner har en voksen uten visdomstenner?","28",["20","24","32"],3],
+  ["Hvilken av disse er IKKE en av de fem sansene?","Humor",["Syn","Hørsel","Lukt"],2],
+  ["Hva heter beinet du sitter på?","Sittebeinet",["Lårbeinet","Skulderbladet","Leggbeinet"],3],
+ ],
+ sprak:[
+  ["Hva er flertall av «bok»?","Bøker",["Boker","Boks","Bokene"],1],
+  ["Hva er flertall av «mann»?","Menn",["Manner","Mannen","Mans"],1],
+  ["Hva er flertall av «fot»?","Føtter",["Fots","Foter","Fotter"],1],
+  ["Hva er flertall av «tre» (planten)?","Trær",["Treer","Tres","Tre"],1],
+  ["Hva er det motsatte av «stor»?","Liten",["Tung","Lang","Sterk"],1],
+  ["Hva er det motsatte av «varm»?","Kald",["Våt","Tørr","Lys"],1],
+  ["Hvilket ord betyr det samme som «fort»?","Raskt",["Sakte","Tungt","Stille"],1],
+  ["Hvilket tegn setter vi på slutten av et spørsmål?","Spørsmålstegn",["Punktum","Komma","Utropstegn"],1],
+  ["Hva betyr «thank you» på norsk?","Takk",["Unnskyld","Hei","Ha det"],1],
+  ["Hva betyr «good morning» på norsk?","God morgen",["God natt","God dag","Hei hei"],1],
+  ["Hva er «cat» på norsk?","Katt",["Hund","Mus","Hest"],1],
+  ["Hvilken måned kommer etter mars?","April",["Mai","Februar","Juni"],1],
+  ["Hvilken dag er mellom tirsdag og torsdag?","Onsdag",["Mandag","Fredag","Lørdag"],1],
+  ["Hva kalles en person som skriver bøker?","Forfatter",["Redaktør","Kritiker","Bokhandler"],1],
+  ["Hva er X i romertall?","10",["5","50","100"],2],
+  ["Hva er C i romertall?","100",["10","50","500"],2],
+  ["Hvilken ordklasse er «løpe»?","Verb",["Substantiv","Adjektiv","Adverb"],2],
+  ["Hvilken ordklasse er «hus»?","Substantiv",["Verb","Adjektiv","Preposisjon"],2],
+  ["Hvilken ordklasse er «vakker»?","Adjektiv",["Verb","Substantiv","Pronomen"],2],
+  ["Hvor mange bokstaver har det norske alfabetet?","29",["26","28","30"],2],
+  ["Hvilke tre bokstaver kommer til slutt i det norske alfabetet?","Æ, Ø, Å",["X, Y, Z","Å, Ø, Æ","Ø, Æ, Å"],2],
+  ["Hva er flertall av «barn»?","Barn",["Barner","Barne","Barns"],2],
+  ["Fullfør ordtaket: «Hvor det er hjerterom, er det …»","husrom",["plass","varme","mat"],2],
+  ["Fullfør ordtaket: «Øvelse gjør …»","mester",["sliten","sterk","rask"],1],
+  ["Hva betyr «å ha is i magen»?","Å holde seg rolig",["Å være sulten","Å være syk","Å være kald"],2],
+  ["Hva betyr «å slå to fluer i ett smekk»?","Å løse to ting på en gang",["Å drepe insekter","Å lage mat","Å rydde"],2],
+  ["Hva er «onsdag» på engelsk?","Wednesday",["Tuesday","Thursday","Friday"],2],
+  ["Hva betyr «hola» på spansk?","Hei",["Takk","Farvel","Unnskyld"],2],
+  ["Hva er «takk» på fransk?","Merci",["Gracias","Danke","Grazie"],2],
+  ["Hva er «takk» på tysk?","Danke",["Merci","Gracias","Grazie"],2],
+  ["Hva er «takk» på spansk?","Gracias",["Grazie","Danke","Merci"],2],
+  ["Hva er «takk» på italiensk?","Grazie",["Danke","Merci","Gracias"],2],
+  ["Hvor mange dager har februar i et skuddår?","29",["28","30","31"],2],
+  ["Hva betyr det engelske ordet «library»?","Bibliotek",["Bokhandel","Skole","Bibel"],2],
+  ["Hva kalles et ord som beskriver hvordan noe gjøres (fort, pent)?","Adverb",["Adjektiv","Verb","Preposisjon"],3],
+  ["Hva betyr «å gå som katten rundt grøten»?","Å somle med å si det man egentlig vil",["Å lage mat","Å jage katter","Å gå sakte"],3],
+  ["Hva betyr «å ta seg vann over hodet»?","Å ta på seg for mye",["Å dusje","Å bade","Å bli våt"],3],
+  ["Hva betyr «å gå over bekken etter vann»?","Å gjøre noe unødvendig tungvint",["Å være tørst","Å bade","Å hente vann"],3],
+  ["Hva betyr «å skjære alle over én kam»?","Å behandle alle likt uten å se forskjeller",["Å klippe hår","Å rydde","Å krangle"],3],
+  ["Hva betyr «å sitte med skjegget i postkassa»?","Å bli tatt i noe pinlig",["Å vente på post","Å ha langt skjegg","Å være gammel"],3],
+  ["Hvor mange måneder har 31 dager?","7",["6","5","8"],3],
+  ["Hva er XL i romertall?","40",["60","14","90"],3],
+  ["Hva betyr latin «carpe diem»?","Grip dagen",["Spis fisken","Vær rolig","Husk det"],3],
+  ["Hvilket språk snakkes i Brasil?","Portugisisk",["Spansk","Brasiliansk","Italiensk"],2],
+  ["Hvilket språk snakkes i Østerrike?","Tysk",["Østerriksk","Ungarsk","Italiensk"],2],
+  ["Hvilket er det mest snakkede morsmålet i verden?","Mandarin (kinesisk)",["Engelsk","Spansk","Hindi"],3],
+ ]
+};
+
 const COUNTRIES = [
  ["Norge","🇳🇴","Oslo",1],["Sverige","🇸🇪","Stockholm",1],["Danmark","🇩🇰","København",1],["Finland","🇫🇮","Helsingfors",1],
  ["Island","🇮🇸","Reykjavik",1],["Tyskland","🇩🇪","Berlin",1],["Frankrike","🇫🇷","Paris",1],["Spania","🇪🇸","Madrid",1],
@@ -323,6 +768,11 @@ const COUNTRIES = [
  ["Irland","🇮🇪","Dublin",2],["Mexico","🇲🇽","Mexico by",2],["Argentina","🇦🇷","Buenos Aires",2],["Australia","🇦🇺","Canberra",2],
  ["India","🇮🇳","New Delhi",2],["Sør-Korea","🇰🇷","Seoul",2],["Tyrkia","🇹🇷","Ankara",2],["Egypt","🇪🇬","Kairo",2],
  ["Sør-Afrika","🇿🇦","Pretoria",2],["Kenya","🇰🇪","Nairobi",2],["Ukraina","🇺🇦","Kyiv",2],["Estland","🇪🇪","Tallinn",2],
+ ["Peru","🇵🇪","Lima",3],["Colombia","🇨🇴","Bogotá",3],["Cuba","🇨🇺","Havana",3],["Saudi-Arabia","🇸🇦","Riyadh",3],["Iran","🇮🇷","Teheran",3],
+ ["Irak","🇮🇶","Bagdad",3],["Pakistan","🇵🇰","Islamabad",3],["Bangladesh","🇧🇩","Dhaka",3],["Indonesia","🇮🇩","Jakarta",3],["Filippinene","🇵🇭","Manila",3],
+ ["Nigeria","🇳🇬","Abuja",3],["Etiopia","🇪🇹","Addis Abeba",3],["Ghana","🇬🇭","Accra",3],["Tsjekkia","🇨🇿","Praha",3],["Ungarn","🇭🇺","Budapest",3],
+ ["Romania","🇷🇴","București",3],["Bulgaria","🇧🇬","Sofia",3],["Serbia","🇷🇸","Beograd",3],["Latvia","🇱🇻","Riga",3],["Litauen","🇱🇹","Vilnius",3],
+ ["Kasakhstan","🇰🇿","Astana",3],["Nepal","🇳🇵","Kathmandu",3],["Tanzania","🇹🇿","Dodoma",3],["Slovakia","🇸🇰","Bratislava",3],["Slovenia","🇸🇮","Ljubljana",3],
  ["Thailand","🇹🇭","Bangkok",2],["Jamaica","🇯🇲","Kingston",2],["New Zealand","🇳🇿","Wellington",2],["Marokko","🇲🇦","Rabat",2],
  ["Kroatia","🇭🇷","Zagreb",2],["Chile","🇨🇱","Santiago",2],["Vietnam","🇻🇳","Hanoi",2],
 ];
@@ -414,9 +864,6 @@ const QBANK = {
   ["Hvor mange lag var med i fotball-VM 2026?","48",["32","24","64"],2],
   ["Hvilken norsk fotballspiss spiller for Manchester City?","Erling Haaland",["Martin Ødegaard","Sander Berge","Alexander Sørloth"],1],
   ["Hvem er kaptein på Norges herrelandslag i fotball?","Martin Ødegaard",["Erling Haaland","Ada Hegerberg","Kristian Thorstvedt"],2],
-  ["Hvem er Norges konge?","Harald V",["Haakon VII","Olav V","Carl Gustaf"],1],
-  ["Hvem er kronprins i Norge?","Haakon",["Sverre Magnus","Harald","Marius"],1],
-  ["Hvem er nummer to i arverekkefølgen til Norges trone?","Prinsesse Ingrid Alexandra",["Prinsesse Märtha Louise","Dronning Sonja","Prins Sverre Magnus"],2],
   ["Hvilket land vant Eurovision i 2025?","Østerrike",["Norge","Sverige","Italia"],2],
   ["Hvilken sport driver Jakob Ingebrigtsen med?","Løping",["Skiskyting","Fotball","Svømming"],1],
   ["Hvilken øvelse er Karsten Warholm kjent for?","400 meter hekk",["Spydkast","Lengdehopp","Maraton"],2],
@@ -425,6 +872,10 @@ const QBANK = {
   ["Hva heter NRK sin kanal for barn?","NRK Super",["NRK Junior","Barne-TV Pluss","NRK Kids"],1],
  ],
 };
+for(const k in QEXTRA) QBANK[k]=(QBANK[k]||[]).concat(QEXTRA[k]);
+for(const k in QEXTRA2) QBANK[k]=(QBANK[k]||[]).concat(QEXTRA2[k]);
+for(const k in QBANK){ const u=new Set(); QBANK[k]=QBANK[k].filter(q=>!u.has(q[0])&&u.add(q[0])); }
+
 const CATS = [
   {id:"matte",   name:"Matte",            e:"➗", bg:"#ffe1ef"},
   {id:"flagg",   name:"Flagg",            e:"🏳️", bg:"#e1f0ff"},
@@ -432,6 +883,8 @@ const CATS = [
   {id:"historie",name:"Historie",         e:"🏰", bg:"#fff1cc"},
   {id:"boker",   name:"Bøker, film & TV", e:"📚", bg:"#dcf7e6"},
   {id:"natur",   name:"Natur & geografi", e:"🌍", bg:"#d9f4ff"},
+  {id:"kropp",   name:"Kropp & helse",    e:"🫀", bg:"#ffdede"},
+  {id:"sprak",   name:"Språk & ordtak",   e:"🗣️", bg:"#e8f0d0"},
   {id:"aktuelt", name:"Aktuelt",          e:"📰", bg:"#ffe6d6"},
   {id:"mix",     name:"Bland alt!",       e:"🎲", bg:"#f3e8ff"},
 ];
@@ -473,7 +926,7 @@ async function retryWrite(fn){
   }
 }
 
-function value(it){ const d=DEF[it.id]; return d&&VARIANTS[it.v]? Math.round(TIERS[d.tier].price*VARIANTS[it.v].mult) : 0; }
+function value(it){ const d=DEF[it.id]; if(d&&d.fake) return FAKE_VALUE; return d&&VARIANTS[it.v]? Math.round(TIERS[d.tier].price*VARIANTS[it.v].mult) : 0; }
 function invValue(inv){ return inv.reduce((s,i)=>s+value(i),0); }
 function rollVariant(boost=1){
   const r=Math.random()*100;
@@ -482,7 +935,7 @@ function rollVariant(boost=1){
   if(r<(1+5+12)*boost) return "g";
   return "n";
 }
-function makeItem(id,boost){ return {uid:uid(), id, v:rollVariant(boost), at:Date.now()}; }
+function makeItem(id,boost){ return {uid:uid(), id, v:(DEF[id]&&DEF[id].fake)?"n":rollVariant(boost), at:Date.now()}; }
 // Lagring: hver ting skrives for seg, så trades fra andre aldri blir overskrevet
 function save(){ if(!me||!db) return; retryWrite(()=>FB.update(R("players/"+me),{coins:S.coins,lvl:S.lvl,name:S.name,stats:S.stats,daily:S.daily})).catch(fail); }
 function addItem(it){ S.inv.push(it); S.dex[it.id]=true; if(!me) return; FB.set(R(`players/${me}/inv/${it.uid}`),{id:it.id,v:it.v,at:it.at}).catch(fail); FB.set(R(`players/${me}/dex/${it.id}`),true).catch(fail); }
@@ -502,7 +955,7 @@ function card(it,opts={}){
   const d=DEF[it.id]; if(!d) return "";
   const t=TIERS[d.tier], v=VARIANTS[it.v];
   return `<div class="card t${d.tier} v-${it.v} ${opts.cls||""}" data-uid="${it.uid||""}" data-id="${d.id}">
-    <span class="tier">${t.name}</span>${v.icon?`<span class="vtag">${v.icon}</span>`:""}
+    <span class="tier">${d.fake?"Falsk":t.name}</span>${d.fake?`<span class="faketag">FAKE</span>`:""}${v.icon?`<span class="vtag">${v.icon}</span>`:""}
     <div class="blob" style="--bc:${d.color}">${d.emoji}</div>
     <div class="nm">${v.name?v.name+" ":""}${esc(d.name)}</div>
     <div class="br">${esc(d.brand)}</div>
@@ -582,7 +1035,7 @@ function vOppgaver(m){
     const today=new Date().toDateString();
     m.innerHTML=`<h2>Tjen mynter 🧠</h2>
      ${S.daily!==today?`<div class="panel row"><div class="grow"><b>Daglig bonus!</b><div class="muted">Hent 50 gratis mynter i dag</div></div><button class="btn green" id="daily">Hent 🪙 50</button></div>`:""}
-     <p class="muted">Riktig svar = 🪙 10. Fem riktige på rad = 🪙 25 ekstra! Nivå: <b>${S.lvl===1?"Lett":"Middels"}</b> (bytt under «Meg»)</p>
+     <p class="muted">Riktig svar = 🪙 10. Fem riktige på rad = 🪙 25 ekstra! Nivå: <b>${["","Lett","Middels","Voksen"][S.lvl]||"Middels"}</b> (bytt under «Meg»)</p>
      <div class="cats">${CATS.map(c=>`<button class="cat" data-c="${c.id}" style="background:${c.bg}"><span class="e">${c.e}</span>${c.name}</button>`).join("")}</div>`;
     m.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{ quiz={cat:b.dataset.c,streak:0,n:0,right:0,earned:0,q:null,seen:new Set()}; nextQ(); render(); });
     const d=m.querySelector("#daily"); if(d) d.onclick=(e)=>{ S.daily=today; setCoins(S.coins+50); coinFly(e.clientX,e.clientY,"+50 🪙"); render(); };
@@ -611,7 +1064,23 @@ function vOppgaver(m){
 }
 function mcq(q,a,wrong,big){ return {q,a:String(a),opts:shuffle([String(a),...wrong.slice(0,3).map(String)]),big}; }
 function numWrong(a,spread){ const s=new Set(); while(s.size<3){ let w=a+rnd(-spread,spread); if(w!==a&&w>=0) s.add(w); } return [...s]; }
+function genMathAdult(){
+  const t=pick(["mul","pst","rab","ekv","kv","rot","brok","snitt","tid","dev"]);
+  let q,a;
+  if(t==="mul"){ const x=rnd(12,99),y=rnd(6,19); q=`Hva er ${x} × ${y}?`; a=x*y; }
+  else if(t==="pst"){ const p=pick([5,15,20,25,30,35,40,60,75]), x=rnd(2,40)*20; q=`Hva er ${p} % av ${x}?`; a=x*p/100; }
+  else if(t==="rab"){ const p=pick([10,20,25,30,40,50]), x=rnd(4,40)*40; q=`En vare koster ${x} kr. Du får ${p} % rabatt. Hva blir prisen?`; a=x*(100-p)/100; }
+  else if(t==="ekv"){ const x=rnd(3,25), k=rnd(2,9), c=rnd(1,40); q=`Løs for x: ${k}x + ${c} = ${k*x+c}`; a=x; }
+  else if(t==="kv"){ const x=rnd(11,30); q=`Hva er ${x}²?`; a=x*x; }
+  else if(t==="rot"){ const x=rnd(6,25); q=`Hva er kvadratroten av ${x*x}?`; a=x; }
+  else if(t==="brok"){ const n=pick([2,3,4,5,8]), x=rnd(2,12)*n, k=rnd(1,n-1); q=`Hva er ${k}/${n} av ${x}?`; a=x/n*k; }
+  else if(t==="snitt"){ const a1=rnd(4,12),b1=rnd(4,12),c1=rnd(4,12); const tot=a1+b1+c1, pad=(3-tot%3)%3; const c2=c1+pad; q=`Hva er gjennomsnittet av ${a1}, ${b1} og ${c2}?`; a=(a1+b1+c2)/3; }
+  else if(t==="tid"){ const h=rnd(2,9), mm=pick([15,30,45]); q=`Hvor mange minutter er ${h} timer og ${mm} minutter?`; a=h*60+mm; }
+  else { const x=rnd(3,12), y=rnd(3,12), z=rnd(2,9); q=`Hva er (${x} + ${y}) × ${z}?`; a=(x+y)*z; }
+  return mcq(q, a, numWrong(a, Math.max(4,Math.round(a*0.12))));
+}
 function genMath(lvl){
+  if(lvl>=3) return genMathAdult();
   const t = lvl===1 ? pick(["+","+","-","-","x"]) : pick(["+","-","x","x",":","halv","pst"]);
   let q,a;
   if(lvl===1){
@@ -628,9 +1097,12 @@ function genMath(lvl){
   }
   return mcq(q.includes("?")?q:`Hva er ${q}?`, a, numWrong(a, Math.max(3,Math.round(a*0.15))));
 }
+// husker hvilke spørsmål spilleren har fått, så de ikke går igjen før alle i temaet er brukt opp
+function qSeenSet(){ const k="squishyTrade.qseen."+(me||"x"); if(qSeenSet.k!==k){ qSeenSet.k=k; try{ qSeenSet.s=new Set(JSON.parse(localStorage.getItem(k)||"[]")); }catch(e){ qSeenSet.s=new Set(); } } return qSeenSet.s; }
+function qSeenSave(){ try{ localStorage.setItem(qSeenSet.k,JSON.stringify([...qSeenSet.s].slice(-2000))); }catch(e){} }
 function genQ(cat){
-  const lvl=S.lvl, cs=COUNTRIES.filter(c=>c[3]<=lvl);
-  if(cat==="mix") cat=pick(["matte","flagg","hoved","historie","boker","natur","aktuelt"]);
+  const lvl=S.lvl, cs=COUNTRIES.filter(c=>lvl>=3?c[3]>=2:c[3]<=lvl);
+  if(cat==="mix") cat=pick(["matte","flagg","hoved","historie","boker","natur","kropp","sprak","aktuelt"]);
   if(cat==="matte") return genMath(lvl);
   if(cat==="flagg"||cat==="hoved"){
     const c=pick(cs), others=shuffle(COUNTRIES.filter(x=>x!==c&&x[3]<=Math.max(lvl,1)+ (lvl===1?0:0)));
@@ -638,40 +1110,91 @@ function genQ(cat){
     return Math.random()<.5 ? mcq(`Hva er hovedstaden i ${c[0]}?`, c[2], others.map(o=>o[2]), c[1])
                             : mcq(`${c[2]} er hovedstaden i hvilket land?`, c[0], others.map(o=>o[0]), "🏙️");
   }
-  const bank=QBANK[cat].filter(q=>q[3]<=lvl);
-  let item, tries=0; do{ item=pick(bank); tries++; }while(quiz&&quiz.seen.has(item[0])&&tries<30);
-  if(quiz){ quiz.seen.add(item[0]); if(quiz.seen.size>=bank.length) quiz.seen.clear(); }
+  const bank=QBANK[cat].filter(q=>lvl>=3?q[3]>=2:q[3]<=lvl);
+  const SS=qSeenSet();
+  let fresh=bank.filter(q=>!SS.has(q[0]));
+  if(!fresh.length){ bank.forEach(q=>SS.delete(q[0])); fresh=bank; }
+  const item=pick(fresh); SS.add(item[0]); qSeenSave();
   return mcq(item[0], item[1], item[2]);
 }
 function nextQ(){ quiz.q=genQ(quiz.cat); }
 
 /* ---------- BUTIKK ---------- */
-let shopBrand="Alle";
+let shopBrand="Alle", shopOnly=false;
+const MDUMP={id:"mdump",name:"Mysterie-dumpling",e:"🥟",price:90,desc:"1 dumpling · du vet ikke hvilken!"};
+function cdSpan(ts){ return `<b data-cd="${ts}">${fmtCd(ts-Date.now())}</b>`; }
 function vButikk(m){
-  const brands=["Alle",...new Set(CATALOG.map(d=>d.brand))];
-  const items=CATALOG.filter(d=>d.tier<=2&&(shopBrand==="Alle"||d.brand===shopBrand));
+  const brands=["Alle",...new Set(CATALOG.filter(d=>!d.blind).map(d=>d.brand))];
+  const all=CATALOG.filter(d=>!d.blind&&(shopBrand==="Alle"||d.brand===shopBrand)).map(d=>({d,st:stockOf(d)}));
+  const list=all.filter(x=>!shopOnly||x.st.on).sort((a,b)=>(b.st.on-a.st.on)||(b.st.fresh?1:0)-(a.st.fresh?1:0)||a.d.tier-b.d.tier);
+  const fresh=all.filter(x=>x.st.fresh).map(x=>x.d.name);
+  const soon=all.filter(x=>x.st.next).sort((a,b)=>a.st.next-b.st.next)[0];
+  const md=stockInfo(MD_KEY,MD_P);
   m.innerHTML=`<h2>Butikken 🛍️</h2>
+   ${fresh.length?`<div class="restock">🔔 <b>Restock!</b> Nytt på lager: ${fresh.slice(0,3).map(esc).join(", ")}${fresh.length>3?` og ${fresh.length-3} til`:""}</div>`:""}
+   ${soon?`<p class="muted" style="font-size:13px;margin:4px 0">⏳ Neste restock: <b>${esc(soon.d.name)}</b> om ${cdSpan(soon.st.next)}</p>`:""}
    <h3>Mysteriebokser</h3>
-   <div class="boxes">${BOXES.map(b=>`<div class="box ${b.cls}"><span class="e">${b.e}</span>${b.name}<small>${b.desc}</small><button class="btn" data-box="${b.id}" ${S.coins<b.price?"disabled":""}>🪙 ${b.price}</button></div>`).join("")}</div>
-   <p class="muted" style="font-size:13px">Episke og legendariske squishies finnes bare i bokser! Alle kjøp kan bli <b>✨ Glitter</b>, <b>🌈 Regnbue</b> eller <b>👑 Gull</b> – da er de verdt mye mer.</p>
+   <div class="boxes">${BOXES.map(b=>`<div class="box ${b.cls}"><span class="e">${b.e}</span>${b.name}<small>${b.desc}</small><button class="btn" data-box="${b.id}" ${S.coins<b.price?"disabled":""}>🪙 ${b.price}</button></div>`).join("")}
+     <div class="box b1 ${md.on?"":"oosb"}"><span class="e">🥟❓</span>${MDUMP.name}<small>${md.on?MDUMP.desc:"UTSOLGT"}</small>
+       ${md.on?`<button class="btn" data-box="mdump" ${S.coins<MDUMP.price?"disabled":""}>🪙 ${MDUMP.price}</button><small>${md.end?`Utsolgt om ${cdSpan(md.end)}`:""}</small>`:`<button class="btn" disabled>Utsolgt</button><small>🔔 Restock om ${md.next?cdSpan(md.next):"…"}</small>`}</div></div>
+   <p class="muted" style="font-size:13px">Episke og legendariske squishies finnes mest i bokser! Pass opp for <b>fake</b> dumplings 😬. Alle kjøp kan bli <b>✨ Glitter</b>, <b>🌈 Regnbue</b> eller <b>👑 Gull</b>.</p>
    <h3>Kjøp squishies</h3>
-   <div class="chips">${brands.map(b=>`<button class="${b===shopBrand?"on":""}" data-b="${b}">${b}</button>`).join("")}</div>
-   <div class="grid">${items.map(d=>`<div class="shopitem">${card({id:d.id,v:"n"},{price:TIERS[d.tier].price})}<button class="btn" style="width:100%;padding:8px" data-buy="${d.id}" ${S.coins<TIERS[d.tier].price?"disabled":""}>Kjøp</button></div>`).join("")}</div>`;
-  m.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{shopBrand=b.dataset.b;render();});
+   <div class="chips">${brands.map(b=>`<button class="${b===shopBrand?"on":""}" data-b="${b}">${b}</button>`).join("")}<button class="${shopOnly?"on":""}" id="onlyin">✅ Bare på lager</button></div>
+   <div class="grid">${list.map(({d,st})=>{
+     const p=priceOf(d);
+     const info = st.on ? (st.end?`<div class="cdl">Utsolgt om ${cdSpan(st.end)}</div>`:`<div class="cdl">På lager</div>`)
+                : st.never ? `<div class="cdl">Utsolgt – kommer ikke tilbake på en stund</div>`
+                : `<div class="cdl">🔔 Restock om ${cdSpan(st.next)}</div>`;
+     return `<div class="shopitem ${st.on?"":"oos"}"><div class="cw">${card({id:d.id,v:"n"},{price:p})}${st.fresh?`<span class="rs">🔔 RESTOCK</span>`:""}${st.on?"":`<span class="oosr">UTSOLGT</span>`}</div>${info}<button class="btn" style="width:100%;padding:8px" data-buy="${d.id}" ${(!st.on||S.coins<p)?"disabled":""}>${st.on?"Kjøp":"Utsolgt"}</button></div>`; }).join("")}</div>`;
+  m.querySelectorAll(".chips button[data-b]").forEach(b=>b.onclick=()=>{shopBrand=b.dataset.b;render();});
+  m.querySelector("#onlyin").onclick=()=>{shopOnly=!shopOnly;render();};
   m.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>buy(b.dataset.buy));
   m.querySelectorAll("[data-box]").forEach(b=>b.onclick=()=>openBox(b.dataset.box));
 }
 function buy(id){
-  const d=DEF[id], p=TIERS[d.tier].price; if(S.coins<p) return toast("Ikke nok mynter 😅");
+  const d=DEF[id], p=priceOf(d); if(!stockOf(d).on){ toast("Utsolgt akkurat nå 😢"); return render(); }
+  if(S.coins<p) return toast("Ikke nok mynter 😅");
   setCoins(S.coins-p); const it=makeItem(id,1); addItem(it); save(); sendInv();
   reveal([it],"🛍️",()=>render());
 }
+// teller ned hvert sekund; når noe restockes/blir utsolgt tegnes butikken på nytt
+setInterval(()=>{
+  const els=document.querySelectorAll("[data-cd]"); if(!els.length) return;
+  let again=false; els.forEach(e=>{ const r=+e.dataset.cd-Date.now(); if(r<=0) again=true; else e.textContent=fmtCd(r); });
+  if(again&&view==="butikk"&&!document.querySelector(".modal")&&!$("#reveal").classList.contains("show")) render();
+},1000);
+// varsler når noe kommer tilbake på lager mens appen er åpen (eller siden sist du var inne)
+const STK_KEY="squishyTrade.stk";
+function stockTick(first){
+  const cur=CATALOG.filter(d=>!d.blind&&stockOf(d).on).map(d=>d.id);
+  let prev=null; try{ prev=JSON.parse(localStorage.getItem(STK_KEY)||"null"); }catch(e){}
+  try{ localStorage.setItem(STK_KEY,JSON.stringify(cur)); }catch(e){}
+  if(!prev||!me) return;
+  const back=cur.filter(id=>!prev.includes(id)&&DEF[id].tier>=2);
+  if(back.length&&Date.now()-(window._lrt||0)>10*60*1000){ window._lrt=Date.now(); toast("🔔 Restock! "+back.slice(0,2).map(id=>DEF[id].name).join(", ")+(back.length>2?` og ${back.length-2} til`:"")+" er på lager",5000); if(view==="butikk") softRender(); }
+}
+setInterval(stockTick,20000);
 function rollTier(odds){ let r=Math.random()*100; for(let i=0;i<odds.length;i++){ if(r<odds[i]) return i; r-=odds[i]; } return 0; }
+function rollMystery(){
+  if(Math.random()<0.12) return pick(CATALOG.filter(d=>d.fake));
+  const pool=CATALOG.filter(d=>d.brand==="Mystery Dumpling"), W=[10,8,5,0,1];
+  let tot=pool.reduce((a,d)=>a+W[d.tier],0), r=Math.random()*tot;
+  for(const d of pool){ r-=W[d.tier]; if(r<0) return d; } return pool[0];
+}
 function openBox(bid){
-  const b=BOXES.find(x=>x.id===bid); if(S.coins<b.price) return toast("Ikke nok mynter 😅");
+  const b=bid==="mdump"?MDUMP:BOXES.find(x=>x.id===bid); if(!b) return;
+  if(bid==="mdump"&&!stockInfo(MD_KEY,MD_P).on){ toast("Utsolgt akkurat nå 😢"); return render(); }
+  if(S.coins<b.price) return toast("Ikke nok mynter 😅");
   setCoins(S.coins-b.price); S.stats.opened++;
-  const items=[]; for(let i=0;i<b.count;i++){ const t=rollTier(b.odds); const d=pick(CATALOG.filter(c=>c.tier===t)); const it=makeItem(d.id,b.vboost); addItem(it); items.push(it); }
-  save(); sendInv(); reveal(items,b.e,()=>render());
+  const items=[];
+  if(bid==="mdump"){ const it=makeItem(rollMystery().id,1); addItem(it); items.push(it); }
+  else for(let i=0;i<b.count;i++){
+    const t=rollTier(b.odds); let d;
+    if(t===0&&Math.random()<0.08) d=pick(CATALOG.filter(c=>c.fake));
+    else d=pick(CATALOG.filter(c=>c.tier===t&&!c.fake));
+    const it=makeItem(d.id,b.vboost); addItem(it); items.push(it);
+  }
+  save(); sendInv(); reveal(items,bid==="mdump"?"🥟":b.e,()=>render());
 }
 
 /* ---------- REVEAL-ANIMASJON ---------- */
@@ -695,8 +1218,9 @@ function reveal(items,boxEmoji,done,title){
         ri.innerHTML=card(it); ri.classList.add("on");
         if(f>=2){ R.classList.add("big"); confetti(f); try{navigator.vibrate&&navigator.vibrate(f>=4?[100,60,100,60,300]:[80,50,80]);}catch(e){} }
         const v=VARIANTS[it.v];
-        let L = f>=4?"🌟 LEGENDARISK! 🌟": f===3?"💜 EPISK! 💜": f===2?"💙 SJELDEN! 💙": d.tier===1?"Uvanlig!":"Ny squishy!";
+        let L = d.tier===4&&d.brand==="Mystery Dumpling"?"👑 GOLDEN DUMPLING!! 👑": f>=4?"🌟 LEGENDARISK! 🌟": f===3?"💜 EPISK! 💜": f===2?"💙 SJELDEN! 💙": d.tier===1?"Uvanlig!":"Ny squishy!";
         if(it.v!=="n") L = `${v.icon} ${v.name.toUpperCase()}-VARIANT! ${v.icon}`;
+        if(d.fake) L="😬 Æsj – en FAKE dumpling!";
         lab.textContent=L; if(f>=2) lab.classList.add("pop");
         lab.style.color=FAN_COL[f];
         sub.textContent=`${TIERS[d.tier].name}${it.v!=="n"?" · "+v.name:""} · verdi 🪙 ${value(it)}`+(items.length>1?`  (${i+1}/${items.length})`:"");
@@ -875,11 +1399,11 @@ function vMeg(m){
    <div class="panel"><b>🏆 Toppliste (samlingsverdi)</b>${board.map((x,i)=>`<div class="stat" ${i===board.length-1?'style="border:0"':""}><span>${["🥇","🥈","🥉"][i]||"·"} ${esc(x.n)}</span><b>🪙 ${x.v}</b></div>`).join("")}</div>
    <div class="panel"><b>Innstillinger</b>
      <p style="margin:10px 0 4px">Nivå på oppgaver</p>
-     <select id="lv"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2">Middels (ca. 5.–7. trinn)</option></select>
+     <select id="lv"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2">Middels (ca. 5.–7. trinn)</option><option value="3">Voksen (vanskelig)</option></select>
      <button class="btn" id="sv" style="width:100%;margin-top:12px">Lagre</button>
    </div>
    <div class="panel"><b>Odds i boksene</b><p class="muted" style="font-size:13px">${BOXES.map(b=>`${b.e} ${b.name}: `+b.odds.map((o,i)=>o?`${TIERS[i].name} ${o}%`:"").filter(Boolean).join(", ")).join("<br>")}<br>Varianter: ✨ Glitter ~12 %, 🌈 Regnbue ~5 %, 👑 Gull ~1 % (høyere i store bokser)</p></div>
-   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 6 · familiekode</p>`;
+   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 8 · flere spørsmål</p>`;
   m.querySelector("#lv").value=S.lvl;
   m.querySelector("#sv").onclick=()=>{ S.lvl=+m.querySelector("#lv").value; save(); toast("Lagret ✅"); };
   m.querySelector("#lo").onclick=async()=>{ if(await confirmBox("Bytte spiller? Samlingen ligger trygt lagret.","Bytt")){ me=""; localStorage.removeItem(ME_KEY); S=fresh(); render(); } };
@@ -905,7 +1429,7 @@ function vLogin(m){
     ${ps.length?`<h3>Hvem spiller nå?</h3><div class="cats">${ps.map(p=>`<button class="cat" data-p="${p}" style="background:#ffe1ef"><span class="e">🧑‍🎤</span>${esc(pname(p))}</button>`).join("")}</div>`:""}
     <div class="panel" style="margin-top:14px"><h3 style="margin-top:0">✨ Ny spiller</h3>
       <input id="nn" maxlength="16" placeholder="Navnet ditt">
-      <select id="nl" style="margin-top:8px"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2" selected>Middels (ca. 5.–7. trinn)</option></select>
+      <select id="nl" style="margin-top:8px"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2" selected>Middels (ca. 5.–7. trinn)</option><option value="3">Voksen (vanskelig)</option></select>
       <button class="btn" id="nb" style="width:100%;margin-top:10px">Lag spiller 🎉</button></div>`;
   m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>login(b.dataset.p));
   m.querySelector("#nb").onclick=async()=>{
