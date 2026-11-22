@@ -243,6 +243,7 @@ button.tbtn:disabled{opacity:.45}
 .advb{border:2px solid #ffb3b3;background:linear-gradient(135deg,#fff5f5,#f2fff4)}.advb.hot{animation:glow 1.2s ease-in-out infinite;border-color:#4cc577}
 .doors{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.door{border:0;border-radius:14px;padding:10px 0;background:#ef4b4b;color:#fff;font-weight:900;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 3px 0 #b83030}
 .door.lock{background:#c9c0cf;box-shadow:0 3px 0 #a79eb0}.door.open{background:#4cc577;box-shadow:0 3px 0 #2f9a55}.door.can{animation:glow 1.2s ease-in-out infinite}.door .dn{font-size:18px}.door .di{font-size:22px}
+.lvbar{display:flex;gap:8px;margin-bottom:12px}.lvb{flex:1;border:2px solid #eadff5;background:#fff;border-radius:14px;padding:10px 4px;font-weight:800;font-size:14px;color:#6b5b7a}.lvb.on{background:#2d2547;color:#fff;border-color:#2d2547}
 .addrow{margin-top:10px}.addrow button{width:100%}
 .askbar{background:#fff3c4;border:2px solid #f2c94c;border-radius:14px;padding:10px;margin-top:10px;font-weight:800;text-align:center;animation:glow 1.2s ease-in-out infinite}
 </style>
@@ -1685,8 +1686,10 @@ function vOppgaver(m){
     const today=new Date().toDateString();
     m.innerHTML=`<h2>Tjen mynter 🧠</h2>
      ${S.daily!==today?`<div class="panel row"><div class="grow"><b>Daglig bonus!</b><div class="muted">Hent 50 gratis mynter i dag</div></div><button class="btn green" id="daily">Hent 🪙 50</button></div>`:""}
-     <p class="muted">Riktig svar = 🪙 10. Fem riktige på rad = 🪙 25 ekstra! Nivå: <b>${["","Lett","Middels","Voksen"][S.lvl]||"Middels"}</b> (bytt under «Meg»)</p>
+     <p class="muted" style="margin-bottom:6px">Riktig svar = 🪙 10. Fem riktige på rad = 🪙 25 ekstra!</p>
+     <div class="lvbar">${[["1","🟢 Lett"],["2","🟡 Middels"],["3","🔴 Voksen"]].map(x=>`<button class="lvb ${S.lvl==+x[0]?"on":""}" data-l="${x[0]}">${x[1]}</button>`).join("")}</div>
      <div class="cats">${CATS.map(c=>`<button class="cat" data-c="${c.id}" style="background:${c.bg}"><span class="e">${c.e}</span>${c.name}</button>`).join("")}</div>`;
+    m.querySelectorAll(".lvb").forEach(b=>b.onclick=()=>{ S.lvl=+b.dataset.l; save(); render(); });
     m.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{ quiz={cat:b.dataset.c,streak:0,n:0,right:0,earned:0,q:null,seen:new Set()}; nextQ(); render(); });
     const d=m.querySelector("#daily"); if(d) d.onclick=(e)=>{ S.daily=today; setCoins(S.coins+50); coinFly(e.clientX,e.clientY,"+50 🪙"); render(); };
     return;
