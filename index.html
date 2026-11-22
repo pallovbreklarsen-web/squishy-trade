@@ -437,7 +437,7 @@ const CATALOG = [
 ].map(([id,name,brand,emoji,color,tier,x])=>({id,name,brand,emoji,color,tier,...(x||{})}));
 const DEF = Object.fromEntries(CATALOG.map(d=>[d.id,d]));
 // Uåpnet Mystery Dumpling-boks (ligger ikke i katalogen/Squishydex – åpnes til en tilfeldig dumpling)
-DEF["md-box"]={id:"md-box",name:"Mystery Dumpling",brand:"Mystery Dumpling",emoji:"📦",color:"#bfe4ff",tier:0,sealed:1,blind:1,cols:[""]};
+DEF["md-box"]={id:"md-box",name:"Mystery Dumpling",brand:"Mystery Dumpling",emoji:"🥡",color:"#bfe4ff",tier:0,sealed:1,blind:1,cols:[""]};
 const SEALED_VALUE=90;
 /* =========================================================
    TEGNEDE SQUISHIES (SVG) + FARGER
@@ -750,7 +750,7 @@ function artSVG(d,k){
     const d2=Object.assign({},d,{id:d.id+"_"+(k||"x")});
     const r=SHAPE[sp[1]](d2,p); inner=`<defs>${r.defs||""}</defs>${r.b}`; _dk=false;
   }catch(e){ console.error("art",d.id,e); } }
-  if(d.sealed) inner=`<ellipse cx="50" cy="78" rx="38" ry="12" fill="#c9a24f"/><rect x="12" y="46" width="76" height="32" fill="#e3c273"/><ellipse cx="50" cy="46" rx="38" ry="13" fill="#f0d489"/><ellipse cx="50" cy="45" rx="30" ry="9" fill="none" stroke="#c9a24f" stroke-width="1.5" stroke-dasharray="3 2"/><rect x="9" y="48" width="82" height="24" rx="3" fill="#7fd0f5"/><rect x="9" y="48" width="82" height="4" fill="#ff7ab8"/><rect x="9" y="68" width="82" height="4" fill="#ffd84d"/><text x="50" y="60" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="9" fill="#ff4f9a" stroke="#fff" stroke-width=".6">MYSTERY</text><text x="50" y="67.5" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="7.5" fill="#ff4f9a" stroke="#fff" stroke-width=".6">DUMPLING</text><text x="50" y="43" text-anchor="middle" font-size="14" font-weight="900" fill="#c9a24f" font-family="Arial,sans-serif">?</text>`;
+  if(d.sealed) inner=`<defs><clipPath id="mdlid"><ellipse cx="50" cy="40" rx="38" ry="13"/></clipPath></defs><path d="M12 40 V72 Q12 85 50 85 Q88 85 88 72 V40 Z" fill="#d9b25c"/><path d="M12 40 V72 Q12 85 50 85 Q88 85 88 72 V40" fill="none" stroke="#b8923f" stroke-width="1.5"/><ellipse cx="50" cy="40" rx="38" ry="13" fill="#ecd08a"/><g clip-path="url(#mdlid)" stroke="#c9a24f" stroke-width="1.6" opacity=".8"><path d="M10 30 L90 52 M10 38 L90 60 M10 46 L90 68 M10 22 L90 44 M90 30 L10 52 M90 38 L10 60 M90 46 L10 68 M90 22 L10 44"/></g><rect x="38" y="33" width="24" height="7" rx="3" fill="#8a6a2a" opacity=".85"/><path d="M11 50 Q50 62 89 50 V74 Q50 86 11 74 Z" fill="#7fd0f5"/><path d="M11 50 Q50 62 89 50 V54 Q50 66 11 54 Z" fill="#ff7ab8"/><path d="M11 70 Q50 82 89 70 V74 Q50 86 11 74 Z" fill="#ffd84d"/><text x="50" y="69" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="9.5" fill="#ff4f9a" stroke="#fff" stroke-width=".7" paint-order="stroke">MYSTERY</text><text x="50" y="76" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="7" fill="#ff4f9a" stroke="#fff" stroke-width=".7" paint-order="stroke">DUMPLING</text>`;
   const svg=`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="50" cy="95" rx="30" ry="3.5" fill="#000" opacity=".12"/>${inner}</svg>`;
   return _artCache[key]=svg;
 }
@@ -1418,7 +1418,7 @@ function syncMe(){
 function card(it,opts={}){
   const d=DEF[it.id]; if(!d) return "";
   const t=TIERS[d.tier], v=VARIANTS[it.v];
-  return `<div class="card t${d.tier} v-${it.v} ${it.x?"broken ":""}${opts.cls||""}" data-uid="${it.uid||""}" data-id="${d.id}">${it.x?`<span class="brktag">💥 ØDELAGT</span>`:d.sealed?`<span class="brktag" style="background:#3b8de0">📦 UÅPNET</span>`:""}
+  return `<div class="card t${d.tier} v-${it.v} ${it.x?"broken ":""}${opts.cls||""}" data-uid="${it.uid||""}" data-id="${d.id}">${it.x?`<span class="brktag">💥 ØDELAGT</span>`:d.sealed?`<span class="brktag" style="background:#3b8de0">UÅPNET</span>`:""}
     <span class="tier">${d.fake?"Falsk":t.name}</span>${itemCol(it)?`<span class="cdot" title="${COLS[itemCol(it)][0]}" style="background:${colBg(itemCol(it))}"></span>`:""}${d.fake?`<span class="faketag">FAKE</span>`:""}${v.icon?`<span class="vtag">${v.icon}</span>`:""}
     <div class="blob art">${artSVG(d,it.k)}</div>
     <div class="nm">${v.name?v.name+" ":""}${esc(d.name)}</div>
@@ -1529,6 +1529,7 @@ function popBang(){
     const src=_ac.createBufferSource(), g=_ac.createGain(); src.buffer=buf; g.gain.value=0.5; src.connect(g); g.connect(_ac.destination); src.start(t);
     const o=_ac.createOscillator(), g2=_ac.createGain(); o.frequency.setValueAtTime(260,t); o.frequency.exponentialRampToValueAtTime(40,t+0.2); g2.gain.setValueAtTime(0.25,t); g2.gain.exponentialRampToValueAtTime(0.0001,t+0.22); o.connect(g2); g2.connect(_ac.destination); o.start(t); o.stop(t+0.25); }catch(e){}
 }
+function unbox(u){ const it=S.inv.find(i=>i.uid===u); if(!it||isOffered(u)) return; S.stats.opened++; save(); removeItem(u); const n=makeItem(rollMystery().id,1); addItem(n); reveal([n],"TUB",()=>render()); }
 function trashItem(u){ removeItem(u); render(); toast("🗑️ Kastet i søpla"); }
 function itemDetail(u){
   const it=S.inv.find(i=>i.uid===u); if(!it) return;
@@ -1544,14 +1545,14 @@ function itemDetail(u){
   }
   const off=isOffered(u);
   if(d.sealed){
-    const m=modal(`<div style="text-align:center"><b style="font-size:18px">Mystery Dumpling 📦</b></div>
+    const m=modal(`<div style="text-align:center"><b style="font-size:18px">Mystery Dumpling</b></div>
      <div class="sqstage" style="cursor:default"><div class="sqbody">${artSVG(d,"")}</div></div>
-     <p style="text-align:center"><b>Uåpnet!</b><br><span class="muted">Du vet ikke hva som er inni før du åpner den. Du kan også bytte eller selge den uåpnet.</span></p>
+     <p style="text-align:center"><b>Uåpnet!</b><br><span class="muted">Du vet ikke hva som er inni før du unboxer den. Du kan også bytte eller selge den uåpnet.</span></p>
      <div class="row"><button class="btn sec grow" id="cl">Lukk</button><button class="btn red grow" id="sl" ${off?"disabled":""}>Selg 🪙 ${sell}</button></div>
-     <div class="row" style="margin-top:8px"><button class="btn green grow" id="ub" ${off?"disabled":""}>📦 Åpne den!</button></div>`,{center:true});
+     <div class="row" style="margin-top:8px"><button class="btn green grow" id="ub" ${off?"disabled":""}>📦 Unbox!</button></div>`,{center:true});
     m.querySelector("#cl").onclick=()=>m.remove();
     m.querySelector("#sl").onclick=async()=>{ m.remove(); if(await confirmBox(`Selge uåpnet Mystery Dumpling for 🪙 ${sell}?`,"Selg")){ removeItem(u); setCoins(S.coins+sell); render(); toast("Solgt! +"+sell+" 🪙"); } };
-    m.querySelector("#ub").onclick=()=>{ if(isOffered(u)) return; m.remove(); S.stats.opened++; save(); removeItem(u); const n=makeItem(rollMystery().id,1); addItem(n); reveal([n],"🥟",()=>render()); };
+    m.querySelector("#ub").onclick=()=>{ if(isOffered(u)) return; m.remove(); unbox(u); };
     return;
   }
   const m=modal(`<div style="text-align:center"><b style="font-size:18px">${esc(d.name)}</b></div>
@@ -1875,7 +1876,7 @@ function nextQ(){ quiz.q=genQ(quiz.cat); }
 
 /* ---------- BUTIKK ---------- */
 let shopBrand="Alle", shopOnly=false;
-const MDUMP={id:"mdump",name:"Mysterie-dumpling",e:"🥟",price:90,desc:"1 uåpnet boks · åpne den selv i samlingen!"};
+const MDUMP={id:"mdump",name:"Mysterie-dumpling",e:"🥟",price:90,desc:"1 uåpnet dumpling-boks · unbox den selv!"};
 function cdSpan(ts){ return `<b data-cd="${ts}">${fmtCd(ts-Date.now())}</b>`; }
 function vButikk(m){
   const brands=["Alle",...new Set(CATALOG.filter(d=>!d.blind&&!d.adv).map(d=>d.brand))];
@@ -1889,7 +1890,7 @@ function vButikk(m){
    ${soon?`<p class="muted" style="font-size:13px;margin:4px 0">⏳ Neste restock: <b>${esc(soon.d.name)}</b> om ${cdSpan(soon.st.next)}</p>`:""}
    <h3>Mysteriebokser</h3>
    <div class="boxes">${BOXES.map(b=>`<div class="box ${b.cls}"><span class="e">${b.e}</span>${b.name}<small>${b.desc}</small><button class="btn" data-box="${b.id}" ${S.coins<b.price?"disabled":""}>🪙 ${b.price}</button></div>`).join("")}
-     <div class="box b1 ${md.on?"":"oosb"}"><span class="e">📦❓</span>${MDUMP.name}<small>${md.on?MDUMP.desc:"UTSOLGT"}</small>
+     <div class="box b1 ${md.on?"":"oosb"}"><span class="e" style="display:block;width:70px;margin:0 auto">${artSVG(DEF["md-box"],"")}</span>${MDUMP.name}<small>${md.on?MDUMP.desc:"UTSOLGT"}</small>
        ${md.on?`<button class="btn" data-box="mdump" ${S.coins<MDUMP.price?"disabled":""}>🪙 ${MDUMP.price}</button><small>${md.end?`Utsolgt om ${cdSpan(md.end)}`:""}</small>`:`<button class="btn" disabled>Utsolgt</button><small>🔔 Restock om ${md.next?cdSpan(md.next):"…"}</small>`}</div></div>
    <p class="muted" style="font-size:13px">Episke og legendariske squishies finnes mest i bokser! Pass opp for <b>fake</b> dumplings 😬. Alle kjøp kan bli <b>✨ Glitter</b>, <b>🌈 Regnbue</b> eller <b>👑 Gull</b>.</p>
    <h3>Kjøp squishies</h3>
@@ -1952,7 +1953,12 @@ function openBox(bid){
     if(b.guar&&items.every(i=>i.v==="n")){ const best=items.slice().sort((a,c)=>DEF[c.id].tier-DEF[a.id].tier)[0]; const r=Math.random()*100; best.v=r<8?"gold":r<30?"r":"g"; }
     items.forEach(addItem);
   }
-  save(); sendInv(); reveal(items,bid==="mdump"?"📦":b.e,()=>render());
+  save(); sendInv();
+  if(bid==="mdump"){ const u=items[0].uid;
+    const m=modal(`<div style="text-align:center"><b style="font-size:18px">Mystery Dumpling</b></div><div class="sqstage" style="cursor:default"><div class="sqbody">${artSVG(DEF["md-box"],"")}</div></div><p style="text-align:center"><b>Du fikk en uåpnet dumpling-boks!</b><br><span class="muted">Unbox den nå, eller ta vare på den og unbox senere.</span></p><div class="row"><button class="btn sec grow" id="lt">Senere</button><button class="btn green grow" id="nu">📦 Unbox!</button></div>`,{center:true,onclose:()=>render()});
+    m.querySelector("#lt").onclick=()=>{ m.remove(); render(); }; m.querySelector("#nu").onclick=()=>{ m.remove(); unbox(u); };
+    return; }
+  reveal(items,b.e,()=>render());
 }
 
 /* ---------- REVEAL-ANIMASJON ---------- */
@@ -1966,7 +1972,7 @@ function reveal(items,boxEmoji,done,title){
     if(i>=items.length){ R.classList.remove("show","big"); done&&done(); return; }
     const it=items[i], d=DEF[it.id], f=fanfare(it);
     R.classList.remove("big"); ri.classList.remove("on"); ri.innerHTML=""; lab.textContent=title||""; lab.classList.remove("pop"); sub.textContent=items.length>1?`${i+1} av ${items.length}`:""; nx.style.display="none";
-    box.textContent=boxEmoji; box.style.display="block"; box.className="shake";
+    if(boxEmoji==="TUB") box.innerHTML=`<div style="width:150px;margin:0 auto">${artSVG(DEF["md-box"],"")}</div>`; else box.textContent=boxEmoji; box.style.display="block"; box.className="shake";
     R.style.setProperty("--rc",FAN_COL[f]);
     const shakeTime = 700 + f*450;
     setTimeout(()=>{
@@ -1979,7 +1985,7 @@ function reveal(items,boxEmoji,done,title){
         let L = d.tier===4&&d.brand==="Mystery Dumpling"?"👑 GOLDEN DUMPLING!! 👑": f>=4?"🌟 LEGENDARISK! 🌟": f===3?"💜 EPISK! 💜": f===2?"💙 SJELDEN! 💙": d.tier===1?"Uvanlig!":"Ny squishy!";
         if(it.v!=="n") L = `${v.icon} ${v.name.toUpperCase()}-VARIANT! ${v.icon}`;
         if(d.fake) L="😬 Æsj – en FAKE dumpling!";
-        if(d.sealed) L="📦 Uåpnet Mystery Dumpling!";
+        if(d.sealed) L="Uåpnet Mystery Dumpling!";
         lab.textContent=L; if(f>=2) lab.classList.add("pop");
         lab.style.color=FAN_COL[f];
         sub.textContent=`${TIERS[d.tier].name}${it.v!=="n"?" · "+v.name:""} · verdi 🪙 ${value(it)}`+(items.length>1?`  (${i+1}/${items.length})`:"");
