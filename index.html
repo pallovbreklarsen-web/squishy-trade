@@ -1683,7 +1683,7 @@ function processInbox(){
 
 /* ---------- NIVÅ-PROGRESJON ---------- */
 const PCATS=["matte","flagg","hoved","historie","boker","natur","kropp","sprak","rekord","aktuelt"], NEED=5, LVN=["","Lett","Middels","Voksen"];
-function progOf(c){ const p=S.prog&&S.prog[c]; return p?{c:p.c||0,n:p.n||0}:{c:Math.max(0,Math.min(3,(S.lvl||2)-1)),n:0}; }
+function progOf(c){ const p=S.prog&&S.prog[c]; return p?{c:p.c||0,n:p.n||0}:{c:0,n:0}; }
 function unlockedTier(){ return Math.min(3,1+Math.min(...PCATS.map(c=>progOf(c).c))); }
 function catLevel(c){ return Math.max(1,Math.min(progOf(c).c+1,unlockedTier(),3)); }
 function catState(c){ const p=progOf(c), U=unlockedTier(); if(p.c>=3) return {t:"mester",lvl:3,n:NEED}; if(p.c+1>U) return {t:"vent",lvl:U,c:p.c}; return {t:"gar",lvl:p.c+1,n:p.n}; }
@@ -2111,7 +2111,6 @@ function vLogin(m){
     ${ps.length?`<h3>Hvem spiller nå?</h3><div class="cats">${ps.map(p=>`<button class="cat" data-p="${p}" style="background:#ffe1ef"><span class="e">🧑‍🎤</span>${esc(pname(p))}</button>`).join("")}</div>`:""}
     <div class="panel" style="margin-top:14px"><h3 style="margin-top:0">✨ Ny spiller</h3>
       <input id="nn" maxlength="16" placeholder="Navnet ditt">
-      <select id="nl" style="margin-top:8px"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2" selected>Middels (ca. 5.–7. trinn)</option><option value="3">Voksen (vanskelig)</option></select>
       <button class="btn" id="nb" style="width:100%;margin-top:10px">Lag spiller 🎉</button></div>`;
   m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>login(b.dataset.p));
   m.querySelector("#nb").onclick=async()=>{
@@ -2119,7 +2118,7 @@ function vLogin(m){
     if(!n) return toast("Skriv navnet ditt 😊");
     let p=slug(n); if(PLAYERS[p]) return toast("Det navnet er tatt – velg et annet");
     const welcome=makeItem("tb-dumpling",1);
-    const rec={name:n, lvl:+m.querySelector("#nl").value, coins:200, created:Date.now(),
+    const rec={name:n, lvl:1, coins:200, created:Date.now(),
       stats:fresh().stats, daily:"", dex:{"tb-dumpling":true}, inv:{[welcome.uid]:{id:welcome.id,v:welcome.v,at:welcome.at}}};
     if(!navigator.onLine) return toast("Ingen internett akkurat nå 📵",4000);
     const btn=m.querySelector("#nb"); btn.disabled=true; btn.textContent="Lager spiller…";
