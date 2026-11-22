@@ -236,6 +236,13 @@ button.tbtn:disabled{opacity:.45}
 .slot .sb.art{width:40px;height:40px;border-radius:0}
 .cdot{position:absolute;left:6px;bottom:6px;width:13px;height:13px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px #0004}
 .cdot2{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1.5px solid #0002}.colchips{margin:8px 0;flex-wrap:wrap}
+.frow{display:flex;align-items:center;gap:8px;padding:6px 0}.cdot2.big{width:22px;height:22px;margin:0}.fn{font-weight:900;min-width:34px;text-align:right}.fok{font-size:20px}
+.btn.sm{padding:6px 12px;font-size:13px;width:auto}
+.auc{display:flex;gap:12px;align-items:center}.auc.lead{border:2px solid #4cc577}.aucard{width:100px;flex:none}.aucinfo{flex:1;display:flex;flex-direction:column;gap:3px}
+.sqstage{width:200px;height:200px;margin:8px auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;display:flex;align-items:flex-end;justify-content:center}.sqbody{width:100%;height:100%;transform-origin:50% 92%;will-change:transform}.sqbody svg{width:100%;height:100%;display:block;pointer-events:none}.sqn{text-align:center;font-weight:800;color:var(--muted);min-height:22px}
+.advb{border:2px solid #ffb3b3;background:linear-gradient(135deg,#fff5f5,#f2fff4)}.advb.hot{animation:glow 1.2s ease-in-out infinite;border-color:#4cc577}
+.doors{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.door{border:0;border-radius:14px;padding:10px 0;background:#ef4b4b;color:#fff;font-weight:900;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 3px 0 #b83030}
+.door.lock{background:#c9c0cf;box-shadow:0 3px 0 #a79eb0}.door.open{background:#4cc577;box-shadow:0 3px 0 #2f9a55}.door.can{animation:glow 1.2s ease-in-out infinite}.door .dn{font-size:18px}.door .di{font-size:22px}
 .addrow{margin-top:10px}.addrow button{width:100%}
 .askbar{background:#fff3c4;border:2px solid #f2c94c;border-radius:14px;padding:10px;margin-top:10px;font-weight:800;text-align:center;animation:glow 1.2s ease-in-out infinite}
 </style>
@@ -251,6 +258,7 @@ button.tbtn:disabled{opacity:.45}
   <button data-v="oppgaver"><span class="ic">🧠</span>Oppgaver</button>
   <button data-v="butikk"><span class="ic">🛍️</span>Butikk</button>
   <button data-v="trade"><span class="ic">🤝</span>Trade</button>
+  <button data-v="auksjon"><span class="ic">🔨</span>Auksjon</button>
   <button data-v="meg"><span class="ic">⭐</span>Meg</button>
 </nav>
 
@@ -404,6 +412,15 @@ const CATALOG = [
   ["sz-duck","Squeezy Duck","Squeezy","🦆","#ffe45e",1],
   ["sz-butter","Squeezy Butter","Squeezy","🧈","#fff3a3",1],
   ["tb-capy","Taba Capybara","Taba Squishy","🐹","#c99a6b",3],
+  ["sz-snow","Squeezy Snowman","Squeezy","⛄","#f4faff",3],
+  ["sz-pump","Squeezy Pumpkin","Squeezy","🎃","#ffb066",2],
+  ["al-potato","Alpi Potato Foam","Foam Squishy","🥔","#ecd3a6",0],
+  ["nd-teenie","NeeDoh Teenie Glob","NeeDoh","🔮","#d6c2ff",0],
+  ["nd-advent","NeeDoh Julekalender-dumpling","NeeDoh","🎄","#ffd6d6",2],
+  ["xm-pepper","Pepperkake Squishy","Jule-squishy","🍪","#d9a76a",2,{adv:1}],
+  ["xm-tre","Juletre Squishy","Jule-squishy","🎄","#4cc577",2,{adv:1}],
+  ["xm-rein","Reinsdyr Squishy","Jule-squishy","🦌","#b98a5e",3,{adv:1}],
+  ["xm-nisse","Julenisse Squishy","Jule-squishy","🎅","#ef4b4b",4,{adv:1}],
 ].map(([id,name,brand,emoji,color,tier,x])=>({id,name,brand,emoji,color,tier,...(x||{})}));
 const DEF = Object.fromEntries(CATALOG.map(d=>[d.id,d]));
 /* =========================================================
@@ -557,6 +574,14 @@ SHAPE.potato=(d,p)=>{const id=d.id,c=p.c||"#d9b077";return {defs:G(c,id+"a"),b:`
 SHAPE.capy=(d,p)=>{const id=d.id,c=p.c||"#c99a6b";return {defs:G(c,id+"a"),b:`<ellipse cx="50" cy="66" rx="40" ry="26" fill="url(#${id}a)"/><rect x="14" y="30" width="62" height="42" rx="22" fill="url(#${id}a)"/><circle cx="22" cy="30" r="6" fill="${sh(c,-.15)}"/><circle cx="62" cy="28" r="6" fill="${sh(c,-.15)}"/><ellipse cx="30" cy="58" rx="16" ry="12" fill="${sh(c,.18)}"/><ellipse cx="22" cy="53" rx="5" ry="3.5" fill="#5a3a2a"/>${gloss(42,34,10,4,-10,.45)}<circle cx="38" cy="44" r="2.8" fill="#3a2a35"/><circle cx="56" cy="44" r="2.8" fill="#3a2a35"/><ellipse cx="68" cy="82" rx="8" ry="4" fill="${sh(c,-.15)}"/><path d="M26 66 Q31 70 36 66" fill="none" stroke="#3a2a35" stroke-width="1.8" stroke-linecap="round"/>`}};
 SHAPE.duck=(d,p)=>{const id=d.id,c=p.c||"#ffe45e";return {defs:G(c,id+"a"),b:`<ellipse cx="46" cy="70" rx="38" ry="22" fill="url(#${id}a)"/><path d="M78 62 Q92 56 90 70 Q84 68 78 70Z" fill="${sh(c,-.12)}"/><circle cx="40" cy="36" r="24" fill="url(#${id}a)"/><path d="M58 38 Q76 34 78 44 Q66 50 58 46Z" fill="#ff9d2e"/><ellipse cx="42" cy="72" rx="16" ry="9" fill="${sh(c,-.1)}" opacity=".6"/>${gloss(30,26,8,4,-30,.55)}${F(36,38,{s:.8,sp:8})}`}};
 SHAPE.melon=(d,p)=>{const id=d.id,c=p.c||"#f6d98a";return {defs:G(c,id+"a"),b:`<ellipse cx="50" cy="56" rx="42" ry="34" fill="url(#${id}a)"/><g stroke="${sh(c,-.3)}" stroke-width="2" opacity=".55" stroke-linecap="round"><path d="M30 28 Q24 40 28 50"/><path d="M50 22 L50 40"/><path d="M70 28 Q76 40 72 50"/><path d="M18 62 Q16 72 22 78"/><path d="M82 62 Q84 72 78 78"/></g>${gloss(32,38,11,5,-20,.5)}${F(50,64,{s:1})}`}};
+
+SHAPE.snowman=(d,p)=>{const id=d.id;return {defs:G("#f4faff",id+"a"),b:`<circle cx="50" cy="70" r="26" fill="url(#${id}a)" stroke="#cfe6f7" stroke-width="1.2"/><circle cx="50" cy="36" r="20" fill="url(#${id}a)" stroke="#cfe6f7" stroke-width="1.2"/><rect x="33" y="14" width="34" height="6" rx="2" fill="#3b3b4a"/><rect x="38" y="2" width="24" height="14" rx="3" fill="#3b3b4a"/><path d="M52 40 L70 44 L52 46Z" fill="#ff9d2e"/><path d="M32 52 Q50 60 68 52 L68 58 Q50 66 32 58Z" fill="#ef4b4b"/><circle cx="50" cy="72" r="2.4" fill="#3b3b4a"/><circle cx="50" cy="82" r="2.4" fill="#3b3b4a"/>${gloss(40,28,7,4,-30,.7)}${F(46,36,{s:.75,sp:7,ch:null})}`}};
+SHAPE.pump=(d,p)=>{const id=d.id,c=p.c||"#ff9f43";return {defs:G(c,id+"a"),b:`<ellipse cx="50" cy="58" rx="40" ry="32" fill="url(#${id}a)" stroke="${sh(c,-.25)}" stroke-width="1.5"/><g stroke="${sh(c,-.25)}" stroke-width="2" fill="none" opacity=".6"><path d="M50 28 Q36 58 50 88"/><path d="M50 28 Q64 58 50 88"/><path d="M34 32 Q14 58 34 84"/><path d="M66 32 Q86 58 66 84"/></g><path d="M46 28 Q44 14 54 10 L56 18 Q52 20 52 28Z" fill="#3fae5a"/>${gloss(32,44,9,5,-30,.5)}${F(50,60,{s:1.05})}`}};
+
+SHAPE.xtre=(d,p)=>{const id=d.id;return {defs:G("#3fae5a",id+"a"),b:`<rect x="43" y="82" width="14" height="10" rx="2" fill="#8a5a30"/><path d="M50 10 L72 40 L62 40 L82 66 L66 66 L88 86 L12 86 L34 66 L18 66 L38 40 L28 40Z" fill="url(#${id}a)" stroke="#2f8a48" stroke-width="1.5"/><path d="M50 2 l3 7 8 1 -6 5 2 8 -7 -4 -7 4 2 -8 -6 -5 8 -1z" fill="#ffd34d"/><circle cx="36" cy="72" r="3" fill="#ef4b4b"/><circle cx="66" cy="52" r="3" fill="#4aa8ff"/><circle cx="44" cy="44" r="3" fill="#ffd34d"/><circle cx="70" cy="78" r="3" fill="#ffd34d"/>${gloss(38,50,6,10,25,.4)}${F(50,64,{s:.85})}`}};
+SHAPE.pepper=(d,p)=>{const id=d.id,c="#c98a4a";return {defs:G(c,id+"a"),b:`<path d="M50 6 C62 6 68 14 66 24 C64 30 62 32 62 34 L88 36 C94 38 94 48 88 50 L68 56 L78 88 C78 94 70 96 64 90 L50 74 L36 90 C30 96 22 94 22 88 L32 56 L12 50 C6 48 6 38 12 36 L38 34 C38 32 36 30 34 24 C32 14 38 6 50 6Z" fill="url(#${id}a)" stroke="#a8672d" stroke-width="1.5"/><g fill="#fff"><circle cx="50" cy="48" r="2.4"/><circle cx="50" cy="58" r="2.4"/><circle cx="50" cy="68" r="2.4"/></g><path d="M20 40 Q14 42 20 46 M80 40 Q86 42 80 46" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>${F(50,22,{s:.8,sp:7})}`}};
+SHAPE.rein=(d,p)=>{const id=d.id,c="#b98a5e";return {defs:G(c,id+"a"),b:`<g stroke="#8a5a30" stroke-width="4" fill="none" stroke-linecap="round"><path d="M32 30 L24 8 M28 20 L16 16 M28 20 L36 8"/><path d="M68 30 L76 8 M72 20 L84 16 M72 20 L64 8"/></g><ellipse cx="24" cy="34" rx="8" ry="11" transform="rotate(-30 24 34)" fill="${sh(c,-.1)}"/><ellipse cx="76" cy="34" rx="8" ry="11" transform="rotate(30 76 34)" fill="${sh(c,-.1)}"/><ellipse cx="50" cy="62" rx="36" ry="30" fill="url(#${id}a)"/><ellipse cx="50" cy="76" rx="18" ry="12" fill="#f1dcc4"/><circle cx="50" cy="70" r="7" fill="#ef4b4b"/>${gloss(34,46,10,5,-30,.45)}${F(50,56,{s:1,mouth:false})}`}};
+SHAPE.nisse=(d,p)=>{const id=d.id;return {defs:G("#ffd9bf",id+"a")+G("#ef4b4b",id+"r"),b:`<circle cx="50" cy="66" r="30" fill="url(#${id}a)"/><path d="M20 66 Q50 100 80 66 Q80 96 50 98 Q20 96 20 66Z" fill="#fff"/><path d="M18 50 Q22 14 56 12 Q70 12 74 28 L82 30 Q84 40 78 50Z" fill="url(#${id}r)"/><rect x="16" y="44" width="68" height="14" rx="7" fill="#fff"/><circle cx="82" cy="30" r="7" fill="#fff"/><ellipse cx="50" cy="68" rx="7" ry="5" fill="#ffb3b3"/>${gloss(36,60,7,4,-30,.5)}${F(50,60,{s:.85,mouth:false})}<path d="M44 80 Q50 85 56 80" stroke="#c9b9a9" stroke-width="2" fill="none"/>`}};
 /* spesifikasjon: id -> [farge, form, parametere] */
 const SPEC={
  "sq-cam":["oransje","plush",{c:"#f4a45b",belly:"#ffe8cc",ears:"point",acc:["whisk"]}],
@@ -667,7 +692,13 @@ const SPEC={
  "vs-straw":["rod","strawb",{c:"#ff6f86"}],
  "sz-duck":["gul","duck",{c:"#ffe45e"}],
  "sz-butter":["gul","butter",{c:"#ffe27a",label:1}],
- "tb-capy":["brun","capy",{c:"#c99a6b"}]
+ "tb-capy":["brun","capy",{c:"#c99a6b"}],
+ "sz-snow":["hvit","snowman",{}],
+ "sz-pump":["oransje","pump",{c:"#ff9f43"}],
+ "al-potato":["brun","potato",{c:"#ecd3a6"}],
+ "nd-teenie":["lilla","ball",{c:"#b79bff"}],
+ "nd-advent":["rod","dump",{c:"#ff9a9a",crown:0,glit:1}],
+ "xm-pepper":["brun","pepper",{}],"xm-tre":["gronn","xtre",{}],"xm-rein":["brun","rein",{}],"xm-nisse":["rod","nisse",{}]
 };
 const ALLC=["rosa","rod","oransje","gul","gronn","bla","lilla","brun","hvit"];
 const MULTI={
@@ -685,7 +716,8 @@ const MULTI={
  "ls-cookie":["brun","hvit"],"md-cat":["oransje","hvit","svart"],"md-bear":["brun","hvit"],"sq-malcolm":["rod","lilla","oransje"],
  "cr-peanut":["brun","hvit","rosa","gul"],"cr-melon":["gul","rosa","gronn","bla"],"cr-straw":["rosa","rod","lilla"],
  "vs-peanut":["brun","rosa","bla","gul","gronn"],"vs-cheese":["gul","oransje","hvit","rosa"],"vs-potato":["brun","gul","rosa","lilla"],"vs-straw":["rod","rosa","lilla","bla"],
- "sz-duck":["gul","rosa","bla","gronn","lilla","hvit"],"sz-butter":["gul","rosa","bla","gronn","lilla"],"tb-capy":["brun","rosa","gronn","bla","gul"]
+ "sz-duck":["gul","rosa","bla","gronn","lilla","hvit"],"sz-butter":["gul","rosa","bla","gronn","lilla"],"tb-capy":["brun","rosa","gronn","bla","gul"],
+ "sz-pump":["oransje","gul","hvit","lilla"],"al-potato":["brun","gul","rosa","bla"],"nd-teenie":["lilla","rosa","bla","gronn","gul","oransje"],"nd-advent":["rod","gronn","hvit","gul"]
 };
 for(const d of CATALOG){ const sp=SPEC[d.id]; d.col=sp?sp[0]:null; d.cols=MULTI[d.id]||[d.col]; if(d.cols.indexOf(d.col)<0) d.cols.unshift(d.col); }
 const rollColor=d=>d.cols[Math.floor(Math.random()*d.cols.length)];
@@ -1190,6 +1222,101 @@ const QBANK = {
   ["Hva heter NRK sin kanal for barn?","NRK Super",["NRK Junior","Barne-TV Pluss","NRK Kids"],1],
  ],
 };
+
+const QEXTRA3 = {
+ rekord:[
+  // Nivå 1 – enkle
+  ["Hva heter verdens høyeste fjell?","Mount Everest",["Mont Blanc","Kilimanjaro","Matterhorn"],1],
+  ["Hvilken verdensdel ligger Mount Everest i?","Asia",["Europa","Afrika","Sør-Amerika"],1],
+  ["Hva heter Norges høyeste fjell?","Galdhøpiggen",["Preikestolen","Snøhetta","Trolltunga"],1],
+  ["Hva heter Norges største innsjø?","Mjøsa",["Femunden","Tyrifjorden","Røssvatnet"],1],
+  ["Hvilket hav er verdens største?","Stillehavet",["Atlanterhavet","Indiahavet","Nordishavet"],1],
+  ["Hva er verdens største øy (som ikke er et kontinent)?","Grønland",["Island","Madagaskar","Borneo"],1],
+  ["Hvilket land er størst i areal?","Russland",["Canada","Kina","USA"],1],
+  ["Hvilket land er verdens minste?","Vatikanstaten",["Monaco","Liechtenstein","San Marino"],1],
+  ["Hva heter verdens største ørken (varm ørken)?","Sahara",["Gobi","Kalahari","Arabia"],1],
+  ["Hvilken by har Eiffeltårnet?","Paris",["London","Roma","Berlin"],1],
+  ["Hvilken by har Big Ben?","London",["Paris","Dublin","Edinburgh"],1],
+  ["Hvilket land har pyramidene i Giza?","Egypt",["Mexico","Peru","India"],1],
+  ["Hvilken by har Colosseum?","Roma",["Athen","Madrid","Wien"],1],
+  ["Hvilken by har Frihetsgudinnen?","New York",["Washington","Los Angeles","Chicago"],1],
+  ["Hvilket land har Taj Mahal?","India",["Pakistan","Kina","Tyrkia"],1],
+  ["Hva er Den kinesiske mur?","En veldig lang mur i Kina",["En bro i Japan","Et slott i India","En kanal i Thailand"],1],
+  ["Hvilken by har Operahuset med seilformede tak, kjent fra bilder?","Sydney",["Melbourne","Oslo","Wien"],1],
+  ["Hva heter Norges hovedstad, der Slottet ligger?","Oslo",["Bergen","Trondheim","Stavanger"],1],
+  ["Hvilket dyr er verdens høyeste?","Sjiraffen",["Elefanten","Strutsen","Kamelen"],1],
+  ["Hvilket dyr er verdens største?","Blåhvalen",["Elefanten","Haien","Spermhvalen"],1],
+  ["Hva er verdens raskeste landdyr?","Gepard",["Løve","Hest","Antilope"],1],
+  ["Hva heter fjellet Matterhorn kjent for å se ut som?","En spiss pyramide",["En flat bord","En rund kule","En hestesko"],1],
+  ["Hvilket land er Machu Picchu i?","Peru",["Mexico","Brasil","Chile"],1],
+  ["Hvilken statue står over Rio de Janeiro med utstrakte armer?","Kristusstatuen",["Frihetsgudinnen","Sfinksen","Moai"],1],
+  ["Hvilken bro i San Francisco er rød og berømt?","Golden Gate Bridge",["Brooklyn Bridge","Tower Bridge","Rialtobroen"],1],
+  // Nivå 2 – middels
+  ["Hva er verdens høyeste fjell over havet, omtrent?","8849 meter",["6 000 meter","7 500 meter","10 200 meter"],2],
+  ["Hvilket fjell er Afrikas høyeste?","Kilimanjaro",["Mount Kenya","Atlasfjellene","Table Mountain"],2],
+  ["Hvilket fjell er Nord-Amerikas høyeste?","Denali (Mount McKinley)",["Mount Rainier","Mount Whitney","Pikes Peak"],2],
+  ["Hvilket fjell er Sør-Amerikas høyeste?","Aconcagua",["Chimborazo","Fitz Roy","Cotopaxi"],2],
+  ["Hvilket fjell er Europas høyeste (i Kaukasus)?","Elbrus",["Mont Blanc","Matterhorn","Olympen"],2],
+  ["Hvilken elv regnes ofte som verdens lengste?","Nilen",["Amazonas","Mississippi","Donau"],2],
+  ["Hvilken elv fører mest vann i verden?","Amazonas",["Nilen","Yangtze","Kongo"],2],
+  ["Hva heter Norges lengste elv?","Glomma",["Numedalslågen","Tana","Drammenselva"],2],
+  ["Hva heter verdens dypeste innsjø?","Bajkalsjøen",["Victoriasjøen","Gardasjøen","Titicacasjøen"],2],
+  ["Hva heter Norges dypeste innsjø?","Hornindalsvatnet",["Mjøsa","Femunden","Tinnsjå"],2],
+  ["Hvilken innsjø i Afrika er størst?","Victoriasjøen",["Tanganyika","Tsjad","Malawi"],2],
+  ["Hvilken av de store innsjøene i Nord-Amerika er størst?","Lake Superior",["Lake Erie","Lake Ontario","Lake Michigan"],2],
+  ["Hva heter verdens høyeste foss?","Angel Falls",["Niagara","Victoriafallene","Iguaçu"],2],
+  ["Hvilket land ligger Angel Falls i?","Venezuela",["Brasil","Argentina","Colombia"],2],
+  ["Hvilken verdensdel er Amazonas regnskog i?","Sør-Amerika",["Afrika","Asia","Australia"],2],
+  ["Hva heter verdens dypeste havgrop?","Marianergropen",["Puerto Rico-graven","Sunda-graven","Kermadec-graven"],2],
+  ["Hvilket hav er Marianergropen i?","Stillehavet",["Atlanterhavet","Indiahavet","Nordishavet"],2],
+  ["Hva heter Norges lengste fjord?","Sognefjorden",["Hardangerfjorden","Trondheimsfjorden","Geirangerfjorden"],2],
+  ["Hva heter fjorden i Møre og Romsdal som står på UNESCOs verdensarvliste, sammen med Nærøyfjorden?","Geirangerfjorden",["Oslofjorden","Varangerfjorden","Lysefjorden"],2],
+  ["Hvilket kjent fjellplatå i Rogaland stuper nesten 600 meter ned i Lysefjorden?","Preikestolen",["Trolltunga","Kjerag","Romsdalshorn"],2],
+  ["Hva heter stedet i Finnmark som regnes som Europas nordligste punkt du kan kjøre til?","Nordkapp",["Svalbard","Kirkenes","Lofoten"],2],
+  ["Hvilken stor bro i Norge er en kjent turistvei som slynger seg over havet mellom øyer?","Atlanterhavsveien",["Svinesundbrua","Hardangerbrua","Tromsøbrua"],2],
+  ["Hvilket land har Petra, byen hugget ut i rød stein?","Jordan",["Egypt","Saudi-Arabia","Israel"],2],
+  ["Hvilket land har Angkor Wat, verdens største tempelanlegg?","Kambodsja",["Thailand","Vietnam","Laos"],2],
+  ["Hvilken by har Akropolis og Parthenon?","Athen",["Roma","Istanbul","Kairo"],2],
+  ["Hvilken by har Sagrada Família, kirken Gaudí tegnet?","Barcelona",["Madrid","Lisboa","Sevilla"],2],
+  ["Hvilken by har Forbidden City (Den forbudte by)?","Beijing",["Tokyo","Shanghai","Seoul"],2],
+  ["Hvilken by har Den røde plass og Kreml?","Moskva",["Kiev","Warszawa","St. Petersburg"],2],
+  ["Hvilket land har den skjeve tårnet i Pisa?","Italia",["Spania","Hellas","Frankrike"],2],
+  ["Hvilken stein-sirkel står på en slette i England?","Stonehenge",["Avebury","Carnac","Newgrange"],2],
+  ["Hvilket fjell har fire presidentansikter hugget inn i seg?","Mount Rushmore",["Mount Everest","Stone Mountain","Table Mountain"],2],
+  ["Hva heter den store, røde steinformasjonen midt i Australia?","Uluru",["Kata Tjuta","Ayers Hill","Mount Olga"],2],
+  ["Hvilket land har Niagara-fallene sammen med Canada?","USA",["Mexico","Brasil","Storbritannia"],2],
+  ["Hvilken by har Holmenkollbakken?","Oslo",["Lillehammer","Bergen","Trondheim"],2],
+  ["Hvilken by har Nidarosdomen?","Trondheim",["Bergen","Stavanger","Tromsø"],2],
+  ["Hvilken norsk by er kjent for Bryggen?","Bergen",["Ålesund","Kristiansand","Bodø"],2],
+  ["Hva heter øyene nord i Norge kjent for fiske, fjell og midnattssol?","Lofoten",["Svalbard","Vesterålen","Hitra"],2],
+  ["Hva er verdens største kjente korallrev?","Great Barrier Reef",["Rødehavet","Belize Barrier Reef","Raja Ampat"],2],
+  // Nivå 3 – vanskelige (voksen)
+  ["Hvor høyt er Galdhøpiggen, Norges høyeste fjell, omtrent?","2469 meter",["2 100 meter","2 800 meter","1 900 meter"],3],
+  ["Hvor lang er Glomma, Norges lengste elv, omtrent?","620 km",["300 km","900 km","1 200 km"],3],
+  ["Hvor dypt er Hornindalsvatnet, Europas dypeste innsjø, omtrent?","514 meter",["220 meter","790 meter","1 100 meter"],3],
+  ["Hva er Antarktis' høyeste fjell?","Vinson-massivet",["Mount Erebus","Mount Kirkpatrick","Mount Terror"],3],
+  ["Hva er Australias høyeste fastlandsfjell?","Mount Kosciuszko",["Uluru","Mount Bogong","Mount Warning"],3],
+  ["Hva er verdens høyeste bygning (omtrent 828 meter)?","Burj Khalifa",["Shanghai Tower","Taipei 101","One World Trade Center"],3],
+  ["Hvilken by har Burj Khalifa?","Dubai",["Abu Dhabi","Doha","Riyadh"],3],
+  ["Hva er Europas lengste elv?","Volga",["Donau","Rhinen","Dnepr"],3],
+  ["Hva er Asias lengste elv?","Yangtze",["Mekong","Ganges","Indus"],3],
+  ["Hva er verdens største innsjø etter areal?","Kaspihavet",["Aralsjøen","Bajkalsjøen","Lake Superior"],3],
+  ["Hvilken innsjø er verdens høyestliggende seilbare, i Andesfjellene?","Titicacasjøen",["Bajkalsjøen","Vänern","Lake Tahoe"],3],
+  ["Hva heter det laveste punktet på landjorden, ved en salt innsjø?","Dødehavet",["Kaspihavet","Death Valley","Lake Eyre"],3],
+  ["I hvilket land ligger Atacama-ørkenen, et av verdens tørreste steder?","Chile",["Peru","Namibia","Australia"],3],
+  ["Hva er verdens høyeste tre-art, kjent for å bli over 100 meter?","Kystmammuttre (redwood)",["Eik","Eukalyptus","Gran"],3],
+  ["Hva heter verdens lengste fjellkjede over land?","Andesfjellene",["Himalaya","Alpene","Rocky Mountains"],3],
+  ["Hva heter fjellkjeden som skiller Europa og Asia i Russland?","Uralfjellene",["Kaukasus","Karpatene","Altai"],3],
+  ["Hvilken bro i Istanbul forbinder Europa og Asia?","Bosporusbroen",["Galatabroen","Rialtobroen","Øresundsbroen"],3],
+  ["Hvilket hvitt marmorbygg i Agra ble bygget som grav for en keisers kone?","Taj Mahal",["Hawa Mahal","Rødefortet","Golden Temple"],3],
+  ["Hvilken inkaby høyt i Andesfjellene ble gjort kjent for verden i 1911?","Machu Picchu",["Chichén Itzá","Tikal","Teotihuacán"],3],
+  ["Hvilken by har Hagia Sophia, bygget som kirke og senere moské?","Istanbul",["Athen","Kairo","Damaskus"],3],
+  ["Hva heter Norges lengste tunnel, og verdens lengste veitunnel?","Lærdalstunnelen",["Gudvangatunnelen","Oslofjordtunnelen","Folgefonntunnelen"],3],
+  ["Hva heter nasjonalparken i Tanzania kjent for gnuvandringen?","Serengeti",["Kruger","Masai Mara","Etosha"],3],
+  ["Hva heter øygruppen Darwin besøkte og fikk ideer om evolusjon?","Galápagosøyene",["Hawaii","Kanariøyene","Fiji"],3],
+ ]
+};
+for(const k in QEXTRA3) QBANK[k]=(QBANK[k]||[]).concat(QEXTRA3[k]);
 for(const k in QEXTRA) QBANK[k]=(QBANK[k]||[]).concat(QEXTRA[k]);
 for(const k in QEXTRA2) QBANK[k]=(QBANK[k]||[]).concat(QEXTRA2[k]);
 for(const k in QBANK){ const u=new Set(); QBANK[k]=QBANK[k].filter(q=>!u.has(q[0])&&u.add(q[0])); }
@@ -1203,6 +1330,7 @@ const CATS = [
   {id:"natur",   name:"Natur & geografi", e:"🌍", bg:"#d9f4ff"},
   {id:"kropp",   name:"Kropp & helse",    e:"🫀", bg:"#ffdede"},
   {id:"sprak",   name:"Språk & ordtak",   e:"🗣️", bg:"#e8f0d0"},
+  {id:"rekord", name:"Rekorder & landemerker", e:"🏔️", bg:"#dff5ec"},
   {id:"aktuelt", name:"Aktuelt",          e:"📰", bg:"#ffe6d6"},
   {id:"mix",     name:"Bland alt!",       e:"🎲", bg:"#f3e8ff"},
 ];
@@ -1224,7 +1352,7 @@ const ME_KEY = "squishyTrade.me", SEEN_KEY = "squishyTrade.seen", FAM_KEY="squis
 let famOK=!!localStorage.getItem(FAM_KEY), famHash=null;
 let db=null, me=localStorage.getItem(ME_KEY)||"", PLAYERS={}, TRADES={}, ready=false, fbError="";
 let S = fresh();
-function fresh(){ return {name:"", lvl:2, round:1, cnt:{}, coins:0, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,opened:0}, daily:""}; }
+function fresh(){ return {name:"", lvl:2, coins:0, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,opened:0,squeezes:0}, daily:"", claims:{}, advent:{}}; }
 let _uc=0; const uid = ()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36)+(_uc++).toString(36);
 const rnd = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -1255,7 +1383,7 @@ function rollVariant(boost=1){
 }
 function makeItem(id,boost){ return {uid:uid(), id, v:(DEF[id]&&DEF[id].fake)?"n":rollVariant(boost), k:rollColor(DEF[id]), at:Date.now()}; }
 // Lagring: hver ting skrives for seg, så trades fra andre aldri blir overskrevet
-function save(){ if(!me||!db) return; retryWrite(()=>FB.update(R("players/"+me),{coins:S.coins,lvl:S.lvl,round:S.round,cnt:S.cnt,name:S.name,stats:S.stats,daily:S.daily})).catch(fail); }
+function save(){ if(!me||!db) return; retryWrite(()=>FB.update(R("players/"+me),{coins:S.coins,lvl:S.lvl,name:S.name,stats:S.stats,daily:S.daily})).catch(fail); }
 function addItem(it){ S.inv.push(it); S.dex[it.id]=true; if(!me) return; FB.set(R(`players/${me}/inv/${it.uid}`),{id:it.id,v:it.v,k:it.k||DEF[it.id].col||"",at:it.at}).catch(fail); FB.set(R(`players/${me}/dex/${it.id}`),true).catch(fail); }
 function removeItem(u){ S.inv=S.inv.filter(i=>i.uid!==u); FB.remove(R(`players/${me}/inv/${u}`)).catch(fail); }
 function setCoins(n){ S.coins=n; save(); $("#coinN").textContent=S.coins; const c=$("#coins"); c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
@@ -1263,7 +1391,7 @@ function sendInv(){}
 const invOf = p=>Object.entries((PLAYERS[p]&&PLAYERS[p].inv)||{}).map(([uid,i])=>Object.assign({uid},i)).filter(i=>DEF[i.id]);
 function syncMe(){
   const P=PLAYERS[me]; if(!P) return;
-  S={name:P.name||"", lvl:P.lvl||2, coins:P.coins||0, inv:invOf(me), dex:P.dex||{}, stats:Object.assign(fresh().stats,P.stats||{}), daily:P.daily||"", round:P.round||1, cnt:P.cnt||{}};
+  S={name:P.name||"", lvl:P.lvl||2, coins:P.coins||0, inv:invOf(me), dex:P.dex||{}, stats:Object.assign(fresh().stats,P.stats||{}), daily:P.daily||"", claims:P.claims||{}, advent:P.advent||{}};
 }
 
 /* =========================================================
@@ -1311,7 +1439,7 @@ function render(){
   if(me&&!PLAYERS[me]) return vLoading(m);
   if(!me) return vLogin(m);
   updateBadge();
-  ({samling:vSamling,oppgaver:vOppgaver,butikk:vButikk,trade:vTrade,meg:vMeg})[view](m);
+  ({samling:vSamling,oppgaver:vOppgaver,butikk:vButikk,trade:vTrade,auksjon:vAuksjon,meg:vMeg})[view](m);
 }
 
 /* ---------- SAMLING ---------- */
@@ -1319,8 +1447,9 @@ let samTab="mine", sortBy="value";
 let colF="";
 function vSamling(m){
   const tot=invValue(S.inv), dexN=Object.keys(S.dex).length;
+  const _ab=advBanner();
   const have=[...new Set(S.inv.map(itemCol).filter(Boolean))];
-  let html=`<div class="tabs"><button data-t="mine" class="${samTab==="mine"?"on":""}">Mine squishies (${S.inv.length})</button><button data-t="dex" class="${samTab==="dex"?"on":""}">Squishydex</button></div>`;
+  let html=_ab+`<div class="tabs"><button data-t="mine" class="${samTab==="mine"?"on":""}">Mine squishies (${S.inv.length})</button><button data-t="dex" class="${samTab==="dex"?"on":""}">Squishydex</button><button data-t="farge" class="${samTab==="farge"?"on":""}">Fargejakt</button></div>`;
   if(samTab==="mine"){
     html+=`<div class="panel row"><div class="grow"><b>Samlingsverdi</b><div style="font-size:26px;font-weight:900">🪙 ${tot}</div></div>
       <select id="sort" style="width:auto"><option value="value">Verdi</option><option value="new">Nyeste</option><option value="brand">Merke</option></select></div>`;
@@ -1329,6 +1458,8 @@ function vSamling(m){
     if(have.length>1) html+=`<div class="chips colchips"><button class="${colF?"":"on"}" data-c="">Alle</button>${have.map(k=>`<button class="${colF===k?"on":""}" data-c="${k}"><span class="cdot2" style="background:${colBg(k)}"></span>${COLS[k][0]}</button>`).join("")}</div>`;
     const inv=S.inv.filter(i=>!colF||itemCol(i)===colF).sort(sortBy==="value"?(a,b)=>value(b)-value(a):sortBy==="new"?(a,b)=>b.at-a.at:(a,b)=>DEF[a.id].brand.localeCompare(DEF[b.id].brand)||value(b)-value(a));
     html+=`<div class="grid">${inv.map(i=>card(i,{cls:"tap"+(isOffered(i.uid)?" locked":"")})).join("")}</div>`;
+  } else if(samTab==="farge"){
+    html+=vFarge();
   } else {
     html+=`<div class="panel"><b>Samlet ${dexN} av ${CATALOG.length}</b><div class="dexbar"><div style="width:${dexN/CATALOG.length*100}%"></div></div><span class="muted">Grå = ikke funnet ennå</span></div>`;
     for(const brand of [...new Set(CATALOG.map(d=>d.brand))]){
@@ -1337,61 +1468,232 @@ function vSamling(m){
   }
   m.innerHTML=html;
   m.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{samTab=b.dataset.t;render();});
+  const ao=m.querySelector("#advopen"); if(ao) ao.onclick=advModal;
+  m.querySelectorAll("[data-claim]").forEach(b=>b.onclick=()=>claimColor(b.dataset.claim));
   m.querySelectorAll(".colchips [data-c]").forEach(b=>b.onclick=()=>{colF=b.dataset.c;render();});
   const so=m.querySelector("#sort"); if(so){ so.value=sortBy; so.onchange=()=>{sortBy=so.value;render();}; }
   m.querySelectorAll(".grid .card[data-uid]").forEach(c=>c.onclick=()=>{ squishOn(c); if(c.dataset.uid) setTimeout(()=>itemDetail(c.dataset.uid),250); });
 }
+/* ---------- KLEM PÅ SQUISHIES ---------- */
+let _ac=null;
+function squeak(fake,dn){
+  try{ _ac=_ac||new (window.AudioContext||window.webkitAudioContext)(); const t=_ac.currentTime, o=_ac.createOscillator(), g=_ac.createGain();
+    o.type=fake?"sawtooth":"sine"; const f=(fake?180:520)+Math.random()*120;
+    o.frequency.setValueAtTime(f,t); o.frequency.exponentialRampToValueAtTime(dn?f*0.55:f*1.5,t+0.14);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(fake?0.05:0.09,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);
+    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.2); }catch(e){}
+}
+function setupSqueeze(m,d){
+  const st=m.querySelector("#sqs"), body=m.querySelector(".sqbody"), nEl=m.querySelector("#sqn"); if(!st) return;
+  const fake=!!d.fake; let sy=1,vy=0,tgt=1,raf=0,last=0,down=false,mine=0;
+  const tick=ts=>{ const dt=Math.min(0.03,(ts-last)/1000||0.016); last=ts;
+    const k=240,c=fake?22:7.5; vy+=(-k*(sy-tgt)-c*vy)*dt; sy+=vy*dt;
+    body.style.transform=`scale(${1+(1-sy)*0.55},${sy})`;
+    if(down||Math.abs(sy-tgt)>0.002||Math.abs(vy)>0.01) raf=requestAnimationFrame(tick); else { raf=0; body.style.transform=""; } };
+  const kick=()=>{ if(!raf){ last=performance.now(); raf=requestAnimationFrame(tick); } };
+  const press=e=>{ e.preventDefault(); if(down) return; down=true; tgt=fake?0.82:0.58; try{st.setPointerCapture(e.pointerId);}catch(x){}
+    squeak(fake,true); if(navigator.vibrate) navigator.vibrate(fake?8:18);
+    S.stats.squeezes=(S.stats.squeezes||0)+1; mine++;
+    if(S.stats.squeezes%100===0){ setCoins(S.coins+10); toast("🤗 100 klemmer! +10 🪙"); save(); }
+    else if(S.stats.squeezes%10===0) save();
+    nEl.textContent=`🤗 Klemt ${mine} ganger nå · ${S.stats.squeezes} totalt`; kick(); };
+  const rel=()=>{ if(!down) return; down=false; tgt=1; squeak(fake,false); kick(); };
+  st.addEventListener("pointerdown",press); st.addEventListener("pointerup",rel); st.addEventListener("pointercancel",rel); st.addEventListener("pointerleave",rel);
+}
 function itemDetail(u){
   const it=S.inv.find(i=>i.uid===u); if(!it) return;
   const d=DEF[it.id], sell=Math.round(value(it)*0.4);
-  const m=modal(`<div style="width:180px;margin:0 auto">${card(it)}</div>
+  const m=modal(`<div style="text-align:center"><b style="font-size:18px">${esc(d.name)}</b></div>
+   <div class="sqstage" id="sqs"><div class="sqbody">${artSVG(d,it.k)}</div></div>
+   <div class="sqn" id="sqn">🤗 Klem på meg! Hold fingeren nede</div>
    <p style="text-align:center" class="muted">${TIERS[d.tier].name}${itemCol(it)?" · "+COLS[itemCol(it)][0]:""}${it.v!=="n"?" · "+VARIANTS[it.v].name+"-variant (x"+VARIANTS[it.v].mult+" verdi)":""}${it.from?"<br>Tradet fra "+esc(it.from):""}</p>
    <div class="row"><button class="btn sec grow" id="cl">Lukk</button><button class="btn red grow" id="sl" ${isOffered(u)?"disabled":""}>Selg for 🪙 ${sell}</button></div>`,{center:true});
-  m.querySelector("#cl").onclick=()=>m.remove();
+  m.querySelector("#cl").onclick=()=>{ m.remove(); save(); };
+  setupSqueeze(m,d);
   m.querySelector("#sl").onclick=async()=>{ m.remove(); if(await confirmBox(`Selge ${VARIANTS[it.v].name} ${esc(d.name)} for 🪙 ${sell}?`,"Selg")){ removeItem(u); setCoins(S.coins+sell); render(); toast("Solgt! +"+sell+" 🪙"); } };
 }
 
-/* ---------- OPPGAVER (nivåer) ----------
-   Nivå R er felles for alle kategorier. Klar på nivå R = LEVEL_GOAL riktige i kategorien.
-   Når alle kategoriene er klare, får man én mystery box og nivå R+1 låses opp.
-   Lavere nivåer kan spilles på nytt for mindre penger. Nivå 1 kan spilles på nytt først når R > 1. */
-const LEVEL_GOAL=5;
-const PROG_CATS=CATS.filter(c=>c.id!=="mix");
-const lvlReward=L=>10*2**(L-1);
-const catDone=id=>(S.cnt[id]||0)>=LEVEL_GOAL;
-let quiz=null, levelPick=null;
+
+
+/* ---------- JULEKALENDER (1.–24. desember) ---------- */
+const ADV=[ ["c",50],["c",40],["c",60],["i",1],["c",75],["c",50],["c",100],["x","xm-pepper",60],
+ ["c",60],["i",2],["c",80],["x","xm-rein",100],["c",50],["i",2],["c",120],["x","xm-tre",80],
+ ["c",70],["i",3],["c",90],["c",150],["i",3],["c",200],["c",250],["x","xm-nisse",500] ];
+function advToday(){ if(window.__advDay) return window.__advDay; const n=new Date(); return n.getMonth()===11&&n.getDate()<=31?n.getDate():0; }
+function advYear(){ return window.__advYear||new Date().getFullYear(); }
+function advActive(){ const t=advToday(); return t>=1; }
+function advDaysTo(){ const n=new Date(); const t=new Date(n.getFullYear(),11,1); return Math.ceil((t-n)/864e5); }
+function advOpened(){ return (S.advent&&S.advent[advYear()])||{}; }
+function advBanner(){
+  if(window.__advDay===undefined&&!(new Date().getMonth()===11)&&!(new Date().getMonth()===10&&new Date().getDate()>=20)) return "";
+  if(!advActive()) return `<div class="panel row advb"><div style="font-size:34px">🎄</div><div class="grow"><b>Julekalender</b><div class="muted">Åpner 1. desember – om ${advDaysTo()} ${advDaysTo()===1?"dag":"dager"}! 24 luker med mynter og jule-squishies.</div></div></div>`;
+  const op=advOpened(), t=Math.min(24,advToday()); let n=0; for(let d=1;d<=t;d++) if(!op[d]) n++;
+  return `<div class="panel row advb ${n?"hot":""}" id="advopen"><div style="font-size:34px">🎄</div><div class="grow"><b>Julekalender</b><div class="muted">${n?`${n} ${n===1?"luke":"luker"} å åpne!`:"Kom tilbake i morgen for ny luke"}</div></div><button class="btn ${n?"green":"sec"} sm">Åpne</button></div>`;
+}
+function advRewardIcon(d){ const r=ADV[d-1]; return r[0]==="c"?"🪙":r[0]==="i"?"🎁":DEF[r[1]].emoji; }
+function advModal(){
+  const t=advToday(), op=advOpened();
+  const doors=ADV.map((r,i)=>{ const d=i+1, o=!!op[d], can=!o&&d<=t;
+    return `<button class="door ${o?"open":can?"can":"lock"}" data-d="${d}" ${can?"":"disabled"}><span class="dn">${d}</span>${o?`<span class="di">${advRewardIcon(d)}</span>`:can?`<span class="di">🎁</span>`:`<span class="di">🔒</span>`}</button>`; }).join("");
+  const m=modal(`<h3 style="margin-top:0;text-align:center">🎄 Julekalender</h3><p class="muted" style="text-align:center">Én luke hver dag fra 1. til 24. desember. Glemte du en? Den kan åpnes senere!</p><div class="doors">${doors}</div><button class="btn sec" id="cl" style="width:100%;margin-top:12px">Lukk</button>`);
+  m.querySelector("#cl").onclick=()=>{ m.remove(); render(); };
+  m.querySelectorAll(".door.can").forEach(b=>b.onclick=()=>{ m.remove(); openDoor(+b.dataset.d); });
+}
+function openDoor(d){
+  const r=ADV[d-1], op=advOpened(); if(op[d]||d>advToday()) return;
+  S.advent=S.advent||{}; S.advent[advYear()]=Object.assign({},op,{[d]:Date.now()});
+  FB.set(R(`players/${me}/advent/${advYear()}/${d}`),Date.now()).catch(fail);
+  if(r[0]==="c"){ setCoins(S.coins+r[1]); modal(`<div style="text-align:center"><div style="font-size:70px">🪙</div><h2>Luke ${d}</h2><p><b>+ ${r[1]} mynter!</b></p><button class="btn green" id="ok">Super!</button></div>`,{center:true}).querySelector("#ok").onclick=e=>{ e.target.closest(".modal").remove(); render(); advModal(); }; return; }
+  let items=[], coins=0;
+  if(r[0]==="i"){ const pool=CATALOG.filter(x=>!x.blind&&!x.fake&&!x.adv&&x.tier<=r[1]&&x.tier>=Math.max(0,r[1]-1)); items=[makeItem(pick(pool).id,r[1]>=3?3:1)]; }
+  else { items=[makeItem(r[1],1)]; coins=r[2]||0; }
+  items.forEach(addItem); if(coins) setCoins(S.coins+coins); save();
+  reveal(items,"🎁",()=>{ if(coins) toast("+ "+coins+" 🪙 også!"); render(); advModal(); },"Luke "+d+(coins?" · + "+coins+" 🪙":""));
+}
+
+/* ---------- FARGEJAKT ---------- */
+const COLGOAL=5, COLBONUS=150, RAINBOW_BONUS=800;
+function colorStats(){
+  const own={}; for(const i of S.inv){ const k=itemCol(i); if(!k) continue; (own[k]=own[k]||new Set()).add(i.id); }
+  const out={};
+  for(const k of Object.keys(COLS)){
+    const avail=CATALOG.filter(d=>d.cols&&d.cols.indexOf(k)>=0).length;
+    const goal=Math.min(COLGOAL,avail||COLGOAL), n=own[k]?own[k].size:0;
+    out[k]={n,goal,avail,done:!!(S.claims&&S.claims[k]),ready:n>=goal&&!(S.claims&&S.claims[k]),has:n>0};
+  }
+  return out;
+}
+function vFarge(){
+  const st=colorStats(), keys=Object.keys(COLS), hasAll=keys.every(k=>st[k].has||(S.claims&&S.claims[k]));
+  const rb=S.claims&&S.claims.regnbuesamling;
+  let h=`<div class="panel"><b>🎨 Fargejakt</b><div class="muted" style="margin-top:4px">Samle ${COLGOAL} ulike squishies i samme farge og få 🪙 ${COLBONUS}. Har du minst én i alle fargene, får du 🪙 ${RAINBOW_BONUS}!</div></div>`;
+  h+=`<div class="panel">${keys.map(k=>{ const x=st[k]; return `<div class="frow"><span class="cdot2 big" style="background:${colBg(k)}"></span><div class="grow"><b>${COLS[k][0]}</b><div class="dexbar"><div style="width:${Math.min(100,x.n/x.goal*100)}%"></div></div></div><span class="fn">${Math.min(x.n,x.goal)}/${x.goal}</span>${x.done?`<span class="fok">✅</span>`:x.ready?`<button class="btn green sm" data-claim="${k}">Hent 🪙 ${COLBONUS}</button>`:""}</div>`; }).join("")}</div>`;
+  h+=`<div class="panel row"><div class="grow"><b>🌈 Regnbuesamling</b><div class="muted">Minst én squishy i hver av de ${keys.length} fargene (${keys.filter(k=>st[k].has||(S.claims&&S.claims[k])).length}/${keys.length})</div></div>${rb?`<span class="fok">✅</span>`:hasAll?`<button class="btn green sm" data-claim="regnbuesamling">Hent 🪙 ${RAINBOW_BONUS}</button>`:""}</div>`;
+  return h;
+}
+function claimColor(k){
+  const st=colorStats(); S.claims=S.claims||{};
+  if(S.claims[k]) return;
+  let amt=0;
+  if(k==="regnbuesamling"){ if(!Object.keys(COLS).every(c=>st[c].has||S.claims[c])) return; amt=RAINBOW_BONUS; }
+  else { if(!st[k]||!st[k].ready) return; amt=COLBONUS; }
+  S.claims[k]=Date.now();
+  FB.set(R(`players/${me}/claims/${k}`),S.claims[k]).catch(fail);
+  setCoins(S.coins+amt); toast("🎉 +"+amt+" 🪙"); render();
+}
+
+
+/* ---------- AUKSJON ---------- */
+let AUC={};
+const AU_DUR=[["1 time",3600e3],["6 timer",6*3600e3],["24 timer",24*3600e3]], AU_MAX=3;
+const minNext=a=>a.cur>0?a.cur+Math.max(5,Math.round(a.cur*0.05)):a.min;
+const inboxPush=(p,o)=>FB.set(R(`players/${p}/inbox/${uid()}`),Object.assign({at:Date.now()},o)).catch(fail);
+const aucName=a=>{ const d=DEF[a.item.id]; return (d?d.name:"squishy"); };
+function vAuksjon(m){
+  const now=Date.now(), all=Object.entries(AUC).map(([id,a])=>Object.assign({id},a));
+  const live=all.filter(a=>a.state==="open").sort((a,b)=>a.end-b.end);
+  const done=all.filter(a=>a.state==="done"&&now-a.end<86400e3).sort((a,b)=>b.end-a.end).slice(0,6);
+  const mine=live.filter(a=>a.seller===me).length;
+  let h=`<div class="panel row"><div class="grow"><b>🔨 Familieauksjon</b><div class="muted">Legg ut en squishy og la de andre by med mynter.</div></div><button class="btn green sm" id="aunew" ${mine>=AU_MAX?"disabled":""}>＋ Legg ut</button></div>`;
+  if(!live.length) h+=`<div class="panel" style="text-align:center"><div style="font-size:50px">🔨</div><b>Ingen auksjoner akkurat nå</b><p class="muted">Vær den første til å legge ut en squishy!</p></div>`;
+  h+=live.map(a=>{ const it={id:a.item.id,v:a.item.v,k:a.item.k}, ended=a.end<=now, lead=a.by===me;
+    return `<div class="panel auc ${lead?"lead":""}"><div class="aucard">${card(it,{noval:true})}</div><div class="aucinfo"><b>${esc(aucName(a))}</b><div class="muted">Fra ${esc(a.sname||"?")}</div>
+      <div>${a.cur>0?`Høyeste bud: <b>🪙 ${a.cur}</b> (${a.by===me?"deg":esc(a.bname||"?")})`:`Startpris: <b>🪙 ${a.min}</b>`}</div>
+      <div class="muted">${ended?"Avsluttes…":`⏱ ${cdSpan(a.end)}`}</div>
+      ${ended?"":a.seller===me?(a.cur>0?`<div class="muted">Din auksjon</div>`:`<button class="btn sec sm" data-acx="${a.id}">Trekk tilbake</button>`):lead?`<div class="muted">✅ Du leder!</div><button class="btn sm" data-bid="${a.id}">By mer</button>`:`<button class="btn green sm" data-bid="${a.id}">Byd fra 🪙 ${minNext(a)}</button>`}</div></div>`; }).join("");
+  if(done.length) h+=`<h3>Avsluttet</h3>`+done.map(a=>`<div class="panel muted">${DEF[a.item.id]?DEF[a.item.id].emoji:""} <b>${esc(aucName(a))}</b> – ${a.by?`solgt til ${a.by===me?"deg":esc(a.bname||"?")} for 🪙 ${a.cur}`:"ingen bud"}</div>`).join("");
+  m.innerHTML=h;
+  const nb=m.querySelector("#aunew"); if(nb) nb.onclick=listAuction;
+  m.querySelectorAll("[data-bid]").forEach(b=>b.onclick=()=>bidModal(b.dataset.bid));
+  m.querySelectorAll("[data-acx]").forEach(b=>b.onclick=()=>cancelAuction(b.dataset.acx));
+}
+function listAuction(){
+  const items=S.inv.filter(i=>!isOffered(i.uid));
+  picker("Velg squishy å legge ut",items,it=>{
+    const d=DEF[it.id], def=Math.max(5,Math.round(value(it)*0.6));
+    const m=modal(`<div style="width:150px;margin:0 auto">${card(it)}</div>
+      <label class="muted">Startpris (mynter)</label><input id="aup" type="number" min="1" value="${def}" style="width:100%">
+      <label class="muted">Varighet</label><select id="aud" style="width:100%">${AU_DUR.map((x,i)=>`<option value="${i}" ${i===1?"selected":""}>${x[0]}</option>`).join("")}</select>
+      <div class="row" style="margin-top:12px"><button class="btn sec grow" id="cl">Avbryt</button><button class="btn green grow" id="ok">Legg ut</button></div>`,{center:true});
+    m.querySelector("#cl").onclick=()=>{ m.remove(); render(); };
+    m.querySelector("#ok").onclick=async()=>{
+      const p=Math.max(1,Math.round(+m.querySelector("#aup").value||def)), dur=AU_DUR[+m.querySelector("#aud").value][1];
+      m.remove();
+      const a={seller:me,sname:S.name,item:{id:it.id,v:it.v,k:it.k||""},min:p,cur:0,by:"",bname:"",end:Date.now()+dur,state:"open",at:Date.now()};
+      try{ await retryWrite(()=>FB.set(R("auctions/"+uid()),a)); removeItem(it.uid); toast("🔨 Lagt ut!"); }catch(e){ fail(e); }
+      render();
+    };
+  });
+}
+function bidModal(id){
+  const a=AUC[id]; if(!a||a.state!=="open") return;
+  const min=minNext(a);
+  const m=modal(`<div style="width:150px;margin:0 auto">${card({id:a.item.id,v:a.item.v,k:a.item.k},{noval:true})}</div>
+    <p style="text-align:center">${a.cur>0?`Høyeste bud 🪙 ${a.cur}`:`Startpris 🪙 ${a.min}`} · du har 🪙 ${S.coins}</p>
+    <input id="bam" type="number" min="${min}" value="${min}" style="width:100%">
+    <p class="muted" style="text-align:center">Myntene trekkes nå og går tilbake hvis du blir overbudt.</p>
+    <div class="row"><button class="btn sec grow" id="cl">Avbryt</button><button class="btn green grow" id="ok">Byd</button></div>`,{center:true});
+  m.querySelector("#cl").onclick=()=>m.remove();
+  m.querySelector("#ok").onclick=()=>{ const v=Math.round(+m.querySelector("#bam").value||0); m.remove(); bid(id,v); };
+}
+async function bid(id,amt){
+  if(amt>S.coins) return toast("Ikke nok mynter 😅");
+  let did=false, prev=null, nm="";
+  try{
+    await FB.runTransaction(R("auctions/"+id),a=>{ did=false; if(!a||a.state!=="open"||a.end<=Date.now()||a.seller===me||amt<minNext(a)) return; prev=a.by?{by:a.by,cur:a.cur}:null; nm=aucName(a); a.cur=amt; a.by=me; a.bname=S.name; did=true; return a; });
+  }catch(e){ return fail(e); }
+  if(!did) return toast("Budet ble ikke tatt – noen var raskere, eller auksjonen er over");
+  setCoins(S.coins-amt);
+  if(prev&&prev.by!==me) inboxPush(prev.by,{coins:prev.cur,txt:"Du ble overbudt på "+nm+" – 🪙 "+prev.cur+" tilbake"});
+  else if(prev&&prev.by===me) setCoins(S.coins+prev.cur);
+  toast("🔨 Du leder med 🪙 "+amt); render();
+}
+async function cancelAuction(id){
+  if(!(await confirmBox("Trekke tilbake auksjonen?","Trekk tilbake"))) return;
+  let did=false;
+  try{ await FB.runTransaction(R("auctions/"+id),a=>{ did=false; if(!a||a.state!=="open"||a.seller!==me||a.cur>0) return; a.end=Date.now(); did=true; return a; }); }catch(e){ return fail(e); }
+  if(did) settle(id);
+}
+const settling=new Set();
+async function settle(id){
+  if(settling.has(id)) return; settling.add(id);
+  let snap=null;
+  try{ await FB.runTransaction(R("auctions/"+id),a=>{ snap=null; if(!a||a.state!=="open"||a.end>Date.now()) return; a.state="done"; snap=Object.assign({},a); return a; }); }catch(e){ settling.delete(id); return; }
+  if(snap){ const nm=aucName(snap);
+    if(snap.by){ inboxPush(snap.by,{item:snap.item,from:snap.sname||"",txt:"🎉 Du vant "+nm+"!"}); inboxPush(snap.seller,{coins:snap.cur,txt:"💰 "+nm+" ble solgt for 🪙 "+snap.cur}); }
+    else inboxPush(snap.seller,{item:snap.item,txt:"Ingen bød på "+nm+" – den er tilbake i samlingen"}); }
+}
+setInterval(()=>{ if(!me||!db) return; const now=Date.now(); for(const [id,a] of Object.entries(AUC)) if(a.state==="open"&&a.end<=now) settle(id); },4000);
+// post (mynter/squishies fra auksjoner) som venter på meg
+const inboxBusy=new Set();
+function processInbox(){
+  const P=PLAYERS[me]; if(!P||!P.inbox||!db) return;
+  for(const [k,e] of Object.entries(P.inbox)){
+    if(inboxBusy.has(k)) continue; inboxBusy.add(k);
+    FB.remove(R(`players/${me}/inbox/${k}`)).then(()=>{
+      if(e.coins) setCoins(S.coins+e.coins);
+      if(e.item&&DEF[e.item.id]) addItem({uid:uid(),id:e.item.id,v:e.item.v||"n",k:e.item.k||"",at:Date.now(),from:e.from||""});
+      if(e.txt) toast(e.txt,4500); softRender();
+    }).catch(x=>{ inboxBusy.delete(k); fail(x); });
+  }
+}
+
+/* ---------- OPPGAVER ---------- */
+let quiz=null;
 function vOppgaver(m){
-  const R=S.round||1;
-  if(!quiz && !levelPick){
-    const today=new Date().toDateString(), klare=PROG_CATS.filter(c=>catDone(c.id)).length;
+  if(!quiz){
+    const today=new Date().toDateString();
     m.innerHTML=`<h2>Tjen mynter 🧠</h2>
      ${S.daily!==today?`<div class="panel row"><div class="grow"><b>Daglig bonus!</b><div class="muted">Hent 50 gratis mynter i dag</div></div><button class="btn green" id="daily">Hent 🪙 50</button></div>`:""}
-     <div class="panel"><b>Nivå ${R}</b><div class="muted">Klar i ${klare} av ${PROG_CATS.length} kategorier. Når alle er klare får du en mystery box, og nivå ${R+1} låses opp.</div>
-       <div style="background:#e5e7eb;border-radius:8px;height:10px;margin-top:8px;overflow:hidden"><div style="background:#7dd3fc;height:10px;width:${klare/PROG_CATS.length*100}%"></div></div></div>
-     <p class="muted">Riktig svar gir mer jo høyere nivå: nivå 1 = 🪙 10, nivå 2 = 🪙 20, nivå 3 = 🪙 40 osv. Velg kategori:</p>
-     <div class="cats">${CATS.map(c=>{const ok=c.id!=="mix"&&catDone(c.id); return `<button class="cat" data-c="${c.id}" style="background:${c.bg}"><span class="e">${c.e}</span>${c.name}${ok?" ✅":""}</button>`;}).join("")}</div>`;
-    m.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{ levelPick=b.dataset.c; render(); });
+     <p class="muted">Riktig svar = 🪙 10. Fem riktige på rad = 🪙 25 ekstra! Nivå: <b>${["","Lett","Middels","Voksen"][S.lvl]||"Middels"}</b> (bytt under «Meg»)</p>
+     <div class="cats">${CATS.map(c=>`<button class="cat" data-c="${c.id}" style="background:${c.bg}"><span class="e">${c.e}</span>${c.name}</button>`).join("")}</div>`;
+    m.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{ quiz={cat:b.dataset.c,streak:0,n:0,right:0,earned:0,q:null,seen:new Set()}; nextQ(); render(); });
     const d=m.querySelector("#daily"); if(d) d.onclick=(e)=>{ S.daily=today; setCoins(S.coins+50); coinFly(e.clientX,e.clientY,"+50 🪙"); render(); };
     return;
   }
-  if(!quiz){
-    const cat=CATS.find(c=>c.id===levelPick), mix=levelPick==="mix";
-    const levels=Array.from({length:R},(_,i)=>i+1);
-    m.innerHTML=`<div class="panel qbox">
-      <div class="qhead"><button class="btn sec" id="back" style="padding:6px 12px">← Tilbake</button><span>${cat.e} ${cat.name}</span><span></span></div>
-      <p class="muted">Velg nivå:</p>
-      <div class="cats">${levels.map(L=>{
-        const cur=L===R, done=!mix&&cur&&catDone(levelPick);
-        const info=mix?(cur?"Blandede spørsmål, teller mot kategoriene":"Spill for å tjene mindre"):done?"✅ Klar, venter på de andre":cur?`Klar: ${S.cnt[levelPick]||0}/${LEVEL_GOAL}`:"Spill for å tjene mindre";
-        return `<button class="cat" data-l="${L}" ${done?"disabled":""} style="background:${cat.bg}"><span class="e">${L}</span>Nivå ${L}<br><small>🪙 ${lvlReward(L)} per riktig · ${info}</small></button>`;
-      }).join("")}</div></div>`;
-    m.querySelector("#back").onclick=()=>{ levelPick=null; render(); };
-    m.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{ quiz={cat:levelPick,lvl:+b.dataset.l,streak:0,n:0,right:0,earned:0,q:null}; levelPick=null; nextQ(); render(); });
-    return;
-  }
-  const q=quiz.q, cat=CATS.find(c=>c.id===(q.sub||quiz.cat));
+  const q=quiz.q, cat=CATS.find(c=>c.id===quiz.cat);
   m.innerHTML=`<div class="panel qbox">
-    <div class="qhead"><button class="btn sec" id="back" style="padding:6px 12px">← Tilbake</button><span>${cat.e} ${cat.name} · nivå ${quiz.lvl}</span><span class="streak">🔥 ${quiz.streak}</span></div>
+    <div class="qhead"><button class="btn sec" id="back" style="padding:6px 12px">← Tilbake</button><span>${cat.e} ${cat.name}</span><span class="streak">🔥 ${quiz.streak}</span></div>
     ${q.big?`<div class="qbig">${q.big}</div>`:""}
     <div class="qtext">${esc(q.q)}</div>
     <div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>
@@ -1402,29 +1704,13 @@ function vOppgaver(m){
   m.querySelectorAll(".opt").forEach(b=>b.onclick=(e)=>{
     if(done) return; done=true;
     const ok=q.opts[+b.dataset.i]===q.a; quiz.n++; S.stats.answered++;
-    let roundDone=false, catJust=false;
     if(ok){ b.classList.add("ok"); quiz.right++; quiz.streak++; S.stats.correct++; S.stats.best=Math.max(S.stats.best,quiz.streak);
-      let gain=lvlReward(quiz.lvl); if(quiz.streak%5===0){ gain+=25; toast("🔥 "+quiz.streak+" på rad! +25 bonus"); }
+      let gain=10; if(quiz.streak%5===0){ gain+=25; toast("🔥 "+quiz.streak+" på rad! +25 bonus"); }
       quiz.earned+=gain; setCoins(S.coins+gain); coinFly(e.clientX-20,e.clientY-20,"+"+gain+" 🪙");
-      const qc=q.sub||quiz.cat;
-      if(quiz.lvl===R && !catDone(qc)){
-        S.cnt[qc]=(S.cnt[qc]||0)+1;
-        if(catDone(qc)){ catJust=true; toast(`✅ ${cat.name} klar på nivå ${R}!`); }
-        roundDone=PROG_CATS.every(c=>catDone(c.id));
-      }
     } else { b.classList.add("no"); quiz.streak=0; m.querySelectorAll(".opt").forEach(x=>{ if(q.opts[+x.dataset.i]===q.a) x.classList.add("ok"); }); }
     save();
-    setTimeout(()=>{
-      if(roundDone){ quiz=null; levelUp(R); return; }
-      if(catJust && quiz.cat!=="mix"){ quiz=null; render(); return; }
-      nextQ(); render();
-    }, ok?700:1600);
+    setTimeout(()=>{ nextQ(); render(); }, ok?700:1600);
   });
-}
-function levelUp(R){
-  S.round=R+1; S.cnt={}; save();
-  const it=makeItem(rollMystery().id,1); addItem(it); save();
-  reveal([it],"🎁",()=>render(),`Nivå ${R} klart i alle kategorier!`);
 }
 function mcq(q,a,wrong,big){ return {q,a:String(a),opts:shuffle([String(a),...wrong.slice(0,3).map(String)]),big}; }
 function numWrong(a,spread){ const s=new Set(); while(s.size<3){ let w=a+rnd(-spread,spread); if(w!==a&&w>=0) s.add(w); } return [...s]; }
@@ -1464,9 +1750,9 @@ function genMath(lvl){
 // husker hvilke spørsmål spilleren har fått, så de ikke går igjen før alle i temaet er brukt opp
 function qSeenSet(){ const k="squishyTrade.qseen."+(me||"x"); if(qSeenSet.k!==k){ qSeenSet.k=k; try{ qSeenSet.s=new Set(JSON.parse(localStorage.getItem(k)||"[]")); }catch(e){ qSeenSet.s=new Set(); } } return qSeenSet.s; }
 function qSeenSave(){ try{ localStorage.setItem(qSeenSet.k,JSON.stringify([...qSeenSet.s].slice(-2000))); }catch(e){} }
-function genQ(cat,lvl){
-  const cs=COUNTRIES.filter(c=>lvl>=3?c[3]>=2:c[3]<=lvl);
-  if(cat==="mix") cat=pick(["matte","flagg","hoved","historie","boker","natur","kropp","sprak","aktuelt"]);
+function genQ(cat){
+  const lvl=S.lvl, cs=COUNTRIES.filter(c=>lvl>=3?c[3]>=2:c[3]<=lvl);
+  if(cat==="mix") cat=pick(["matte","flagg","hoved","historie","boker","natur","kropp","sprak","rekord","aktuelt"]);
   if(cat==="matte") return genMath(lvl);
   if(cat==="flagg"||cat==="hoved"){
     const c=pick(cs), others=shuffle(COUNTRIES.filter(x=>x!==c&&x[3]<=Math.max(lvl,1)+ (lvl===1?0:0)));
@@ -1481,20 +1767,15 @@ function genQ(cat,lvl){
   const item=pick(fresh); SS.add(item[0]); qSeenSave();
   return mcq(item[0], item[1], item[2]);
 }
-function nextQ(){
-  if(quiz.cat!=="mix"){ quiz.q=genQ(quiz.cat,quiz.lvl); return; }
-  const R=S.round||1, open=PROG_CATS.filter(c=>!catDone(c.id));
-  const pool=quiz.lvl===R&&open.length?open:PROG_CATS;
-  const sub=pick(pool).id; quiz.q=genQ(sub,quiz.lvl); quiz.q.sub=sub;
-}
+function nextQ(){ quiz.q=genQ(quiz.cat); }
 
 /* ---------- BUTIKK ---------- */
 let shopBrand="Alle", shopOnly=false;
 const MDUMP={id:"mdump",name:"Mysterie-dumpling",e:"🥟",price:90,desc:"1 dumpling · du vet ikke hvilken!"};
 function cdSpan(ts){ return `<b data-cd="${ts}">${fmtCd(ts-Date.now())}</b>`; }
 function vButikk(m){
-  const brands=["Alle",...new Set(CATALOG.filter(d=>!d.blind).map(d=>d.brand))];
-  const all=CATALOG.filter(d=>!d.blind&&(shopBrand==="Alle"||d.brand===shopBrand)).map(d=>({d,st:stockOf(d)}));
+  const brands=["Alle",...new Set(CATALOG.filter(d=>!d.blind&&!d.adv).map(d=>d.brand))];
+  const all=CATALOG.filter(d=>!d.blind&&!d.adv&&(shopBrand==="Alle"||d.brand===shopBrand)).map(d=>({d,st:stockOf(d)}));
   const list=all.filter(x=>!shopOnly||x.st.on).sort((a,b)=>(b.st.on-a.st.on)||(b.st.fresh?1:0)-(a.st.fresh?1:0)||a.d.tier-b.d.tier);
   const fresh=all.filter(x=>x.st.fresh).map(x=>x.d.name);
   const soon=all.filter(x=>x.st.next).sort((a,b)=>a.st.next-b.st.next)[0];
@@ -1530,12 +1811,12 @@ function buy(id){
 setInterval(()=>{
   const els=document.querySelectorAll("[data-cd]"); if(!els.length) return;
   let again=false; els.forEach(e=>{ const r=+e.dataset.cd-Date.now(); if(r<=0) again=true; else e.textContent=fmtCd(r); });
-  if(again&&view==="butikk"&&!document.querySelector(".modal")&&!$("#reveal").classList.contains("show")) render();
+  if(again&&(view==="butikk"||view==="auksjon")&&!document.querySelector(".modal")&&!$("#reveal").classList.contains("show")) render();
 },1000);
 // varsler når noe kommer tilbake på lager mens appen er åpen (eller siden sist du var inne)
 const STK_KEY="squishyTrade.stk";
 function stockTick(first){
-  const cur=CATALOG.filter(d=>!d.blind&&stockOf(d).on).map(d=>d.id);
+  const cur=CATALOG.filter(d=>!d.blind&&!d.adv&&stockOf(d).on).map(d=>d.id);
   let prev=null; try{ prev=JSON.parse(localStorage.getItem(STK_KEY)||"null"); }catch(e){}
   try{ localStorage.setItem(STK_KEY,JSON.stringify(cur)); }catch(e){}
   if(!prev||!me) return;
@@ -1771,8 +2052,15 @@ function vMeg(m){
      <div class="stat" style="border:0"><span>Squishies fått i bytte</span><b>${trades}</b></div>
    </div>
    <div class="panel"><b>🏆 Toppliste (samlingsverdi)</b>${board.map((x,i)=>`<div class="stat" ${i===board.length-1?'style="border:0"':""}><span>${["🥇","🥈","🥉"][i]||"·"} ${esc(x.n)}</span><b>🪙 ${x.v}</b></div>`).join("")}</div>
+   <div class="panel"><b>Innstillinger</b>
+     <p style="margin:10px 0 4px">Nivå på oppgaver</p>
+     <select id="lv"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2">Middels (ca. 5.–7. trinn)</option><option value="3">Voksen (vanskelig)</option></select>
+     <button class="btn" id="sv" style="width:100%;margin-top:12px">Lagre</button>
+   </div>
    <div class="panel"><b>Odds i boksene</b><p class="muted" style="font-size:13px">${BOXES.map(b=>`${b.e} ${b.name}: `+b.odds.map((o,i)=>o?`${TIERS[i].name} ${o}%`:"").filter(Boolean).join(", ")).join("<br>")}<br>Varianter: ✨ Glitter ~12 %, 🌈 Regnbue ~5 %, 👑 Gull ~1 % (høyere i store bokser)</p></div>
-   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 10 · flere squishies</p>`;
+   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 12 · julekalender og nye spørsmål</p>`;
+  m.querySelector("#lv").value=S.lvl;
+  m.querySelector("#sv").onclick=()=>{ S.lvl=+m.querySelector("#lv").value; save(); toast("Lagret ✅"); };
   m.querySelector("#lo").onclick=async()=>{ if(await confirmBox("Bytte spiller? Samlingen ligger trygt lagret.","Bytt")){ me=""; localStorage.removeItem(ME_KEY); S=fresh(); render(); } };
 }
 
@@ -1830,9 +2118,10 @@ function boot(){
   try{
     const app=FB.initializeApp(FIREBASE_CONFIG); const auth=FB.getAuth(app); db=FB.getDatabase(app);
     FB.signInAnonymously(auth).then(()=>{
-      FB.onValue(R("players"),snap=>{ PLAYERS=snap.val()||{}; if(me) syncMe();
+      FB.onValue(R("players"),snap=>{ PLAYERS=snap.val()||{}; if(me){ syncMe(); processInbox(); }
         const first=!ready; ready=true; if(first) render(); else softRender(); },e=>{ fbError="Ingen tilgang til databasen"; render(); });
       FB.onValue(R("meta/code"),snap=>{ famHash=snap.val(); const st=localStorage.getItem(FAM_KEY); if(st&&famHash&&st!==famHash){ localStorage.removeItem(FAM_KEY); famOK=false; render(); } });
+      FB.onValue(R("auctions"),snap=>{ AUC=snap.val()||{}; if(me&&view==="auksjon") softRender(); },()=>{});
       FB.onValue(R("boards"),snap=>{ BOARDS=snap.val()||{}; if(me){ onBoards(); softRender(); } });
     }).catch(e=>{ console.error(e); fbError="Klarte ikke å koble til (er du på nett?)"; render(); });
   }catch(e){ console.error(e); fbError="Feil i Firebase-oppsettet"; render(); }
