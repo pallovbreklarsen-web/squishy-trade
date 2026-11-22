@@ -243,7 +243,7 @@ button.tbtn:disabled{opacity:.45}
 .advb{border:2px solid #ffb3b3;background:linear-gradient(135deg,#fff5f5,#f2fff4)}.advb.hot{animation:glow 1.2s ease-in-out infinite;border-color:#4cc577}
 .doors{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.door{border:0;border-radius:14px;padding:10px 0;background:#ef4b4b;color:#fff;font-weight:900;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 3px 0 #b83030}
 .door.lock{background:#c9c0cf;box-shadow:0 3px 0 #a79eb0}.door.open{background:#4cc577;box-shadow:0 3px 0 #2f9a55}.door.can{animation:glow 1.2s ease-in-out infinite}.door .dn{font-size:18px}.door .di{font-size:22px}
-.cbadge{display:block;font-size:11px;font-weight:800;margin-top:6px;color:#5a4a6a;letter-spacing:1px}.cbadge.m{color:#b8860b}.cbadge.w{color:#2f9a55;letter-spacing:0}
+.cbadge b{font-size:13px;letter-spacing:0}.cbadge .dots{font-size:11px}.cbadge{display:block;font-size:11px;font-weight:800;margin-top:6px;color:#5a4a6a;letter-spacing:1px}.cbadge.m{color:#b8860b}.cbadge.w{color:#2f9a55;letter-spacing:0}
 .lvbar{display:flex;gap:8px;margin-bottom:12px}.lvb{flex:1;border:2px solid #eadff5;background:#fff;border-radius:14px;padding:10px 4px;font-weight:800;font-size:14px;color:#6b5b7a}.lvb.on{background:#2d2547;color:#fff;border-color:#2d2547}
 .addrow{margin-top:10px}.addrow button{width:100%}
 .askbar{background:#fff3c4;border:2px solid #f2c94c;border-radius:14px;padding:10px;margin-top:10px;font-weight:800;text-align:center;animation:glow 1.2s ease-in-out infinite}
@@ -1705,8 +1705,8 @@ function progPanel(){
 }
 function catBadge(c){ const st=catState(c);
   if(st.t==="mester") return `<span class="cbadge m">🏆 Mester</span>`;
-  if(st.t==="vent") return `<span class="cbadge w">✅ Nivå ${st.c} klart – venter</span>`;
-  return `<span class="cbadge">Nivå ${st.lvl} · ${"●".repeat(st.n)}${"○".repeat(NEED-st.n)}</span>`; }
+  if(st.t==="vent") return `<span class="cbadge w"><b>✅ Nivå ${st.c} klart</b><br>venter på resten</span>`;
+  return `<span class="cbadge lv${st.lvl}"><b>${["","🟢","🟡","🔴"][st.lvl]} Nivå ${st.lvl}</b><br><span class="dots">${"●".repeat(st.n)}${"○".repeat(NEED-st.n)}</span></span>`; }
 
 /* ---------- OPPGAVER ---------- */
 let quiz=null;
