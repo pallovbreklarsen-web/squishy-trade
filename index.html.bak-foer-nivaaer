@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Squishy Trade</title>
+<meta name="theme-color" content="#ff8fc7">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Squishy Trade">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{
+  --bg:#fff4fa; --ink:#3b2a4a; --muted:#8a7a99; --pink:#ff8fc7; --pink2:#ffc2e2; --purple:#a78bfa;
+  --card:#ffffff; --line:#f1dbe9;
+  --t0:#9aa5b1; --t1:#3fb56b; --t2:#3b8df0; --t3:#a24de8; --t4:#ff9a1f;
+  --font: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI Rounded", system-ui, sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);
+  background-image:radial-gradient(circle at 10% 10%,#ffe3f2 0,transparent 40%),radial-gradient(circle at 90% 30%,#e9e1ff 0,transparent 40%),radial-gradient(circle at 30% 90%,#dff7ff 0,transparent 40%);
+  background-attachment:fixed; overscroll-behavior:none}
+button{font-family:inherit;cursor:pointer}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:rgba(255,244,250,.85);backdrop-filter:blur(10px);border-bottom:2px solid var(--line)}
+.logo{font-weight:900;font-size:20px;letter-spacing:.3px}
+.logo span{color:var(--pink)}
+.coins{background:#fff;border:2px solid #ffd76a;border-radius:999px;padding:6px 12px;font-weight:800;display:flex;gap:6px;align-items:center;box-shadow:0 3px 0 #ffd76a}
+.coins.bump{animation:bump .5s}
+@keyframes bump{30%{transform:scale(1.25)}60%{transform:scale(.92)}100%{transform:scale(1)}}
+main{padding:14px 14px calc(env(safe-area-inset-bottom) + 96px);max-width:820px;margin:0 auto}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:space-around;background:#fff;
+  border-top:2px solid var(--line);padding:6px 4px calc(env(safe-area-inset-bottom) + 6px)}
+nav button{flex:1;border:0;background:none;font-size:12px;font-weight:800;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px;border-radius:14px}
+nav button .ic{font-size:24px;transition:transform .2s}
+nav button.on{color:var(--ink);background:var(--pink2)}
+nav button.on .ic{transform:scale(1.15) rotate(-6deg)}
+h2{margin:6px 0 12px;font-size:22px}
+h3{margin:16px 0 8px}
+.muted{color:var(--muted)}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px;margin-bottom:14px;box-shadow:0 4px 0 var(--line)}
+.btn{border:0;border-radius:16px;padding:12px 16px;font-weight:900;font-size:16px;background:var(--pink);color:#fff;box-shadow:0 4px 0 #e06aa6;transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #e06aa6}
+.btn.sec{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.btn.green{background:#3fc77a;box-shadow:0 4px 0 #2a9a5a}
+.btn.red{background:#ff6b6b;box-shadow:0 4px 0 #d64545}
+.btn.purple{background:var(--purple);box-shadow:0 4px 0 #7c5fd6}
+.btn:disabled{opacity:.45}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grow{flex:1}
+input,select{font-family:inherit;font-size:16px;padding:12px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--ink);width:100%}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{flex:1;border:2px solid var(--line);background:#fff;border-radius:14px;padding:8px;font-weight:800;color:var(--muted)}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.grid.small{grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.card{position:relative;background:#fff;border-radius:20px;padding:10px 8px 8px;text-align:center;border:3px solid var(--tc,var(--t0));
+  box-shadow:0 4px 0 var(--tc,var(--t0));user-select:none;overflow:hidden}
+.card.tap:active, .card.squish{animation:squish .35s}
+@keyframes squish{0%{transform:scale(1)}30%{transform:scale(1.12,.82)}60%{transform:scale(.93,1.08)}100%{transform:scale(1)}}
+.card .blob{width:64px;height:64px;margin:0 auto 6px;border-radius:50% 50% 46% 46%;display:grid;place-items:center;font-size:38px;background:var(--bc,#ffe)}
+.grid.small .card .blob{width:46px;height:46px;font-size:28px}
+.card .nm{font-weight:900;font-size:12.5px;line-height:1.15;min-height:29px}
+.grid.small .card .nm{font-size:10.5px;min-height:24px}
+.card .br{font-size:10.5px;color:var(--muted);font-weight:700}
+.card .val{font-size:12px;font-weight:900;margin-top:4px}
+.card .tier{position:absolute;top:6px;left:6px;font-size:9px;font-weight:900;color:#fff;background:var(--tc);padding:2px 6px;border-radius:999px}
+.card .vtag{position:absolute;top:6px;right:6px;font-size:13px}
+.card.locked{opacity:.45}
+.card.locked::after{content:"🔒 på bordet";position:absolute;inset:auto 0 0 0;font-size:10px;font-weight:800;background:#000a;color:#fff;padding:2px}
+.t0{--tc:var(--t0)}.t1{--tc:var(--t1)}.t2{--tc:var(--t2)}.t3{--tc:var(--t3)}.t4{--tc:var(--t4)}
+/* variants */
+.v-g .blob{position:relative}
+.v-g .blob::after{content:"✨";position:absolute;right:-6px;top:-6px;font-size:18px;animation:twinkle 1.4s infinite}
+.v-g{background:linear-gradient(160deg,#fff 0%,#fff6d9 50%,#fff 100%)}
+@keyframes twinkle{50%{transform:scale(.6) rotate(30deg);opacity:.5}}
+.v-r{border:0;padding:13px 11px 11px;background:
+  linear-gradient(#fff,#fff) padding-box,
+  linear-gradient(var(--ang,0deg),#ff5f6d,#ffc371,#47e891,#3fa9f5,#b06bff,#ff5f6d) border-box;border:3px solid transparent;border-radius:20px;animation:spinb 3s linear infinite}
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes spinb{to{--ang:360deg}}
+.v-gold{background:linear-gradient(150deg,#fff8d6,#ffe27a 45%,#fff3b8 60%,#ffd04a);box-shadow:0 0 14px #ffcf3f,0 4px 0 #d9a400;border-color:#e3b400}
+.v-gold .nm,.v-gold .val{color:#6b4a00}
+
+/* Shop */
+.shopitem{display:flex;flex-direction:column;align-items:center;gap:6px}
+.boxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.box{border-radius:22px;padding:14px;text-align:center;color:#fff;font-weight:900;box-shadow:0 5px 0 #0002;position:relative;overflow:hidden}
+.box .e{font-size:52px;display:block;animation:float 2.4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px) rotate(4deg)}}
+.box small{display:block;font-weight:700;opacity:.9;margin:4px 0 10px;font-size:12px}
+.box .btn{background:#fff;color:var(--ink);box-shadow:0 4px 0 #0003;width:100%}
+.b1{background:linear-gradient(150deg,#7dd3fc,#3b82f6)}
+.b2{background:linear-gradient(150deg,#c084fc,#7c3aed)}
+.b3{background:linear-gradient(150deg,#fbbf24,#f43f5e)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px}
+.chips button{flex:none;border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-weight:800;color:var(--muted)}
+.chips button.on{background:var(--pink);border-color:var(--pink);color:#fff}
+
+/* Quiz */
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.cat{border:0;border-radius:20px;padding:16px 10px;font-weight:900;font-size:15px;color:var(--ink);box-shadow:0 4px 0 #0001}
+.cat .e{font-size:34px;display:block;margin-bottom:4px}
+.qbox{text-align:center}
+.qtext{font-size:22px;font-weight:900;margin:10px 0 16px;line-height:1.25}
+.qbig{font-size:84px;line-height:1;margin:6px 0}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:2px solid var(--line);background:#fff;border-radius:16px;padding:14px 8px;font-weight:800;font-size:16px;color:var(--ink);box-shadow:0 4px 0 var(--line);min-height:58px}
+.opt.ok{background:#c9f7d9;border-color:#3fc77a;box-shadow:0 4px 0 #3fc77a;animation:squish .4s}
+.opt.no{background:#ffd3d3;border-color:#ff6b6b;box-shadow:0 4px 0 #ff6b6b;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.qhead{display:flex;justify-content:space-between;align-items:center;font-weight:800}
+.streak{background:#fff0c2;border-radius:999px;padding:4px 10px}
+.coinfly{position:fixed;font-weight:900;font-size:22px;color:#e0a800;pointer-events:none;z-index:90;animation:fly 1s forwards}
+@keyframes fly{to{transform:translateY(-80px);opacity:0}}
+
+/* Trade board */
+.board{border-radius:26px;padding:12px;background:
+  repeating-linear-gradient(45deg,#ffe9f5 0 14px,#fff 14px 28px);border:3px dashed var(--pink);margin-bottom:12px}
+.sides{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.side{background:#fffc;border-radius:18px;padding:8px;min-height:170px;border:2px solid var(--line);position:relative}
+.side h4{margin:2px 0 6px;font-size:14px;display:flex;justify-content:space-between}
+.side.acc{border-color:#3fc77a;box-shadow:0 0 0 3px #3fc77a55}
+.side .accb{font-size:12px;color:#2a9a5a;font-weight:900}
+.side .empty{color:var(--muted);font-size:13px;text-align:center;padding:30px 4px}
+.side .grid.small{grid-template-columns:repeat(auto-fill,minmax(70px,1fr))}
+.side .card .blob{width:40px;height:40px;font-size:24px}
+.side .card .nm{font-size:9.5px;min-height:22px}
+.side .card .br{display:none}
+.side .card{animation:drop .35s}
+@keyframes drop{0%{transform:translateY(-30px) scale(.6);opacity:0}70%{transform:translateY(3px) scale(1.06,.92)}100%{transform:none;opacity:1}}
+.fair{text-align:center;font-weight:800;margin:8px 0;font-size:14px}
+.tbtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.status{display:flex;align-items:center;gap:8px;font-weight:800}
+.dot{width:10px;height:10px;border-radius:50%;background:#ccc}
+.dot.on{background:#3fc77a;box-shadow:0 0 0 4px #3fc77a33}
+.code{font-size:40px;font-weight:900;letter-spacing:8px;text-align:center;background:#fff;border:3px dashed var(--purple);border-radius:18px;padding:10px;margin:10px 0}
+.chat{max-height:150px;overflow-y:auto;font-size:14px;margin-bottom:8px;display:flex;flex-direction:column;gap:4px}
+.msg{background:#f5effa;border-radius:12px;padding:6px 10px;align-self:flex-start;max-width:85%}
+.msg.me{background:var(--pink2);align-self:flex-end}
+.msg.sys{background:none;color:var(--muted);font-size:12px;align-self:center}
+
+/* Modal & reveal */
+.modal{position:fixed;inset:0;background:#3b2a4a99;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:640px;max-height:85vh;overflow:auto;border-radius:26px 26px 0 0;padding:16px 16px calc(env(safe-area-inset-bottom) + 16px);animation:up .25s}
+@keyframes up{from{transform:translateY(60px);opacity:0}}
+.center{align-items:center}
+.center .sheet{border-radius:26px;margin:16px;max-width:420px}
+#reveal{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle,#4a2a6b,#1c1030);color:#fff;text-align:center;overflow:hidden}
+#reveal.show{display:flex}
+#rays{position:absolute;width:200vmax;height:200vmax;left:50%;top:50%;margin:-100vmax 0 0 -100vmax;opacity:0;
+  background:repeating-conic-gradient(var(--rc,#fff) 0 8deg,transparent 8deg 20deg);animation:rot 8s linear infinite;
+  -webkit-mask:radial-gradient(circle,#000 0,transparent 55%);mask:radial-gradient(circle,#000 0,transparent 55%)}
+#reveal.big #rays{opacity:.55;transition:opacity .4s}
+@keyframes rot{to{transform:rotate(360deg)}}
+#rbox{font-size:120px;position:relative;z-index:2}
+#rbox.shake{animation:boxshake .12s infinite}
+@keyframes boxshake{0%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.06)}100%{transform:rotate(-8deg)}}
+#rbox.boom{animation:boom .35s forwards}
+@keyframes boom{to{transform:scale(2.4);opacity:0}}
+#ritem{position:relative;z-index:2;display:none}
+#ritem.on{display:block;animation:popin .7s cubic-bezier(.2,1.6,.4,1)}
+@keyframes popin{0%{transform:scale(0) rotate(-30deg)}100%{transform:scale(1)}}
+#ritem .card{width:200px;margin:0 auto;padding:16px}
+#ritem .card .blob{width:120px;height:120px;font-size:80px}
+#ritem .card .nm{font-size:18px;min-height:0}
+#ritem .card .br{font-size:13px}
+#ritem .card .val{font-size:18px}
+#rlabel{font-size:34px;font-weight:900;margin:16px 0 4px;position:relative;z-index:2;text-shadow:0 3px 0 #0005;min-height:42px}
+#rlabel.pop{animation:lab 1s ease-in-out infinite}
+@keyframes lab{50%{transform:scale(1.15) rotate(-3deg)}}
+#rsub{position:relative;z-index:2;opacity:.85;min-height:22px}
+#rnext{position:relative;z-index:2;margin-top:18px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:85}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 64px);transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;z-index:95;animation:up .2s;max-width:90vw;text-align:center}
+.dexbar{height:14px;background:#f1dbe9;border-radius:999px;overflow:hidden;margin:6px 0}
+.dexbar div{height:100%;background:linear-gradient(90deg,var(--pink),var(--purple))}
+.card.unknown{filter:grayscale(1) brightness(1.6);opacity:.55}
+nav button{position:relative}
+nav button[data-badge]:not([data-badge=""])::after{content:attr(data-badge);position:absolute;top:0;right:18%;background:#ff4d6d;color:#fff;font-size:11px;font-weight:900;border-radius:999px;min-width:18px;height:18px;line-height:18px;padding:0 4px}
+
+/* Tradingbrett */
+.tboard{display:grid;grid-template-columns:48px 1fr 1fr 48px;gap:6px;background:linear-gradient(#f9dfe9,#f3d0de);border-radius:24px;padding:9px;box-shadow:inset 0 2px 0 #fff9,0 6px 0 #e3a9bf,0 10px 24px #e3a9bf55;border:2px solid #edbccf}
+.tcol{display:flex;flex-direction:column;gap:7px}
+.tbtn{flex:1;min-height:70px;border-radius:16px;background:#fdf1f6;border:2px solid #e7b2c6;font-size:34px;font-weight:900;color:#d76d90;display:grid;place-items:center;box-shadow:0 3px 0 #e7b2c6;padding:0;line-height:1;font-family:system-ui}
+.tbtn.plus{color:#eaa5bd}.tbtn.ask{font-size:26px}.tbtn.ask.on{background:#fff3c4;border-color:#f2c94c;box-shadow:0 3px 0 #f2c94c;opacity:1!important}
+button.tbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #e7b2c6}
+button.tbtn:disabled{opacity:.45}
+.tcol.them .tbtn{opacity:.55}
+.tbtn.arrow.on{background:#c9f7d9;color:#24a35a;border-color:#3fc77a;box-shadow:0 3px 0 #3fc77a;opacity:1!important;animation:glow 1.2s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 6px #3fc77a44,0 3px 0 #3fc77a}}
+.tpanel{background:#f5dce6;border:2px solid #e3a9bf;border-radius:16px;padding:6px;display:flex;flex-direction:column;gap:5px;min-width:0;position:relative}
+.tpanel.acc{border-color:#3fc77a;box-shadow:0 0 0 3px #3fc77a55}
+.tpanel .ph,.tpanel .pv{font-size:12px;font-weight:900;text-align:center;color:#9a5a75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot{height:56px;border-radius:12px;border:2px dashed #e6b3c6;display:flex;align-items:center;gap:5px;padding:3px 5px;background:#fbeef3;position:relative;min-width:0}
+.slot:not(.empty){border:2px solid var(--tc);background:#fff}
+.slot.v-gold{background:linear-gradient(150deg,#fff8d6,#ffe27a);box-shadow:0 0 8px #ffcf3f}
+.slot.v-r{background:linear-gradient(90deg,#ffe4e6,#fff4d6,#e3fbe9,#e0f0ff,#f1e4ff)}
+.slot.v-g{background:linear-gradient(150deg,#fff,#fff6d9)}
+.slot .sb{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--bc)}
+.slot .si{min-width:0;display:flex;flex-direction:column;line-height:1.1}
+.slot .si b{font-size:10px;line-height:1.1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.slot .si span{font-size:9.5px;color:var(--muted);font-weight:700;white-space:nowrap}
+.slot .sx{position:absolute;top:-6px;right:-6px;background:#ff6b6b;color:#fff;width:18px;height:18px;border-radius:50%;font-size:10px;display:grid;place-items:center;font-weight:900}
+.slot.pop{animation:drop .45s}
+.slot.out{animation:none;transform:scale(.2);opacity:0;transition:.2s}
+.cw{position:relative}
+.shopitem.oos .card{filter:grayscale(1);opacity:.5}
+.oosr{position:absolute;top:42%;left:-4px;right:-4px;text-align:center;background:#ff6b6b;color:#fff;font-weight:900;font-size:13px;padding:3px 0;transform:rotate(-8deg);box-shadow:0 2px 6px #0003;letter-spacing:1px}
+.rs{position:absolute;top:-6px;left:-4px;background:#24a35a;color:#fff;font-weight:900;font-size:10px;padding:3px 7px;border-radius:10px;animation:glow2 1.2s ease-in-out infinite;z-index:3}
+@keyframes glow2{50%{box-shadow:0 0 0 5px #3fc77a55}}
+.cdl{font-size:11px;font-weight:800;color:var(--muted);text-align:center;margin:2px 0 4px;min-height:14px}
+.restock{background:#c9f7d9;border:2px solid #3fc77a;border-radius:14px;padding:8px 12px;margin:6px 0;font-size:14px;animation:glow2 1.4s ease-in-out infinite}
+.box.oosb{filter:grayscale(.8);opacity:.7}
+.faketag{position:absolute;bottom:34px;right:-2px;background:#777;color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:6px;transform:rotate(8deg);z-index:2}
+.card .faketag{bottom:auto;top:30px}
+.tstatus{text-align:center;font-weight:900;margin:12px 0 2px;font-size:15px}
+.tstatus.hot{color:#24a35a;animation:hot 1s ease-in-out infinite}
+@keyframes hot{50%{transform:scale(1.04)}}
+.emotes{display:flex;justify-content:center;gap:8px;margin-top:6px}
+.emotes button{font-size:24px;border:2px solid var(--line);background:#fff;border-radius:14px;width:46px;height:46px;padding:0}
+.emotes button:active{transform:scale(.9)}
+.emote{position:fixed;font-size:60px;z-index:90;pointer-events:none;animation:emo 1.6s ease-out forwards}
+@keyframes emo{0%{transform:scale(0)}20%{transform:scale(1.3)}40%{transform:scale(1)}100%{transform:translateY(-120px) scale(1.1);opacity:0}}
+@media (max-width:360px){.tboard{grid-template-columns:44px 1fr 1fr 44px;gap:5px;padding:7px}.tbtn{font-size:28px;min-height:62px}.slot .sb{width:32px;height:32px;font-size:20px}}
+.stat{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line)}
+.blob.art,.sb.art{background:none!important;box-shadow:none!important;padding:0}
+.blob.art svg,.sb.art svg{width:100%;height:100%;display:block}
+.card .blob.art{width:72px;height:72px}.grid.small .card .blob.art{width:54px;height:54px}.side .card .blob.art{width:46px;height:46px}#ritem .card .blob.art{width:130px;height:130px}
+.slot .sb.art{width:40px;height:40px;border-radius:0}
+.cdot{position:absolute;left:6px;bottom:6px;width:13px;height:13px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px #0004}
+.cdot2{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1.5px solid #0002}.colchips{margin:8px 0;flex-wrap:wrap}
+.addrow{margin-top:10px}.addrow button{width:100%}
+.askbar{background:#fff3c4;border:2px solid #f2c94c;border-radius:14px;padding:10px;margin-top:10px;font-weight:800;text-align:center;animation:glow 1.2s ease-in-out infinite}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Squishy<span>Trade</span></div>
+  <div class="coins" id="coins">🪙 <span id="coinN">0</span></div>
+</header>
+<main id="main"></main>
+<nav id="nav">
+  <button data-v="samling"><span class="ic">🧸</span>Samling</button>
+  <button data-v="oppgaver"><span class="ic">🧠</span>Oppgaver</button>
+  <button data-v="butikk"><span class="ic">🛍️</span>Butikk</button>
+  <button data-v="trade"><span class="ic">🤝</span>Trade</button>
+  <button data-v="meg"><span class="ic">⭐</span>Meg</button>
+</nav>
+
+<div id="reveal">
+  <div id="rays"></div>
+  <div id="rbox">🎁</div>
+  <div id="ritem"></div>
+  <div id="rlabel"></div>
+  <div id="rsub"></div>
+  <button class="btn" id="rnext" style="display:none">Fortsett</button>
+</div>
+<canvas id="confetti"></canvas>
+
+<script>
+"use strict";
+/* =========================================================
+   DATA – squishies (ekte merkenavn, kun til privat bruk)
+   ========================================================= */
+const TIERS = [
+  {k:0, name:"Vanlig",      price:60},
+  {k:1, name:"Uvanlig",     price:120},
+  {k:2, name:"Sjelden",     price:250},
+  {k:3, name:"Episk",       price:600},
+  {k:4, name:"Legendarisk", price:1500},
+];
+const VARIANTS = {
+  n:    {name:"",         mult:1,   icon:"",   fan:0},
+  g:    {name:"Glitter",  mult:2.5, icon:"✨", fan:2},
+  r:    {name:"Regnbue",  mult:6,   icon:"🌈", fan:3},
+  gold: {name:"Gull",     mult:20,  icon:"👑", fan:4},
+};
+// [id, navn, merke, emoji, bakgrunnsfarge, tier]
+const CATALOG = [
+  ["sq-cam","Cam the Cat","Squishmallows","🐱","#ffe1c4",0],
+  ["sq-wendy","Wendy the Frog","Squishmallows","🐸","#d6f5c9",0],
+  ["sq-connor","Connor the Cow","Squishmallows","🐮","#f0f0f0",0],
+  ["sq-maui","Maui the Pineapple","Squishmallows","🍍","#fff1a8",0],
+  ["sq-hans","Hans the Hedgehog","Squishmallows","🦔","#ead7c3",1],
+  ["sq-winston","Winston the Owl","Squishmallows","🦉","#e3d4f7",1],
+  ["sq-fifi","Fifi the Fox","Squishmallows","🦊","#ffd3b0",1],
+  ["sq-malcolm","Malcolm the Mushroom","Squishmallows","🍄","#ffd0d0",2],
+  ["sq-archie","Archie the Axolotl","Squishmallows","🦎","#ffd1ea",2],
+  ["sq-lola","Lola the Unicorn","Squishmallows","🦄","#f3dcff",2],
+  ["sq-jack","Jack the Black Cat","Squishmallows","🐈‍⬛","#d9d2e9",3],
+  ["sq-belana","Belana the Fairy","Squishmallows","🧚","#e2f0ff",4],
+
+  ["jc-avocado","Amuseable Avocado","Jellycat","🥑","#e1f3c7",0],
+  ["jc-croissant","Amuseable Croissant","Jellycat","🥐","#ffe8c2",0],
+  ["jc-egg","Amuseable Boiled Egg","Jellycat","🥚","#fff6e0",0],
+  ["jc-taco","Amuseable Taco","Jellycat","🌮","#ffe4b3",1],
+  ["jc-bunny","Bashful Bunny","Jellycat","🐰","#f5ece4",1],
+  ["jc-bart","Bartholomew Bear","Jellycat","🐻","#ecd5bd",2],
+  ["jc-odell","Odell Octopus","Jellycat","🐙","#ffd6e8",3],
+
+  ["nd-cube","NeeDoh Nice Cube","NeeDoh","🧊","#d4f1ff",0],
+  ["nd-gumdrop","NeeDoh Gumdrop","NeeDoh","🍬","#ffd9f0",0],
+  ["nd-dohnut","NeeDoh Dohnut","NeeDoh","🍩","#ffe0cc",0],
+  ["nd-snow","NeeDoh Snowball Crunch","NeeDoh","❄️","#eaf6ff",1],
+  ["nd-cats","NeeDoh Cool Cats","NeeDoh","😺","#fff0c9",1],
+  ["nd-glow","NeeDoh Glow in the Dark","NeeDoh","🌟","#2b2d55",3],
+
+  ["tb-dumpling","Squishy Dumpling","Taba Squishy","🥟","#fff3e3",0],
+  ["tb-mochi","Mochi Squishy","Taba Squishy","🍡","#ffe3ef",0],
+  ["tb-onigiri","Onigiri Squishy","Taba Squishy","🍙","#f2f2f2",1],
+  ["tb-boba","Boba Tea Squishy","Taba Squishy","🧋","#f1dcc4",1],
+  ["tb-cake","Strawberry Cake Squishy","Taba Squishy","🍰","#ffe0e6",2],
+  ["tb-dragon","Dragon Dumpling","Taba Squishy","🐲","#d7f7e3",3],
+  ["tb-king","Kongedumplingen","Taba Squishy","🫅","#fff1b3",4],
+  ["tb-bear","Bear Taba Squishy","Taba Squishy","🐻","#f1dcc4",0],
+  ["tb-chick","Chick Taba Squishy","Taba Squishy","🐥","#fff3a8",0],
+  ["tb-bao","Bao Squishy","Taba Squishy","🍞","#fff6ea",0],
+  ["tb-paw","Paw Taba Squishy","Taba Squishy","🐾","#ffd9ec",1],
+  ["tb-pudding","Pudding Taba Squishy","Taba Squishy","🍮","#ffe9b8",1],
+  ["tb-cat","Cat Taba Squishy","Taba Squishy","🐱","#ffe1c4",2],
+
+  ["sq-leonard","Leonard the Rainbow Lion","Squishmallows","🦁","#ffe6c9",1],
+  ["sq-gordon","Gordon the Shark","Squishmallows","🦈","#d4ecff",1],
+  ["sq-rosie","Rosie the Pig","Squishmallows","🐷","#ffd6df",0],
+  ["sq-avery","Avery the Duck","Squishmallows","🦆","#fff3b0",0],
+  ["sq-sheldon","Sheldon the Snail","Squishmallows","🐌","#e9ddc9",1],
+  ["sq-hanna","Hanna the Hippo","Squishmallows","🦛","#e6d3ff",2],
+  ["sq-cinna","Cinnamoroll Squishmallow","Squishmallows","☁️","#e3f3ff",2],
+  ["sq-hk","Hello Kitty Squishmallow","Squishmallows","🎀","#ffe0ea",3],
+
+  ["jc-pizza","Amuseables Slice of Pizza","Jellycat","🍕","#ffe3b8",0],
+  ["jc-doughnut","Amuseables Doughnut","Jellycat","🍩","#ffe0e8",0],
+  ["jc-lemon","Amuseables Lemon","Jellycat","🍋","#fff7b3",0],
+  ["jc-burger","Amuseables Burger","Jellycat","🍔","#ffe0b0",1],
+  ["jc-bagel","Amuseables Bagel","Jellycat","🥯","#f1deb8",1],
+  ["jc-pretzel","Amuseables Pretzel","Jellycat","🥨","#f0d9b8",1],
+  ["jc-cloud","Amuseables Cloud","Jellycat","☁️","#e6f1ff",2],
+  ["jc-sun","Amuseables Sun","Jellycat","☀️","#fff0a8",2],
+
+  ["nd-glob","NeeDoh Groovy Glob","NeeDoh","🔮","#e8dcff",0],
+  ["nd-cone","NeeDoh Nice Cream Cone","NeeDoh","🍦","#ffe9f2",1],
+  ["nd-gummy","NeeDoh Gummy Bear","NeeDoh","🧸","#ffd9d9",1],
+  ["nd-fuzz","NeeDoh Fuzz Ball","NeeDoh","🧶","#f3dcff",1],
+  ["nd-banana","NeeDoh Boss Banana","NeeDoh","🍌","#fff3a8",2],
+  ["nd-dream","NeeDoh Dream Drop","NeeDoh","💧","#dff2ff",2],
+
+  ["sh-kitty","Hello Kitty Mochi SquiSHU","Sanrio SquiSHU","🎀","#ffe0ea",0],
+  ["sh-melody","My Melody Mochi SquiSHU","Sanrio SquiSHU","🐰","#ffdbe9",0],
+  ["sh-kuromi","Kuromi Mochi SquiSHU","Sanrio SquiSHU","😈","#e6d9ff",1],
+  ["sh-cinna","Cinnamoroll Mochi SquiSHU","Sanrio SquiSHU","☁️","#e3f3ff",1],
+  ["sh-keroppi","Keroppi Mochi SquiSHU","Sanrio SquiSHU","🐸","#d9f5cf",1],
+  ["sh-pochacco","Pochacco Mochi SquiSHU","Sanrio SquiSHU","🐶","#f2f2f2",2],
+  ["sh-pompom","Pompompurin Mochi SquiSHU","Sanrio SquiSHU","🍮","#ffeeb0",2],
+  ["sh-badtz","Badtz-Maru Mochi SquiSHU","Sanrio SquiSHU","🐧","#d6d6e8",3],
+
+  ["ls-waffle","Waffle Bunny","La Squish","🐰","#fff0d6",0],
+  ["ls-pudding","Pudding Bear","La Squish","🐻","#ffe9b8",0],
+  ["ls-cookie","Cookie Cat","La Squish","🍪","#eadbc4",1],
+  ["ls-donut","Donut Duck","La Squish","🦆","#ffe0e8",1],
+
+  ["md-pink","Pink Mystery Dumpling","Mystery Dumpling","🥟","#ffd6ea",0,{blind:1}],
+  ["md-blue","Blue Mystery Dumpling","Mystery Dumpling","🥟","#d6ecff",0,{blind:1}],
+  ["md-yellow","Yellow Mystery Dumpling","Mystery Dumpling","🥟","#fff3b0",0,{blind:1}],
+  ["md-green","Green Mystery Dumpling","Mystery Dumpling","🥟","#d9f5cf",0,{blind:1}],
+  ["md-purple","Purple Mystery Dumpling","Mystery Dumpling","🥟","#e6d9ff",0,{blind:1}],
+  ["md-white","White Steamed Dumpling","Mystery Dumpling","🥟","#ffffff",0,{blind:1}],
+  ["md-panda","Panda Dumpling","Mystery Dumpling","🐼","#eeeeee",1,{blind:1}],
+  ["md-bear","Bear Dumpling","Mystery Dumpling","🐻","#f1dcc4",1,{blind:1}],
+  ["md-cat","Cat Dumpling","Mystery Dumpling","🐱","#ffe1c4",1,{blind:1}],
+  ["md-glitter","Glitter Rainbow Dumpling","Mystery Dumpling","🌈","#fde8ff",2,{blind:1}],
+  ["md-galaxy","Galaxy Dumpling","Mystery Dumpling","🌌","#2b2d55",2,{blind:1}],
+  ["md-gold","Golden Dumpling","Mystery Dumpling","🥟","#ffe27a",4,{blind:1}],
+
+  ["fk-dump","Fake Dumpling","Fake Dumplings","🥟","#e4e4e4",0,{fake:1}],
+  ["fk-bao","Fake Bao (billigkopi)","Fake Dumplings","🍞","#ececec",0,{fake:1}],
+  ["fk-mystery","Fake Mystery Dumpling","Fake Dumplings","❓","#e8e8f0",0,{fake:1}],
+  ["fk-taba","Fake Taba Dumpling","Fake Dumplings","🥟","#eae6dc",0,{fake:1}],
+  ["fk-gold","Fake Golden Dumpling","Fake Dumplings","🥟","#f1e9b8",0,{fake:1}],
+
+  ["bt-stick","Butter Stick Squishy","Butter Squishy","🧈","#fff3a3",0],
+  ["bt-straw","Strawberry Butter Squishy","Butter Squishy","🧈","#ffd6df",0],
+  ["bt-blue","Blueberry Butter Squishy","Butter Squishy","🧈","#dfe6ff",0],
+  ["bt-tiedye","Tie-Dye Butter Squishy","Butter Squishy","🧈","#ffd9f0",1],
+  ["bt-xl","Butter Squishy XL","Butter Squishy","🧈","#fff0a0",1],
+  ["bt-matcha","Matcha Butter Squishy","Butter Squishy","🧈","#e1f3c7",1],
+  ["bt-choc","Chocolate Butter Squishy","Butter Squishy","🧈","#ead7c3",1],
+  ["bt-honey","Honey Butter Squishy","Butter Squishy","🧈","#ffe6a0",2],
+  ["bt-rainbow","Rainbow Butter Squishy","Butter Squishy","🧈","#f3e8ff",3],
+  ["bt-gold","Golden Butter Squishy","Butter Squishy","🧈","#ffe27a",4],
+  ["cr-peanut","Crunchy Peanut","Crunchy Squishy","🥜","#f0d2a0",1],
+  ["cr-melon","Crunchy Melonpan","Crunchy Squishy","🍈","#f6d98a",1],
+  ["cr-straw","Crunchy Strawberry","Crunchy Squishy","🍓","#ffc9d4",2],
+  ["vs-peanut","Vaseline Peanut","Vaseline Squishy","🥜","#f3dcae",1],
+  ["vs-cheese","Vaseline Cheese","Vaseline Squishy","🧀","#ffe27a",2],
+  ["vs-potato","Vaseline Potato","Vaseline Squishy","🥔","#e6c48a",1],
+  ["vs-straw","Vaseline Strawberry","Vaseline Squishy","🍓","#ff9fb2",2],
+  ["sz-duck","Squeezy Duck","Squeezy","🦆","#ffe45e",1],
+  ["sz-butter","Squeezy Butter","Squeezy","🧈","#fff3a3",1],
+  ["tb-capy","Taba Capybara","Taba Squishy","🐹","#c99a6b",3],
+].map(([id,name,brand,emoji,color,tier,x])=>({id,name,brand,emoji,color,tier,...(x||{})}));
+const DEF = Object.fromEntries(CATALOG.map(d=>[d.id,d]));
+/* =========================================================
+   TEGNEDE SQUISHIES (SVG) + FARGER
+   ========================================================= */
+const COLS={rosa:["Rosa","#ff8fc7"],rod:["Rød","#ef4b4b"],oransje:["Oransje","#ff9f43"],gul:["Gul","#ffd93d"],gronn:["Grønn","#4cc577"],bla:["Blå","#4aa8ff"],lilla:["Lilla","#a78bfa"],brun:["Brun","#a87b51"],hvit:["Hvit","#f3f3f5"],svart:["Svart","#3b3b4a"],gull:["Gull","#f2b705"],regnbue:["Regnbue","conic"]};
+const COLHEX={rosa:"#ffb3d4",rod:"#ff7a7a",oransje:"#ffb066",gul:"#ffe45e",gronn:"#9be29b",bla:"#9ad0ff",lilla:"#c9a8ff",brun:"#c9966a",hvit:"#fffdf8",svart:"#454556"};
+const lum=h=>{const n=parseInt(h.slice(1),16);return .3*(n>>16)+.59*(n>>8&255)+.11*(n&255)};
+let _dk=false;
+const colBg=k=>k==="regnbue"?"conic-gradient(#ff5f6d,#ffc371,#47e891,#3fa9f5,#b06bff,#ff5f6d)":COLS[k][1];
+function sh(h,a){ const n=parseInt(h.slice(1),16); let r=n>>16,g=n>>8&255,b=n&255; const f=a<0?x=>x*(1+a):x=>x+(255-x)*a; return "#"+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(f(x)))).toString(16).padStart(2,"0")).join(""); }
+const G=(c,id,o={})=>`<radialGradient id="${id}" cx="${o.cx||.35}" cy="${o.cy||.28}" r=".85"><stop offset="0" stop-color="${sh(c,.4)}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${sh(c,-.22)}"/></radialGradient>`;
+const gloss=(x,y,rx,ry,r=-30,o=.5)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity="${o}" transform="rotate(${r} ${x} ${y})"/>`;
+function F(cx,cy,o={}){
+  const s=o.s||1, sp=(o.sp||10)*s, ec=o.ec||(_dk?"#ffe9a0":"#3a2a35"), ch=o.ch===undefined?"#ff8fb0":o.ch; let h="";
+  if(ch) h+=`<ellipse cx="${cx-sp-6*s}" cy="${cy+5*s}" rx="${5*s}" ry="${3*s}" fill="${ch}" opacity=".75"/><ellipse cx="${cx+sp+6*s}" cy="${cy+5*s}" rx="${5*s}" ry="${3*s}" fill="${ch}" opacity=".75"/>`;
+  if(o.cool) h+=`<rect x="${cx-sp-7*s}" y="${cy-5*s}" width="${2*sp+14*s}" height="${9*s}" rx="${4*s}" fill="#1f1f2a"/><path d="M${cx-sp-4*s} ${cy-3*s} l${4*s} ${-1*s}" stroke="#fff" opacity=".5" stroke-width="${1.2*s}"/>`;
+  else if(o.ep) h+=`<ellipse cx="${cx-sp}" cy="${cy}" rx="${6*s}" ry="${7*s}" fill="#2d2d36" transform="rotate(20 ${cx-sp} ${cy})"/><ellipse cx="${cx+sp}" cy="${cy}" rx="${6*s}" ry="${7*s}" fill="#2d2d36" transform="rotate(-20 ${cx+sp} ${cy})"/><circle cx="${cx-sp}" cy="${cy-1}" r="${2.6*s}" fill="#fff"/><circle cx="${cx+sp}" cy="${cy-1}" r="${2.6*s}" fill="#fff"/><circle cx="${cx-sp}" cy="${cy-1}" r="${1.3*s}" fill="#222"/><circle cx="${cx+sp}" cy="${cy-1}" r="${1.3*s}" fill="#222"/>`;
+  else if(o.eyes!==false) h+=`<ellipse cx="${cx-sp}" cy="${cy}" rx="${2.9*s}" ry="${3.5*s}" fill="${ec}"/><ellipse cx="${cx+sp}" cy="${cy}" rx="${2.9*s}" ry="${3.5*s}" fill="${ec}"/><circle cx="${cx-sp+s}" cy="${cy-1.3*s}" r="${s}" fill="#fff"/><circle cx="${cx+sp+s}" cy="${cy-1.3*s}" r="${s}" fill="#fff"/>`;
+  if(o.mouth!==false) h+=`<path d="M${cx-3*s} ${cy+5*s} Q${cx} ${cy+9*s} ${cx+3*s} ${cy+5*s}" fill="none" stroke="${ec}" stroke-width="${1.8*s}" stroke-linecap="round"/>`;
+  return h;
+}
+const EAR={
+ round:(c,i)=>`<circle cx="27" cy="31" r="10" fill="${c}"/><circle cx="27" cy="31" r="5" fill="${i}"/><circle cx="73" cy="31" r="10" fill="${c}"/><circle cx="73" cy="31" r="5" fill="${i}"/>`,
+ point:(c,i)=>`<path d="M16 44 L21 10 L46 30Z" fill="${c}"/><path d="M23 38 L25 20 L38 31Z" fill="${i}"/><path d="M84 44 L79 10 L54 30Z" fill="${c}"/><path d="M77 38 L75 20 L62 31Z" fill="${i}"/>`,
+ long:(c,i)=>`<ellipse cx="35" cy="18" rx="8" ry="19" transform="rotate(-8 35 18)" fill="${c}"/><ellipse cx="35" cy="19" rx="4" ry="13" transform="rotate(-8 35 19)" fill="${i}"/><ellipse cx="65" cy="18" rx="8" ry="19" transform="rotate(8 65 18)" fill="${c}"/><ellipse cx="65" cy="19" rx="4" ry="13" transform="rotate(8 65 19)" fill="${i}"/>`,
+ floppy:(c,i)=>`<ellipse cx="21" cy="42" rx="9" ry="17" transform="rotate(28 21 42)" fill="${c}"/><ellipse cx="79" cy="42" rx="9" ry="17" transform="rotate(-28 79 42)" fill="${c}"/>`,
+ tuft:(c,i)=>`<path d="M24 38 L19 10 L44 28Z" fill="${c}"/><path d="M76 38 L81 10 L56 28Z" fill="${c}"/>`,
+ none:()=>""
+};
+function plush(d,p){
+  const id=d.id,c=p.c; let defs=G(c,id+"a")+`<clipPath id="${id}c"><ellipse cx="50" cy="58" rx="${p.rx||35}" ry="${p.ry||31}"/></clipPath>`, back="",front="";
+  const ec2=p.ec2||sh(c,-.1), ei=p.ei||"#ffb3c9";
+  back+=(EAR[p.ears||"none"])(ec2,ei);
+  for(const a of (p.acc||[])){ const r=ACC[a](c,id,p); if(r[0]==="b") back+=r[1]; else front+=r[1]; }
+  const body=`<ellipse cx="50" cy="58" rx="${p.rx||35}" ry="${p.ry||31}" fill="url(#${id}a)"/>`;
+  const belly=p.belly?`<ellipse cx="50" cy="70" rx="21" ry="15" fill="${p.belly}" opacity=".95"/>`:"";
+  const fo={ec:p.fe,ch:p.ch,cool:p.cool,eyes:p.noeyes?false:undefined,mouth:p.nomouth?false:undefined,ep:p.ep,s:p.fs};
+  return {defs,b:back+body+belly+gloss(36,40,13,7)+front+F(50,p.fy||58,fo)+(p.after||"")};
+}
+const ACC={
+ bow:()=>["f",`<path d="M66 24 L82 15 L82 34Z" fill="#e8344a"/><path d="M66 24 L50 15 L50 34Z" fill="#e8344a"/><circle cx="66" cy="24" r="4.5" fill="#c71f37"/>`],
+ bowp:()=>["f",`<path d="M66 24 L82 15 L82 34Z" fill="#ff7fb5"/><path d="M66 24 L50 15 L50 34Z" fill="#ff7fb5"/><circle cx="66" cy="24" r="4.5" fill="#e0508f"/>`],
+ horn:()=>["f",`<path d="M50 3 L43 27 L57 27Z" fill="#ffd34d" stroke="#e0a800" stroke-width="1"/>`],
+ mane:()=>["b",["#ff5f6d","#ffa14d","#ffe14d","#5fe08a","#4aa8ff","#a87bff"].map((k,i)=>{const a=Math.PI*(1.12+i*0.15);return `<circle cx="${50+39*Math.cos(a)}" cy="${60+36*Math.sin(a)}" r="11" fill="${k}"/>`}).join("")+["#ff5f6d","#ffa14d","#ffe14d","#5fe08a","#4aa8ff","#a87bff"].slice(0,0).join("")],
+ pine:(c,id)=>["b",`<g fill="#3fae5a"><ellipse cx="50" cy="14" rx="6" ry="14"/><ellipse cx="37" cy="20" rx="6" ry="13" transform="rotate(-30 37 20)"/><ellipse cx="63" cy="20" rx="6" ry="13" transform="rotate(30 63 20)"/><ellipse cx="27" cy="30" rx="5" ry="11" transform="rotate(-55 27 30)" fill="#2f9a4a"/><ellipse cx="73" cy="30" rx="5" ry="11" transform="rotate(55 73 30)" fill="#2f9a4a"/></g>`],
+ pinex:(c,id)=>["f",`<g clip-path="url(#${id}c)" stroke="#d9a800" stroke-width="1.3" opacity=".55"><path d="M10 40 L60 90 M26 34 L76 84 M44 30 L94 80 M90 40 L40 90 M74 34 L24 84 M56 30 L6 80"/></g>`],
+ spikes:(c)=>["b",`<path d="M12 56 L7 42 L21 44 L19 28 L32 36 L35 20 L44 32 L50 16 L56 32 L65 20 L68 36 L81 28 L79 44 L93 42 L88 56Z" fill="#5b4030"/>`],
+ faceov:(c,id,p)=>["f",`<ellipse cx="50" cy="${p.fy?p.fy+3:62}" rx="${p.fw||23}" ry="${p.fh||18}" fill="${p.face||"#fff"}"/>`],
+ shell:()=>["f",`<circle cx="71" cy="40" r="19" fill="#b9814f"/><path d="M71 40 a3 3 0 1 1 5 3 a7 7 0 1 1 -11 -6 a11 11 0 1 1 17 9" fill="none" stroke="#8a5a30" stroke-width="2" stroke-linecap="round"/>`],
+ fin:(c)=>["b",`<path d="M50 6 L35 38 L65 38Z" fill="${sh(c,-.18)}"/>`],
+ wings:()=>["b",`<ellipse cx="13" cy="46" rx="12" ry="21" transform="rotate(-20 13 46)" fill="#e3f3ff" stroke="#9fd0f5" stroke-width="1.5"/><ellipse cx="87" cy="46" rx="12" ry="21" transform="rotate(20 87 46)" fill="#e3f3ff" stroke="#9fd0f5" stroke-width="1.5"/>`],
+ gills:()=>["b",`<g stroke="#ff5f9f" stroke-width="3.2" stroke-linecap="round"><path d="M23 42 L8 33 M21 49 L5 49 M23 56 L8 65 M77 42 L92 33 M79 49 L95 49 M77 56 L92 65"/></g>`],
+ beak:()=>["f",`<path d="M43 62 L57 62 L50 73Z" fill="#ff9d2e"/>`],
+ pig:()=>["f",`<ellipse cx="50" cy="68" rx="11" ry="8" fill="#ff86a8"/><circle cx="46" cy="68" r="1.9" fill="#b8456b"/><circle cx="54" cy="68" r="1.9" fill="#b8456b"/>`],
+ hippo:()=>["f",`<ellipse cx="50" cy="70" rx="19" ry="12" fill="#cdb6ff"/><circle cx="42" cy="68" r="2.2" fill="#6f55b8"/><circle cx="58" cy="68" r="2.2" fill="#6f55b8"/>`],
+ muzzle:(c)=>["f",`<ellipse cx="50" cy="68" rx="13" ry="9" fill="#f6e2c8"/><ellipse cx="50" cy="64" rx="4" ry="3" fill="#5a3a2a"/>`],
+ spots:()=>["f",`<g fill="#2d2d36"><ellipse cx="30" cy="48" rx="9" ry="7"/><ellipse cx="72" cy="64" rx="10" ry="8"/><ellipse cx="66" cy="38" rx="6" ry="5"/></g><ellipse cx="50" cy="69" rx="12" ry="8" fill="#ffb3c9"/><circle cx="45" cy="69" r="1.8" fill="#c44d73"/><circle cx="55" cy="69" r="1.8" fill="#c44d73"/>`],
+ whisk:()=>["f",`<g stroke="#3a2a35" stroke-width="1.2" opacity=".55"><path d="M28 62 L13 59 M28 67 L13 69 M72 62 L87 59 M72 67 L87 69"/></g>`],
+ nose:()=>["f",`<ellipse cx="50" cy="64" rx="4.5" ry="3" fill="#ffc61a"/>`],
+ beret:()=>["f",`<ellipse cx="50" cy="27" rx="21" ry="9" fill="#8b5a2b"/><circle cx="50" cy="17" r="3.5" fill="#8b5a2b"/>`],
+ skull:()=>["f",`<circle cx="50" cy="27" r="6.5" fill="#ff7fc0"/><rect x="46.5" y="32" width="7" height="3.5" rx="1" fill="#ff7fc0"/><circle cx="47.5" cy="26" r="1.5" fill="#3b3b4a"/><circle cx="52.5" cy="26" r="1.5" fill="#3b3b4a"/>`],
+ tent:(c)=>["b",[20,35,50,65,80].map((x,i)=>`<ellipse cx="${x}" cy="${86+(i%2)*2}" rx="9" ry="9" fill="${sh(c,-.05)}"/>`).join("")],
+ waffle:(c,id)=>["f",`<g clip-path="url(#${id}c)" stroke="${sh(c,-.28)}" stroke-width="1.5" opacity=".6"><path d="M10 40 H90 M10 52 H90 M10 64 H90 M10 76 H90 M30 25 V95 M42 25 V95 M54 25 V95 M66 25 V95 M78 25 V95"/></g>`],
+ caramel:(c,id)=>["f",`<path clip-path="url(#${id}c)" d="M12 56 Q16 28 50 26 Q84 28 88 56 Q80 50 72 58 Q64 50 56 60 Q48 50 40 58 Q32 50 24 58Z" fill="#a8672d"/>`],
+ chips:(c,id)=>["f",`<g fill="#5a3a1d"><ellipse cx="30" cy="50" rx="4" ry="3"/><ellipse cx="68" cy="44" rx="4.5" ry="3.2"/><ellipse cx="76" cy="68" rx="4" ry="3"/><ellipse cx="36" cy="78" rx="4.5" ry="3"/><ellipse cx="58" cy="36" rx="3.5" ry="2.6"/></g>`],
+ icing:(c,id)=>["f",`<path clip-path="url(#${id}c)" d="M12 56 Q16 28 50 26 Q84 28 88 56 Q80 50 72 58 Q64 50 56 60 Q48 50 40 58 Q32 50 24 58Z" fill="#ff9ec7"/><g clip-path="url(#${id}c)"><rect x="30" y="38" width="6" height="2.4" rx="1" fill="#fff" transform="rotate(30 30 38)"/><rect x="50" y="34" width="6" height="2.4" rx="1" fill="#6fd0ff" transform="rotate(-20 50 34)"/><rect x="66" y="42" width="6" height="2.4" rx="1" fill="#ffe14d" transform="rotate(50 66 42)"/><rect x="42" y="46" width="6" height="2.4" rx="1" fill="#7be87b" transform="rotate(10 42 46)"/></g>`],
+ frog:(c)=>["b",`<circle cx="33" cy="30" r="12" fill="${sh(c,-.05)}"/><circle cx="67" cy="30" r="12" fill="${sh(c,-.05)}"/><circle cx="33" cy="29" r="8" fill="#fff"/><circle cx="67" cy="29" r="8" fill="#fff"/><circle cx="34" cy="30" r="4" fill="#2a2a35"/><circle cx="68" cy="30" r="4" fill="#2a2a35"/><circle cx="35.5" cy="28.5" r="1.3" fill="#fff"/><circle cx="69.5" cy="28.5" r="1.3" fill="#fff"/>`],
+ tuftb:()=>["f",`<path d="M42 28 L38 10 L47 22 L51 7 L55 22 L63 11 L60 30Z" fill="#222"/>`],
+ cheekb:()=>["f",""],
+ chickwing:(c)=>["f",`<ellipse cx="18" cy="62" rx="7" ry="11" transform="rotate(20 18 62)" fill="${sh(c,-.12)}"/><ellipse cx="82" cy="62" rx="7" ry="11" transform="rotate(-20 82 62)" fill="${sh(c,-.12)}"/><path d="M46 28 Q50 14 54 28" fill="none" stroke="${sh(c,-.2)}" stroke-width="3" stroke-linecap="round"/>`],
+ starhalo:()=>["f",""],
+ hood:(c)=>["b",`<ellipse cx="50" cy="55" rx="40" ry="36" fill="${sh(c,-.2)}"/>`]
+};
+/* ---------- DUMPLING ---------- */
+function dump(d,p){
+  const id=d.id,c=p.c; let defs="",b="";
+  if(p.fake){
+    const dull=sh(c,-.12);
+    b=`<path d="M8 76 C6 44 28 26 52 20 C74 22 92 42 90 70 C92 86 70 92 48 90 C24 92 10 88 8 76Z" fill="${dull}" stroke="${sh(c,-.35)}" stroke-width="1.5"/>
+      <path d="M54 21 L51 90" stroke="${sh(c,-.3)}" stroke-width="1.4" opacity=".7"/>
+      <g fill="none" stroke="${sh(c,-.3)}" stroke-width="2" stroke-linecap="round"><path d="M26 38 Q31 46 27 52"/><path d="M38 28 Q46 38 41 58"/><path d="M62 28 Q63 36 61 41"/><path d="M76 38 Q82 48 74 60"/><path d="M84 52 Q85 56 82 60"/></g>
+      <path d="M60 90 L66 97 L72 89" fill="${dull}" stroke="${sh(c,-.35)}" stroke-width="1.2"/>
+      <ellipse cx="30" cy="76" rx="6" ry="3.5" fill="#caa9a0" opacity=".8"/><circle cx="82" cy="52" r="3" fill="${sh(c,-.2)}"/>
+      <circle cx="38" cy="66" r="3" fill="#4a3a3a"/><circle cx="64" cy="70" r="5.5" fill="#4a3a3a"/><path d="M42 80 L52 76 L62 82" fill="none" stroke="#4a3a3a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if(p.q) b+=`<text x="50" y="58" font-size="26" font-weight="900" text-anchor="middle" fill="#6b5b8a" opacity=".85" font-family="Arial,sans-serif">?</text>`;
+    return {defs,b};
+  }
+  defs=G(c,id+"a");
+  const pc=sh(c,-.22);
+  if(p.ears==="round") b+=`<circle cx="24" cy="30" r="11" fill="${p.ec}"/><circle cx="76" cy="30" r="11" fill="${p.ec}"/><circle cx="24" cy="30" r="5.5" fill="${p.ei||"#ffc0cb"}"/><circle cx="76" cy="30" r="5.5" fill="${p.ei||"#ffc0cb"}"/>`;
+  if(p.ears==="point") b+=`<path d="M14 42 L20 12 L44 26Z" fill="${p.ec}"/><path d="M86 42 L80 12 L56 26Z" fill="${p.ec}"/><path d="M21 36 L23 20 L36 28Z" fill="#ffb3c9"/><path d="M79 36 L77 20 L64 28Z" fill="#ffb3c9"/>`;
+  if(p.horns) b+=`<path d="M26 34 L20 12 L38 26Z" fill="#fff4d6" stroke="#e6cf9a"/><path d="M74 34 L80 12 L62 26Z" fill="#fff4d6" stroke="#e6cf9a"/>`;
+  if(p.spikes) b+=`<path d="M36 24 L40 12 L45 22 L50 9 L55 22 L60 12 L64 24Z" fill="#2f9a4a"/>`;
+  b+=`<path d="M10 72 C10 40 30 22 50 22 C70 22 90 40 90 72 C90 85 74 91 50 91 C26 91 10 85 10 72Z" fill="url(#${id}a)"/>`;
+  if(p.stripes) b+=`<clipPath id="${id}c"><path d="M10 72 C10 40 30 22 50 22 C70 22 90 40 90 72 C90 85 74 91 50 91 C26 91 10 85 10 72Z"/></clipPath><g clip-path="url(#${id}c)" opacity=".5">${["#ff5f6d","#ffc371","#fff27a","#47e891","#3fa9f5","#b06bff"].map((k,i)=>`<rect x="${i*17-4}" y="10" width="17" height="90" fill="${k}" transform="skewX(-12)"/>`).join("")}</g>`;
+  if(p.stars) b+=[[22,50,1.5],[70,36,1.2],[80,62,1.6],[30,78,1.1],[56,30,1],[44,84,1.3],[62,74,.9]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity=".9"/>`).join("")+`<ellipse cx="50" cy="56" rx="42" ry="8" fill="none" stroke="#c9a7ff" stroke-width="1.2" opacity=".5" transform="rotate(-18 50 56)"/>`;
+  b+=`<g fill="none" stroke="${pc}" stroke-width="2.4" stroke-linecap="round" opacity=".85"><path d="M32 30 Q38 44 33 58"/><path d="M42 25 Q47 42 43 56"/><path d="M50 23 Q53 42 50 55"/><path d="M58 25 Q53 42 57 56"/><path d="M68 30 Q62 44 67 58"/></g>`;
+  b+=gloss(30,44,12,6,-35,.5);
+  if(p.glit) b+=[[26,62],[74,50],[64,80],[38,84],[84,72]].map(([x,y])=>`<path d="M${x} ${y-4} L${x+1.4} ${y-1.4} L${x+4} ${y} L${x+1.4} ${y+1.4} L${x} ${y+4} L${x-1.4} ${y+1.4} L${x-4} ${y} L${x-1.4} ${y-1.4}Z" fill="#fff" opacity=".95"/>`).join("");
+  if(p.crown) b+=`<path d="M33 26 L37 6 L44 17 L50 3 L56 17 L63 6 L67 26Z" fill="#ffd34d" stroke="#e0a800" stroke-width="1.2"/><circle cx="50" cy="8" r="2" fill="#ff5f6d"/>`;
+  const fo={ec:p.fe,ep:p.ep,s:1.05,ch:p.ch};
+  b+=F(50,72,fo);
+  return {defs,b};
+}
+/* ---------- MAT & ANDRE FORMER ---------- */
+const SHAPE={
+ plush, dump,
+ mush:(d,p)=>({defs:G(p.c||"#ff5a5a",d.id+"a")+G("#fff2dc",d.id+"b"),b:`<rect x="32" y="52" width="36" height="38" rx="15" fill="url(#${d.id}b)"/><path d="M10 56 Q10 12 50 12 Q90 12 90 56 Q90 63 82 63 L18 63 Q10 63 10 56Z" fill="url(#${d.id}a)"/><g fill="#fff"><circle cx="30" cy="34" r="6"/><circle cx="56" cy="26" r="5"/><circle cx="72" cy="44" r="6.5"/><circle cx="44" cy="46" r="4"/></g>${gloss(28,26,9,5,-30,.45)}${F(50,76,{s:.95})}`}),
+ avocado:(d,p)=>({defs:G("#2f7d3a",d.id+"a")+G("#bfe58a",d.id+"b")+G("#8a5a35",d.id+"c"),b:`<path d="M50 8 C64 8 70 28 78 48 C90 76 76 93 50 93 C24 93 10 76 22 48 C30 28 36 8 50 8Z" fill="url(#${d.id}a)"/><path d="M50 16 C60 16 65 32 72 50 C82 72 70 86 50 86 C30 86 18 72 28 50 C35 32 40 16 50 16Z" fill="url(#${d.id}b)"/><circle cx="50" cy="68" r="14" fill="url(#${d.id}c)"/>${gloss(44,62,4,3,-30,.5)}${F(50,46,{s:1})}`}),
+ croissant:(d,p)=>({defs:G("#e8944a",d.id+"a"),b:`<ellipse cx="22" cy="64" rx="15" ry="9" transform="rotate(-42 22 64)" fill="url(#${d.id}a)"/><ellipse cx="78" cy="64" rx="15" ry="9" transform="rotate(42 78 64)" fill="url(#${d.id}a)"/><ellipse cx="50" cy="52" rx="34" ry="22" fill="url(#${d.id}a)"/><g stroke="#b86a2a" stroke-width="2" fill="none" opacity=".55" stroke-linecap="round"><path d="M28 36 Q34 52 30 70"/><path d="M72 36 Q66 52 70 70"/><path d="M40 32 Q43 50 40 72"/><path d="M60 32 Q57 50 60 72"/></g>${gloss(38,38,12,5,-10,.45)}${F(50,56,{s:1})}`}),
+ egg:(d,p)=>({defs:G("#fffaf0",d.id+"a"),b:`<path d="M50 8 C74 8 86 40 86 62 C86 82 70 92 50 92 C30 92 14 82 14 62 C14 40 26 8 50 8Z" fill="url(#${d.id}a)" stroke="#ead9b8" stroke-width="1.5"/>${gloss(36,34,7,12,20,.7)}${F(50,60,{s:1.1})}`}),
+ taco:(d,p)=>({defs:G("#ffd24d",d.id+"a"),b:`<path d="M10 74 A40 40 0 0 1 90 74 Z" fill="url(#${d.id}a)" stroke="#e0a800" stroke-width="1.5"/><path d="M14 52 Q22 40 30 50 Q38 38 46 49 Q54 37 62 49 Q70 38 78 50 Q84 44 88 54 L88 60 L12 60Z" fill="#59c26a"/><circle cx="30" cy="56" r="4" fill="#ef4b4b"/><circle cx="52" cy="55" r="4" fill="#ef4b4b"/><circle cx="72" cy="56" r="4" fill="#ef4b4b"/>${gloss(30,40,10,5,-25,.4)}${F(50,72,{s:1})}`}),
+ pizza:(d,p)=>({defs:G("#ffd24d",d.id+"a"),b:`<path d="M10 26 Q50 6 90 26 L54 90 Q50 96 46 90Z" fill="url(#${d.id}a)" stroke="#e0a800" stroke-width="1.5"/><path d="M8 26 Q50 4 92 26 Q92 34 86 34 Q50 16 14 34 Q8 34 8 26Z" fill="#d98b45"/><circle cx="32" cy="42" r="7" fill="#e24b4b"/><circle cx="62" cy="40" r="7" fill="#e24b4b"/><circle cx="48" cy="64" r="6" fill="#e24b4b"/>${F(50,50,{s:.85})}`}),
+ burger:(d,p)=>({defs:G("#e0a05a",d.id+"a"),b:`<path d="M12 44 Q12 12 50 12 Q88 12 88 44Z" fill="url(#${d.id}a)"/><g fill="#fff4cc"><ellipse cx="32" cy="26" rx="3" ry="1.8"/><ellipse cx="52" cy="20" rx="3" ry="1.8"/><ellipse cx="68" cy="30" rx="3" ry="1.8"/></g><path d="M8 46 Q16 56 24 46 Q32 56 40 46 Q48 56 56 46 Q64 56 72 46 Q80 56 92 46 L92 50 L8 50Z" fill="#59c26a"/><path d="M12 52 L88 52 L50 66Z" fill="#ffd24d"/><rect x="10" y="58" width="80" height="14" rx="7" fill="#7b4a2c"/><path d="M12 76 H88 Q88 90 74 90 H26 Q12 90 12 76Z" fill="url(#${d.id}a)"/>${F(50,34,{s:.85})}`}),
+ donut:(d,p)=>({defs:G("#e6a96b",d.id+"a"),b:`<ellipse cx="50" cy="56" rx="42" ry="35" fill="url(#${d.id}a)"/><path d="M11 54 Q14 24 50 22 Q86 24 89 54 Q80 46 74 58 Q66 46 58 60 Q50 48 42 60 Q34 46 26 58 Q18 48 11 54Z" fill="${p.icing||"#ff9ec7"}"/><ellipse cx="50" cy="38" rx="11" ry="7" fill="#d98b45"/><g><rect x="22" y="40" width="7" height="2.6" rx="1.3" fill="#fff" transform="rotate(25 22 40)"/><rect x="68" y="38" width="7" height="2.6" rx="1.3" fill="#6fd0ff" transform="rotate(-30 68 38)"/><rect x="34" y="30" width="7" height="2.6" rx="1.3" fill="#ffe14d" transform="rotate(-10 34 30)"/><rect x="60" y="28" width="7" height="2.6" rx="1.3" fill="#7be87b" transform="rotate(35 60 28)"/></g>${gloss(30,34,9,4,-20,.5)}${F(50,70,{s:1})}`}),
+ lemon:(d,p)=>({defs:G("#ffe14d",d.id+"a"),b:`<path d="M6 58 Q22 28 50 26 Q78 28 94 58 Q78 86 50 88 Q22 86 6 58Z" fill="url(#${d.id}a)" stroke="#e0b800" stroke-width="1.5"/><circle cx="6" cy="58" r="3.5" fill="#f2c500"/><circle cx="94" cy="58" r="3.5" fill="#f2c500"/><path d="M50 26 Q48 12 62 10 Q66 22 50 26Z" fill="#3fae5a"/>${gloss(36,44,12,5,-15,.55)}${F(50,60,{s:1.05})}`}),
+ bagel:(d,p)=>({defs:G("#e0a860",d.id+"a"),b:`<ellipse cx="50" cy="54" rx="42" ry="36" fill="url(#${d.id}a)"/><ellipse cx="50" cy="38" rx="12" ry="8" fill="#b8793a"/><g fill="#fff4cc"><ellipse cx="22" cy="48" rx="2.6" ry="1.4" transform="rotate(30 22 48)"/><ellipse cx="74" cy="42" rx="2.6" ry="1.4" transform="rotate(-30 74 42)"/><ellipse cx="34" cy="30" rx="2.6" ry="1.4"/><ellipse cx="66" cy="28" rx="2.6" ry="1.4" transform="rotate(20 66 28)"/><ellipse cx="84" cy="56" rx="2.6" ry="1.4"/></g>${gloss(30,34,10,4,-20,.45)}${F(50,70,{s:1})}`}),
+ pretzel:(d,p)=>({defs:"",b:`<path d="M28 78 C4 58 12 20 40 22 C56 24 52 46 50 54 C48 46 44 24 60 22 C88 20 96 58 72 78 C64 86 56 82 50 70 C44 82 36 86 28 78Z" fill="none" stroke="#a8622a" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/><path d="M28 78 C4 58 12 20 40 22 C56 24 52 46 50 54 C48 46 44 24 60 22 C88 20 96 58 72 78 C64 86 56 82 50 70 C44 82 36 86 28 78Z" fill="none" stroke="#d68b4a" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><g fill="#fff"><circle cx="22" cy="46" r="1.6"/><circle cx="78" cy="46" r="1.6"/><circle cx="36" cy="30" r="1.6"/><circle cx="64" cy="30" r="1.6"/><circle cx="34" cy="80" r="1.6"/><circle cx="66" cy="80" r="1.6"/></g>${F(50,56,{s:.8,ch:null})}`}),
+ cloud:(d,p)=>({defs:G("#f4faff",d.id+"a"),b:`<g fill="url(#${d.id}a)" stroke="#cfe6f7" stroke-width="1.2"><circle cx="28" cy="62" r="19"/><circle cx="50" cy="46" r="24"/><circle cx="74" cy="60" r="20"/><rect x="26" y="58" width="50" height="24" rx="12"/></g><circle cx="50" cy="46" r="24" fill="url(#${d.id}a)"/>${gloss(40,36,10,5,-25,.7)}${F(50,64,{s:1.05})}`}),
+ sun:(d,p)=>({defs:G("#ffd93d",d.id+"a"),b:`<g stroke="#ff9f43" stroke-width="7" stroke-linecap="round">${[0,45,90,135,180,225,270,315].map(a=>`<path d="M50 ${50-32} L50 ${50-40}" transform="rotate(${a} 50 50)"/>`).join("")}</g><circle cx="50" cy="50" r="28" fill="url(#${d.id}a)"/>${gloss(40,38,9,5,-25,.5)}${F(50,52,{s:1.1})}`}),
+ cube:(d,p)=>({defs:G(p.c,d.id+"a"),b:`${p.glow?`<circle cx="50" cy="56" r="46" fill="${p.c}" opacity=".25"/>`:""}<rect x="14" y="20" width="72" height="70" rx="16" fill="url(#${d.id}a)" opacity=".92" stroke="${sh(p.c,-.25)}" stroke-width="1.5"/><rect x="20" y="26" width="26" height="12" rx="6" fill="#fff" opacity=".5" transform="rotate(-8 33 32)"/>${F(50,58,{s:1.15,ec:p.glow?"#1d4f2c":undefined})}`}),
+ ball:(d,p)=>({defs:G(p.c,d.id+"a"),b:`${p.fuzz?`<g stroke="${sh(p.c,-.12)}" stroke-width="2.4" stroke-linecap="round">${Array.from({length:44},(_,i)=>{const a=i/44*6.283,r1=34,r2=41+(i%3)*2;return `<path d="M${50+r1*Math.cos(a)} ${54+r1*Math.sin(a)} L${50+r2*Math.cos(a)} ${54+r2*Math.sin(a)}"/>`}).join("")}</g>`:""}<circle cx="50" cy="54" r="36" fill="url(#${d.id}a)"/>${p.snow?`<g fill="#fff"><path d="M26 34 l2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2z"/><path d="M72 66 l2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2z"/><path d="M70 30 l1.5 3 3 1.5 -3 1.5 -1.5 3 -1.5 -3 -3 -1.5 3 -1.5z"/></g>`:""}${gloss(36,38,12,7,-30,.55)}${F(50,56,{s:1.1})}`}),
+ gumdrop:(d,p)=>({defs:G(p.c,d.id+"a"),b:`<path d="M12 82 Q12 22 50 22 Q88 22 88 82 Q88 90 80 90 L20 90 Q12 90 12 82Z" fill="url(#${d.id}a)"/><g fill="#fff" opacity=".6">${Array.from({length:26},(_,i)=>`<circle cx="${18+((i*37)%64)}" cy="${34+((i*53)%52)}" r="1.1"/>`).join("")}</g>${gloss(36,40,11,6,-25,.5)}${F(50,64,{s:1.1})}`}),
+ cone:(d,p)=>({defs:G(p.c,d.id+"a")+G("#e8b86a",d.id+"b"),b:`<path d="M24 56 L76 56 L50 96Z" fill="url(#${d.id}b)"/><g stroke="#c08a3a" stroke-width="1.4" opacity=".6"><path d="M34 60 L58 84 M46 58 L64 76 M58 58 L66 68 M66 58 L44 84 M54 58 L36 76 M42 58 L34 68"/></g><circle cx="50" cy="36" r="27" fill="url(#${d.id}a)"/><path d="M24 44 Q28 62 34 52 Q40 66 46 52 Q54 62 58 52 Q66 66 70 52 Q76 62 76 44Z" fill="${sh(p.c,.05)}"/>${gloss(38,24,9,5,-30,.55)}${F(50,38,{s:1})}`}),
+ gummy:(d,p)=>({defs:G(p.c,d.id+"a"),b:`<g fill="url(#${d.id}a)" stroke="${sh(p.c,-.25)}" stroke-width="1.5" opacity=".95"><circle cx="30" cy="20" r="9"/><circle cx="70" cy="20" r="9"/><ellipse cx="50" cy="66" rx="25" ry="26"/><ellipse cx="22" cy="60" rx="9" ry="13" transform="rotate(25 22 60)"/><ellipse cx="78" cy="60" rx="9" ry="13" transform="rotate(-25 78 60)"/><ellipse cx="36" cy="90" rx="10" ry="8"/><ellipse cx="64" cy="90" rx="10" ry="8"/><circle cx="50" cy="38" r="22"/></g>${gloss(40,30,8,5,-30,.55)}${F(50,40,{s:.9})}`}),
+ banana:(d,p)=>({defs:"",b:`<path d="M18 30 Q20 78 66 82 Q82 82 90 70" fill="none" stroke="#d9a800" stroke-width="30" stroke-linecap="round"/><path d="M18 30 Q20 78 66 82 Q82 82 90 70" fill="none" stroke="#ffe14d" stroke-width="26" stroke-linecap="round"/><path d="M18 30 Q19 40 21 47" fill="none" stroke="#7a5a2a" stroke-width="12" stroke-linecap="round"/><path d="M24 40 Q28 70 60 74" fill="none" stroke="#fff6b0" stroke-width="5" stroke-linecap="round" opacity=".7"/>${F(46,70,{s:.85})}`}),
+ drop:(d,p)=>({defs:G(p.c,d.id+"a"),b:`<path d="M50 6 C60 28 86 44 86 66 C86 84 70 94 50 94 C30 94 14 84 14 66 C14 44 40 28 50 6Z" fill="url(#${d.id}a)" opacity=".93" stroke="${sh(p.c,-.2)}" stroke-width="1.5"/>${gloss(34,60,6,12,20,.6)}${F(50,68,{s:1.1})}`}),
+ mochi:(d,p)=>({defs:G(p.c,d.id+"a"),b:`<rect x="10" y="30" width="80" height="58" rx="28" fill="url(#${d.id}a)"/>${gloss(32,42,13,6,-10,.55)}<path d="M62 26 Q70 14 80 20 Q74 30 62 26Z" fill="#59c26a"/>${F(50,62,{s:1.1})}`}),
+ onigiri:(d,p)=>({defs:G("#fff",d.id+"a"),b:`<path d="M50 10 Q60 10 66 24 L88 76 Q94 90 78 90 L22 90 Q6 90 12 76 L34 24 Q40 10 50 10Z" fill="url(#${d.id}a)" stroke="#e3e3ea" stroke-width="1.5"/><path d="M27 68 H73 L80 90 H20Z" fill="#2a3a30"/>${gloss(40,30,6,10,25,.6)}${F(50,52,{s:1.05})}`}),
+ boba:(d,p)=>({defs:G(p.c||"#e6c08f",d.id+"a"),b:`<rect x="46" y="4" width="8" height="30" rx="4" fill="#ff6fa5" transform="rotate(8 50 20)"/><path d="M20 30 H80 L72 90 Q71 94 66 94 H34 Q29 94 28 90Z" fill="#f4fbff" stroke="#cfe0ea" stroke-width="1.5"/><path d="M22 44 H78 L72 90 Q71 94 66 94 H34 Q29 94 28 90Z" fill="url(#${d.id}a)"/><path d="M16 30 Q50 14 84 30 Z" fill="#fff" stroke="#cfe0ea" stroke-width="1.5"/><g fill="#3a2a2a"><circle cx="38" cy="86" r="4.5"/><circle cx="50" cy="88" r="4.5"/><circle cx="62" cy="86" r="4.5"/><circle cx="44" cy="80" r="4"/><circle cx="57" cy="80" r="4"/></g>${F(50,60,{s:.95})}`}),
+ cake:(d,p)=>({defs:G("#ffdfe7",d.id+"a"),b:`<path d="M14 82 L14 52 Q14 44 22 42 L80 32 Q88 31 88 40 L88 82 Q88 90 80 90 L22 90 Q14 90 14 82Z" fill="url(#${d.id}a)" stroke="#f0b8c8" stroke-width="1.5"/><path d="M14 52 Q14 44 22 42 L80 32 Q88 31 88 40 L88 48 Q76 56 66 46 Q56 58 46 48 Q36 58 26 50 Q18 56 14 52Z" fill="#fff"/><circle cx="64" cy="30" r="10" fill="#ef4b4b"/><path d="M60 22 Q64 16 70 22 Q64 26 60 22Z" fill="#3fae5a"/><g fill="#ffd0d8"><circle cx="64" cy="30" r="1.3" fill="#ffd0d8"/></g>${F(48,70,{s:1})}`}),
+ pudding:(d,p)=>({defs:G("#ffe08a",d.id+"a"),b:`<path d="M20 90 L26 44 H74 L80 90Z" fill="url(#${d.id}a)" stroke="#e8c04a" stroke-width="1.5"/><path d="M24 54 Q24 34 50 34 Q76 34 76 54 Q70 50 64 58 Q58 48 50 60 Q42 48 36 58 Q30 50 24 54Z" fill="#a8672d"/><circle cx="50" cy="30" r="8" fill="#ef4b4b"/><path d="M50 22 Q52 14 58 12" fill="none" stroke="#3fae5a" stroke-width="2"/>${F(50,72,{s:1})}`}),
+ paw:(d,p)=>({defs:G(p.c,d.id+"a"),b:`<ellipse cx="50" cy="66" rx="30" ry="25" fill="url(#${d.id}a)"/><ellipse cx="20" cy="38" rx="10" ry="13" transform="rotate(-20 20 38)" fill="url(#${d.id}a)"/><ellipse cx="38" cy="22" rx="10" ry="13" fill="url(#${d.id}a)"/><ellipse cx="62" cy="22" rx="10" ry="13" fill="url(#${d.id}a)"/><ellipse cx="80" cy="38" rx="10" ry="13" transform="rotate(20 80 38)" fill="url(#${d.id}a)"/>${gloss(38,56,11,6,-25,.5)}${F(50,68,{s:1.05})}`}),
+ butter:(d,p)=>{ const c=p.c, id=d.id; const W=p.xl?1:0;
+   const top=p.gold?"#fff0a0":sh(c,.35), side=sh(c,-.18);
+   let ex="";
+   if(p.drip) ex+=`<path d="M22 32 Q22 44 28 40 Q30 52 36 40 Q40 46 44 38" fill="#ffb347"/>`;
+   if(p.seeds) ex+=`<g fill="#ff5a7a">${[[24,56],[40,50],[58,58],[70,50],[34,72],[62,74]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="1.6" ry="2.4"/>`).join("")}</g>`;
+   if(p.dots) ex+=`<g fill="#6f6ad8" opacity=".55">${[[24,56],[40,50],[58,58],[70,50],[34,72],[62,74]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.2"/>`).join("")}</g>`;
+   if(p.chips) ex+=`<g fill="#4a2f1a">${[[24,56],[42,52],[60,60],[70,50],[34,74],[62,76]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="3" ry="2.2"/>`).join("")}</g>`;
+   if(p.swirl) ex+=`<path d="M12 60 Q30 40 46 62 T78 54" fill="none" stroke="#ff6fb5" stroke-width="9" opacity=".7"/><path d="M12 78 Q34 60 50 80 T78 72" fill="none" stroke="#5fb8ff" stroke-width="9" opacity=".7"/><path d="M12 48 Q36 36 54 50 T78 44" fill="none" stroke="#ffe14d" stroke-width="8" opacity=".7"/>`;
+   if(p.rainbow) ex+=["#ff5f6d","#ffa14d","#ffe14d","#5fe08a","#4aa8ff","#a87bff"].map((k,i)=>`<rect x="12" y="${44+i*7}" width="66" height="7" fill="${k}" opacity=".75"/>`).join("");
+   return {defs:G(c,id+"a")+`<clipPath id="${id}c"><rect x="12" y="44" width="66" height="44" rx="8"/></clipPath>`,b:`${p.xl?"":""}<path d="M78 44 L94 30 L94 72 L78 88Z" fill="${side}"/><path d="M12 44 L28 30 L94 30 L78 44Z" fill="${top}"/><rect x="12" y="44" width="66" height="44" rx="8" fill="url(#${id}a)"/><g clip-path="url(#${id}c)">${ex}</g>${p.drip?ex.slice(0,0):""}${p.gold?`<path d="M14 50 L30 46 M60 84 L74 80" stroke="#fff" stroke-width="3" opacity=".7"/>`:""}<path d="M12 56 L18 56 L18 76 L12 76Z" fill="#cfe3ff" opacity="${p.label?1:0}"/>${gloss(26,52,9,3.5,-8,.5)}${p.gold||p.rainbow||p.swirl?"":""}${F(45,66,{s:1.05,ec:p.chips?"#fff":undefined})}${p.gold?`<path d="M82 14 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#fff4a0"/>`:""}`};}
+};
+
+SHAPE.nut=(d,p)=>{const id=d.id,c=p.c||"#e8c48a",t=p.trans;return {defs:G(c,id+"a"),b:`<path d="M30 14 C48 8 60 18 58 36 C56 44 62 48 72 50 C86 54 92 72 78 84 C66 94 46 90 38 78 C34 70 32 62 36 56 C20 50 8 36 16 24 C20 18 24 16 30 14Z" fill="url(#${id}a)" opacity="${t?.85:1}" stroke="${sh(c,-.28)}" stroke-width="1.5"/><g fill="${sh(c,-.22)}" opacity=".55">${[[26,28],[40,22],[22,38],[34,40],[66,62],[76,72],[58,76],[70,84],[48,62]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.5"/>`).join("")}</g>${gloss(32,28,8,4,-30,.5)}${F(56,70,{s:.9})}`}};
+SHAPE.cheese=(d,p)=>{const id=d.id,c=p.c||"#ffd34d";return {defs:G(c,id+"a"),b:`<path d="M8 74 L58 22 Q70 12 82 22 L92 36 Q94 44 90 50 L90 80 Q90 90 80 90 L18 90 Q8 90 8 80Z" fill="url(#${id}a)" stroke="${sh(c,-.25)}" stroke-width="1.5"/><path d="M58 22 L92 36 L90 50 L8 74Z" fill="${sh(c,.3)}" opacity=".5"/><g fill="${sh(c,-.3)}" opacity=".7"><circle cx="26" cy="78" r="5"/><circle cx="66" cy="64" r="6"/><circle cx="80" cy="80" r="4"/><circle cx="52" cy="40" r="3.5"/></g>${gloss(34,60,9,4,-35,.5)}${F(48,74,{s:.9})}`}};
+SHAPE.strawb=(d,p)=>{const id=d.id,c=p.c||"#ff5f7a";return {defs:G(c,id+"a"),b:`<path d="M50 94 C20 82 8 56 14 38 C20 24 36 22 50 28 C64 22 80 24 86 38 C92 56 80 82 50 94Z" fill="url(#${id}a)" stroke="${sh(c,-.25)}" stroke-width="1.5"/><path d="M50 28 L34 12 L44 22 L50 6 L56 22 L66 12Z" fill="#3fae5a"/><g fill="#ffe9a0">${[[30,46],[42,40],[58,40],[70,46],[36,60],[50,54],[64,60],[44,72],[58,72],[50,84]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="1.5" ry="2.2"/>`).join("")}</g>${gloss(32,44,7,10,20,.45)}${F(50,64,{s:.9})}`}};
+SHAPE.potato=(d,p)=>{const id=d.id,c=p.c||"#d9b077";return {defs:G(c,id+"a"),b:`<path d="M16 62 C6 40 24 20 50 22 C78 20 96 40 88 64 C82 86 56 94 34 88 C24 84 18 74 16 62Z" fill="url(#${id}a)" stroke="${sh(c,-.28)}" stroke-width="1.5"/><g fill="${sh(c,-.25)}" opacity=".6"><ellipse cx="28" cy="40" rx="3" ry="2"/><ellipse cx="72" cy="36" rx="3.5" ry="2"/><ellipse cx="78" cy="68" rx="3" ry="2"/><ellipse cx="30" cy="76" rx="3" ry="2"/><ellipse cx="58" cy="84" rx="3" ry="2"/></g>${gloss(34,36,10,5,-20,.45)}${F(50,60,{s:1})}`}};
+SHAPE.capy=(d,p)=>{const id=d.id,c=p.c||"#c99a6b";return {defs:G(c,id+"a"),b:`<ellipse cx="50" cy="66" rx="40" ry="26" fill="url(#${id}a)"/><rect x="14" y="30" width="62" height="42" rx="22" fill="url(#${id}a)"/><circle cx="22" cy="30" r="6" fill="${sh(c,-.15)}"/><circle cx="62" cy="28" r="6" fill="${sh(c,-.15)}"/><ellipse cx="30" cy="58" rx="16" ry="12" fill="${sh(c,.18)}"/><ellipse cx="22" cy="53" rx="5" ry="3.5" fill="#5a3a2a"/>${gloss(42,34,10,4,-10,.45)}<circle cx="38" cy="44" r="2.8" fill="#3a2a35"/><circle cx="56" cy="44" r="2.8" fill="#3a2a35"/><ellipse cx="68" cy="82" rx="8" ry="4" fill="${sh(c,-.15)}"/><path d="M26 66 Q31 70 36 66" fill="none" stroke="#3a2a35" stroke-width="1.8" stroke-linecap="round"/>`}};
+SHAPE.duck=(d,p)=>{const id=d.id,c=p.c||"#ffe45e";return {defs:G(c,id+"a"),b:`<ellipse cx="46" cy="70" rx="38" ry="22" fill="url(#${id}a)"/><path d="M78 62 Q92 56 90 70 Q84 68 78 70Z" fill="${sh(c,-.12)}"/><circle cx="40" cy="36" r="24" fill="url(#${id}a)"/><path d="M58 38 Q76 34 78 44 Q66 50 58 46Z" fill="#ff9d2e"/><ellipse cx="42" cy="72" rx="16" ry="9" fill="${sh(c,-.1)}" opacity=".6"/>${gloss(30,26,8,4,-30,.55)}${F(36,38,{s:.8,sp:8})}`}};
+SHAPE.melon=(d,p)=>{const id=d.id,c=p.c||"#f6d98a";return {defs:G(c,id+"a"),b:`<ellipse cx="50" cy="56" rx="42" ry="34" fill="url(#${id}a)"/><g stroke="${sh(c,-.3)}" stroke-width="2" opacity=".55" stroke-linecap="round"><path d="M30 28 Q24 40 28 50"/><path d="M50 22 L50 40"/><path d="M70 28 Q76 40 72 50"/><path d="M18 62 Q16 72 22 78"/><path d="M82 62 Q84 72 78 78"/></g>${gloss(32,38,11,5,-20,.5)}${F(50,64,{s:1})}`}};
+/* spesifikasjon: id -> [farge, form, parametere] */
+const SPEC={
+ "sq-cam":["oransje","plush",{c:"#f4a45b",belly:"#ffe8cc",ears:"point",acc:["whisk"]}],
+ "sq-wendy":["gronn","plush",{c:"#7ed36b",belly:"#d9f5c8",acc:["frog"],noeyes:true,fy:62}],
+ "sq-connor":["hvit","plush",{c:"#f6f6f8",ears:"floppy",ec2:"#2d2d36",acc:["spots"],nomouth:true}],
+ "sq-maui":["gul","plush",{c:"#ffd93d",acc:["pine","pinex"]}],
+ "sq-hans":["brun","plush",{c:"#8b6a4f",acc:["spikes","faceov"],face:"#f1dcc4"}],
+ "sq-winston":["lilla","plush",{c:"#9b7be6",belly:"#e5d9ff",ears:"tuft",acc:["beak"],nomouth:true}],
+ "sq-fifi":["oransje","plush",{c:"#f08a3c",belly:"#fff",ears:"point",ec2:"#f08a3c",ei:"#fff"}],
+ "sq-malcolm":["rod","mush",{}],
+ "sq-archie":["rosa","plush",{c:"#ff9ec7",acc:["gills"],belly:"#ffd6e8"}],
+ "sq-lola":["lilla","plush",{c:"#d9c2ff",ears:"round",ei:"#f3e6ff",acc:["mane","horn"]}],
+ "sq-jack":["svart","plush",{c:"#3b3b4a",ears:"point",ei:"#ff8fc7",fe:"#ffe066",acc:["whisk"]}],
+ "sq-belana":["bla","plush",{c:"#7bc4ff",acc:["wings"],belly:"#d8eeff"}],
+ "sq-leonard":["regnbue","plush",{c:"#ffd36b",ears:"round",ei:"#ffb3c9",acc:["mane"]}],
+ "sq-gordon":["bla","plush",{c:"#5aa9e6",belly:"#e8f4ff",acc:["fin"]}],
+ "sq-rosie":["rosa","plush",{c:"#ffb3c9",ears:"point",ec2:"#ffa0bd",acc:["pig"],nomouth:true}],
+ "sq-avery":["gul","plush",{c:"#ffe066",acc:["beak"],nomouth:true,belly:"#fff3b0"}],
+ "sq-sheldon":["brun","plush",{c:"#e8d2ae",acc:["shell"]}],
+ "sq-hanna":["lilla","plush",{c:"#b69cf0",ears:"round",ei:"#e8dcff",acc:["hippo"],nomouth:true}],
+ "sq-cinna":["hvit","plush",{c:"#ffffff",ears:"floppy",ec2:"#e3f3ff",acc:[]}],
+ "sq-hk":["hvit","plush",{c:"#ffffff",ears:"point",ec2:"#fff",ei:"#ffe0ea",acc:["bow","whisk","nose"],nomouth:true}],
+ "jc-avocado":["gronn","avocado",{}],
+ "jc-croissant":["oransje","croissant",{}],
+ "jc-egg":["hvit","egg",{}],
+ "jc-taco":["gul","taco",{}],
+ "jc-bunny":["rosa","plush",{c:"#f7c6d9",ears:"long",ec2:"#f7c6d9",ei:"#ffe6ef",belly:"#fff0f5"}],
+ "jc-bart":["brun","plush",{c:"#b98a5e",ears:"round",ei:"#e6c9a3",acc:["muzzle"],nomouth:true}],
+ "jc-odell":["lilla","plush",{c:"#c79bf0",acc:["tent"],belly:"#e8d3ff"}],
+ "jc-pizza":["gul","pizza",{}],
+ "jc-doughnut":["rosa","donut",{icing:"#ff9ec7"}],
+ "jc-lemon":["gul","lemon",{}],
+ "jc-burger":["brun","burger",{}],
+ "jc-bagel":["oransje","bagel",{}],
+ "jc-pretzel":["brun","pretzel",{}],
+ "jc-cloud":["bla","cloud",{}],
+ "jc-sun":["gul","sun",{}],
+ "nd-cube":["bla","cube",{c:"#6cc8ff"}],
+ "nd-gumdrop":["rosa","gumdrop",{c:"#ff8fc7"}],
+ "nd-dohnut":["rosa","donut",{icing:"#ff7fb5"}],
+ "nd-snow":["hvit","ball",{c:"#eaf6ff",snow:1}],
+ "nd-cats":["oransje","plush",{c:"#ff9f43",ears:"point",ei:"#ffd0a0",cool:true,acc:["whisk"],nomouth:false}],
+ "nd-glow":["gronn","cube",{c:"#7dff9a",glow:1}],
+ "nd-glob":["lilla","ball",{c:"#a78bfa"}],
+ "nd-cone":["rosa","cone",{c:"#ffa6cf"}],
+ "nd-gummy":["rod","gummy",{c:"#ff4d5e"}],
+ "nd-fuzz":["lilla","ball",{c:"#c79bff",fuzz:1}],
+ "nd-banana":["gul","banana",{}],
+ "nd-dream":["bla","drop",{c:"#bfe6ff"}],
+ "tb-dumpling":["hvit","dump",{c:"#fff1dc"}],
+ "tb-mochi":["rosa","mochi",{c:"#ffd0e4"}],
+ "tb-onigiri":["hvit","onigiri",{}],
+ "tb-boba":["brun","boba",{}],
+ "tb-cake":["rosa","cake",{}],
+ "tb-dragon":["gronn","dump",{c:"#6fd58f",horns:1,spikes:1}],
+ "tb-king":["gull","dump",{c:"#ffe27a",crown:1}],
+ "tb-bear":["brun","plush",{c:"#b9885c",ears:"round",ei:"#e8c9a5",acc:["muzzle"],nomouth:true,rx:34,ry:28}],
+ "tb-chick":["gul","plush",{c:"#ffe45e",acc:["beak","chickwing"],nomouth:true}],
+ "tb-bao":["hvit","dump",{c:"#fffaf2"}],
+ "tb-paw":["rosa","paw",{c:"#ffb0d4"}],
+ "tb-pudding":["gul","pudding",{}],
+ "tb-cat":["oransje","plush",{c:"#ffb066",ears:"point",ei:"#ffd5b3",acc:["whisk"],rx:34,ry:28}],
+ "sh-kitty":["hvit","plush",{c:"#ffffff",ears:"point",ec2:"#fff",ei:"#ffe0ea",acc:["bow","whisk","nose"],nomouth:true,rx:36,ry:28}],
+ "sh-melody":["rosa","plush",{c:"#ffc1da",ears:"long",ec2:"#ffc1da",ei:"#ff8fb8",acc:["faceov","bowp"],face:"#fff",nomouth:false}],
+ "sh-kuromi":["svart","plush",{c:"#3b3b4a",ears:"point",ei:"#ff8fc7",acc:["faceov","skull"],face:"#fff"}],
+ "sh-cinna":["bla","plush",{c:"#ffffff",ears:"floppy",ec2:"#bfe3ff",acc:[],rx:36,ry:28}],
+ "sh-keroppi":["gronn","plush",{c:"#6fd58a",acc:["frog"],noeyes:true,fy:62,belly:"#dff7e5",rx:36,ry:28}],
+ "sh-pochacco":["hvit","plush",{c:"#ffffff",ears:"floppy",ec2:"#2d2d36",acc:["nose"],nomouth:false,rx:36,ry:28}],
+ "sh-pompom":["gul","plush",{c:"#ffe08a",ears:"floppy",ec2:"#c9894a",acc:["beret"],rx:36,ry:28}],
+ "sh-badtz":["svart","plush",{c:"#3b3b4a",acc:["tuftb","faceov"],face:"#fff",rx:36,ry:28,after:`<ellipse cx="50" cy="68" rx="8" ry="3.6" fill="#ffc61a"/>`,nomouth:true}],
+ "ls-waffle":["oransje","plush",{c:"#f2c48a",ears:"long",ec2:"#f2c48a",ei:"#ffe3c4",acc:["waffle"]}],
+ "ls-pudding":["gul","plush",{c:"#ffe08a",ears:"round",ei:"#ffd0a0",acc:["caramel"]}],
+ "ls-cookie":["brun","plush",{c:"#d9a76a",ears:"point",ei:"#f1d1a5",acc:["chips"],fe:"#4a2f1a"}],
+ "ls-donut":["rosa","plush",{c:"#ffe45e",acc:["beak","icing"],nomouth:true}],
+ "md-pink":["rosa","dump",{c:"#ffb3d4"}],
+ "md-blue":["bla","dump",{c:"#9ad0ff"}],
+ "md-yellow":["gul","dump",{c:"#ffe45e"}],
+ "md-green":["gronn","dump",{c:"#9be29b"}],
+ "md-purple":["lilla","dump",{c:"#c9a8ff"}],
+ "md-white":["hvit","dump",{c:"#fffdf8"}],
+ "md-panda":["svart","dump",{c:"#fbfbfb",ears:"round",ec:"#2d2d36",ei:"#2d2d36",ep:1,ch:"#ff9bb5"}],
+ "md-bear":["brun","dump",{c:"#c9966a",ears:"round",ec:"#c9966a",ei:"#f0d6b8"}],
+ "md-cat":["oransje","dump",{c:"#ffb066",ears:"point",ec:"#ffb066"}],
+ "md-glitter":["regnbue","dump",{c:"#fde8ff",stripes:1,glit:1}],
+ "md-galaxy":["lilla","dump",{c:"#4a3a8a",stars:1,fe:"#fff",ch:"#b48aff"}],
+ "md-gold":["gull","dump",{c:"#ffd34d",glit:1,crown:1}],
+ "fk-dump":[null,"dump",{c:"#ece6d6",fake:1}],
+ "fk-bao":[null,"dump",{c:"#e9e9ec",fake:1}],
+ "fk-mystery":[null,"dump",{c:"#d9d2ea",fake:1,q:1}],
+ "fk-taba":[null,"dump",{c:"#d9c8a8",fake:1}],
+ "fk-gold":[null,"dump",{c:"#d9c978",fake:1}],
+ "bt-stick":["gul","butter",{c:"#ffe27a",label:1}],
+ "bt-straw":["rosa","butter",{c:"#ffb3c9",seeds:1}],
+ "bt-blue":["bla","butter",{c:"#a9c4ff",dots:1}],
+ "bt-tiedye":["regnbue","butter",{c:"#fff0c9",swirl:1}],
+ "bt-xl":["gul","butter",{c:"#ffd95a",xl:1}],
+ "bt-matcha":["gronn","butter",{c:"#b6e08a"}],
+ "bt-choc":["brun","butter",{c:"#a8764c",chips:1}],
+ "bt-honey":["oransje","butter",{c:"#ffc15e",drip:1}],
+ "bt-rainbow":["regnbue","butter",{c:"#fff6e0",rainbow:1}],
+ "bt-gold":["gull","butter",{c:"#ffd34d",gold:1}],
+ "cr-peanut":["brun","nut",{c:"#e8c48a"}],
+ "cr-melon":["gul","melon",{c:"#f6d98a"}],
+ "cr-straw":["rosa","strawb",{c:"#ffa5b8"}],
+ "vs-peanut":["brun","nut",{c:"#f3dcae",trans:1}],
+ "vs-cheese":["gul","cheese",{c:"#ffd34d"}],
+ "vs-potato":["brun","potato",{c:"#e6c48a"}],
+ "vs-straw":["rod","strawb",{c:"#ff6f86"}],
+ "sz-duck":["gul","duck",{c:"#ffe45e"}],
+ "sz-butter":["gul","butter",{c:"#ffe27a",label:1}],
+ "tb-capy":["brun","capy",{c:"#c99a6b"}]
+};
+const ALLC=["rosa","rod","oransje","gul","gronn","bla","lilla","brun","hvit"];
+const MULTI={
+ "tb-dumpling":["hvit","rosa","gul","gronn","bla","lilla","oransje"],"tb-bao":["hvit","rosa","gul","gronn","bla","lilla"],
+ "tb-mochi":["rosa","hvit","gronn","bla","lilla","gul"],"tb-bear":["brun","hvit","rosa","bla","lilla"],"tb-cat":["oransje","hvit","svart","brun","rosa","bla"],
+ "tb-chick":["gul","rosa","bla","hvit","lilla"],"tb-paw":["rosa","bla","lilla","gul","gronn","hvit"],"tb-boba":["brun","rosa","gronn","lilla"],
+ "nd-cube":["bla","rosa","lilla","gronn","gul","oransje"],"nd-gumdrop":["rosa","bla","gul","gronn","lilla","rod"],"nd-glob":["lilla","bla","rosa","gronn","gul","oransje"],
+ "nd-fuzz":["lilla","rosa","bla","gronn","gul"],"nd-dream":["bla","rosa","lilla","gronn","gul"],"nd-cone":["rosa","gul","bla","lilla","gronn"],
+ "nd-cats":["oransje","rosa","lilla","gronn","bla"],"nd-gummy":["rod","gronn","gul","oransje","bla"],"nd-snow":["hvit","bla"],
+ "nd-dohnut":["rosa","brun","bla","lilla","gul"],"jc-doughnut":["rosa","brun","bla","lilla","gul"],
+ "bt-stick":["gul","hvit","rosa","bla","gronn"],"bt-xl":["gul","rosa","bla","lilla","gronn","oransje"],
+ "jc-bunny":["rosa","hvit","brun","bla","gul","lilla"],"jc-bart":["brun","hvit","rosa","bla","gronn"],"jc-odell":["lilla","rosa","oransje","bla"],"jc-cloud":["bla","hvit","rosa"],
+ "sq-cam":["oransje","hvit","svart"],"sq-wendy":["gronn","bla"],"sq-hans":["brun","hvit"],"sq-winston":["lilla","brun","bla"],"sq-archie":["rosa","bla","lilla"],
+ "sq-gordon":["bla","gronn","rosa"],"sq-rosie":["rosa","hvit"],"sq-avery":["gul","hvit"],"sq-hanna":["lilla","rosa","bla"],"sq-lola":["lilla","rosa","bla"],"sq-belana":["bla","rosa"],
+ "ls-cookie":["brun","hvit"],"md-cat":["oransje","hvit","svart"],"md-bear":["brun","hvit"],"sq-malcolm":["rod","lilla","oransje"],
+ "cr-peanut":["brun","hvit","rosa","gul"],"cr-melon":["gul","rosa","gronn","bla"],"cr-straw":["rosa","rod","lilla"],
+ "vs-peanut":["brun","rosa","bla","gul","gronn"],"vs-cheese":["gul","oransje","hvit","rosa"],"vs-potato":["brun","gul","rosa","lilla"],"vs-straw":["rod","rosa","lilla","bla"],
+ "sz-duck":["gul","rosa","bla","gronn","lilla","hvit"],"sz-butter":["gul","rosa","bla","gronn","lilla"],"tb-capy":["brun","rosa","gronn","bla","gul"]
+};
+for(const d of CATALOG){ const sp=SPEC[d.id]; d.col=sp?sp[0]:null; d.cols=MULTI[d.id]||[d.col]; if(d.cols.indexOf(d.col)<0) d.cols.unshift(d.col); }
+const rollColor=d=>d.cols[Math.floor(Math.random()*d.cols.length)];
+const itemCol=it=>it.k||DEF[it.id].col;
+const _artCache={};
+function artSVG(d,k){
+  const sp=SPEC[d.id], base=sp?sp[0]:null; k=k||base;
+  const key=d.id+"|"+k; if(_artCache[key]) return _artCache[key];
+  let inner="";
+  if(sp){ try{
+    const p=Object.assign({},sp[2]), orig=p.c;
+    if(k&&base&&k!==base&&COLHEX[k]){ p.c=COLHEX[k]; if(p.belly) p.belly=sh(p.c,.55); if(p.ec2===orig) p.ec2=undefined; if(sp[1]==="donut") p.icing=COLHEX[k]; }
+    _dk=lum(p.c||"#ffffff")<110;
+    const d2=Object.assign({},d,{id:d.id+"_"+(k||"x")});
+    const r=SHAPE[sp[1]](d2,p); inner=`<defs>${r.defs||""}</defs>${r.b}`; _dk=false;
+  }catch(e){ console.error("art",d.id,e); } }
+  const svg=`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="50" cy="95" rx="30" ry="3.5" fill="#000" opacity=".12"/>${inner}</svg>`;
+  return _artCache[key]=svg;
+}
+
+if(CATALOG.length!==99) console.warn("Katalog har",CATALOG.length,"squishies");
+const FAKE_PRICE=15, FAKE_VALUE=10;
+const priceOf=d=>d.fake?FAKE_PRICE:TIERS[d.tier].price;
+
+/* ---------- LAGERSTATUS (felles for alle, regnes ut av klokka) ---------- */
+const SLOT=3*3600*1000, STOCK_P=[0.9,0.75,0.55,0.3,0];
+const PERMA=new Set(["sq-jack","jc-odell","nd-glow"]);   // alltid utsolgt (i tillegg til alle legendariske)
+const MD_KEY="md-blind", MD_P=0.6;
+function hsh(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function stockP(d){ return d.fake?1 : (PERMA.has(d.id)||d.tier>=4)?0 : STOCK_P[d.tier]; }
+function inStockAt(key,p,t){ if(p>=1) return true; if(p<=0) return false; const off=hsh(key)%SLOT, slot=Math.floor((t-off)/SLOT); return (hsh(key+"|"+slot)%1000)/1000<p; }
+function stockInfo(key,p,t=Date.now()){
+  if(p>=1) return {on:true};
+  if(p<=0) return {on:false,never:true};
+  const off=hsh(key)%SLOT, slot=Math.floor((t-off)/SLOT);
+  if(!inStockAt(key,p,t)){
+    for(let k=1;k<=80;k++){ if(inStockAt(key,p,off+(slot+k)*SLOT+1)) return {on:false,next:off+(slot+k)*SLOT}; }
+    return {on:false,never:true};
+  }
+  const start=off+slot*SLOT, fresh=!inStockAt(key,p,start-1)&&(t-start)<45*60*1000;
+  let end=null; for(let k=1;k<=80;k++){ if(!inStockAt(key,p,off+(slot+k)*SLOT+1)){ end=off+(slot+k)*SLOT; break; } }
+  return {on:true,fresh,start,end};
+}
+const stockOf=d=>stockInfo(d.id,stockP(d));
+function fmtCd(ms){ ms=Math.max(0,ms); const t=Math.ceil(ms/1000), h=Math.floor(t/3600), m=Math.floor(t%3600/60), sec=t%60; return h?`${h}t ${String(m).padStart(2,"0")}m`:`${m}m ${String(sec).padStart(2,"0")}s`; }
+
+const BOXES = [
+  {id:"liten", name:"Mysterieboks", e:"🎁", cls:"b1", price:100, count:1, odds:[70,25,5,0,0], vboost:1, desc:"1 squishy · mest vanlige"},
+  {id:"stor",  name:"Superboks",    e:"💜", cls:"b2", price:300, count:2, odds:[30,40,22,7,1], vboost:1.5, desc:"2 squishies · sjanse for episk!"},
+  {id:"mega",  name:"Megaboks",     e:"🌟", cls:"b3", price:800, count:3, odds:[0,20,45,28,7], vboost:2, desc:"3 squishies · høy sjanse for legendarisk"},
+];
+
+/* =========================================================
+   QUIZ
+   ========================================================= */
+// [navn, flagg, hovedstad, nivå]
+const QEXTRA = {
+ historie:[
+  ["Hvilken tid levde vikingene i?","Vikingtiden",["Steinalderen","Renessansen","Bronsealderen"],1],
+  ["Hvilket år ble Norge frigjort etter andre verdenskrig?","1945",["1940","1950","1918"],2],
+  ["Hva feirer vi 8. mai i Norge?","Frigjøringsdagen",["Arbeidernes dag","Kongens fødselsdag","Nyttårsaften"],2],
+  ["Hvilket år ble Norge okkupert av Tyskland?","1940",["1914","1945","1905"],2],
+  ["Hvem ledet Kon-Tiki-ekspedisjonen i 1947?","Thor Heyerdahl",["Roald Amundsen","Fridtjof Nansen","Helge Ingstad"],2],
+  ["Hvem ble Norges første konge etter selvstendigheten i 1905?","Haakon VII",["Olav V","Harald V","Oscar II"],2],
+  ["Hvem var USAs første president?","George Washington",["Abraham Lincoln","Thomas Jefferson","Benjamin Franklin"],2],
+  ["Hvem malte Mona Lisa?","Leonardo da Vinci",["Michelangelo","Edvard Munch","Pablo Picasso"],2],
+  ["Hvilket år oppdaget Columbus Amerika?","1492",["1066","1776","1620"],2],
+  ["Hvilket år falt Berlinmuren?","1989",["1961","1975","2001"],2],
+  ["Hvilken by var sentrum i Romerriket?","Roma",["Athen","Kairo","Istanbul"],2],
+  ["Hvilket år begynte første verdenskrig?","1914",["1905","1939","1918"],3],
+  ["Hvilket år begynte den franske revolusjonen?","1789",["1689","1815","1914"],3],
+  ["Hvem oppfant trykkpressen med løse bokstaver i Europa rundt 1450?","Johannes Gutenberg",["Leonardo da Vinci","Isaac Newton","Galileo Galilei"],3],
+  ["Hvem ledet Fram-ekspedisjonen over polhavet 1893–96?","Fridtjof Nansen",["Roald Amundsen","Otto Sverdrup","Thor Heyerdahl"],3],
+  ["Hvilket år ble Norge medlem av NATO?","1949",["1945","1957","1994"],3],
+  ["Hvem var Norges første kvinnelige statsminister?","Gro Harlem Brundtland",["Erna Solberg","Kåre Willoch","Anne-Grete Strøm-Erichsen"],3],
+  ["Hvilket år fikk alle norske kvinner stemmerett?","1913",["1814","1905","1945"],3],
+  ["Hvilket år startet oljeeventyret med funnet av Ekofisk?","1969",["1945","1980","1905"],3],
+  ["Hva kalte vi motstandsbevegelsen i Norge under krigen?","Hjemmefronten",["Heimevernet","Milorg-hæren","Forsvarsfronten"],3],
+  ["Hvilket år ble FN stiftet?","1945",["1919","1957","1989"],3],
+  ["Hvilket år kollapset Sovjetunionen?","1991",["1989","1975","2001"],3],
+  ["Hvor lenge var Norge i union med Danmark?","Ca. 400 år",["Ca. 100 år","Ca. 50 år","Ca. 1000 år"],3],
+  ["Hvilken krig sto mellom Nord- og Sørstatene i USA?","Den amerikanske borgerkrigen",["Uavhengighetskrigen","Koreakrigen","Krimkrigen"],3],
+ ],
+ boker:[
+  ["Hva heter snømannen i Frost?","Olaf",["Kristoff","Sven","Hans"],1],
+  ["Hva heter Nemos pappa i «Oppdrag Nemo»?","Marlin",["Dory","Bruce","Gill"],1],
+  ["Hva heter løven i «Løvenes konge»?","Simba",["Mufasa","Timon","Scar"],1],
+  ["Hva heter rørleggeren med rød lue i Nintendo-spillene?","Mario",["Luigi","Sonic","Link"],1],
+  ["I hvilket spill bygger man med blokker og møter creepers?","Minecraft",["Fortnite","Roblox","Zelda"],1],
+  ["Hvilken norsk maler laget «Skrik»?","Edvard Munch",["Christian Krohg","Harald Sohlberg","Theodor Kittelsen"],1],
+  ["Hva heter hovedpersonen i Harry Potter-bøkene til etternavn?","Potter",["Weasley","Granger","Malfoy"],1],
+  ["Hvem skrev «Doktor Proktors prompepulver»?","Jo Nesbø",["Roald Dahl","Jostein Gaarder","Thorbjørn Egner"],1],
+  ["Hva heter Pippi Langstrømpes hest?","Lille Gubben",["Blakken","Svarten","Skjoldmøy"],2],
+  ["Hvem skrev «Hobbiten» og «Ringenes herre»?","J.R.R. Tolkien",["C.S. Lewis","J.K. Rowling","Roald Dahl"],2],
+  ["Hvem skrev «Et dukkehjem»?","Henrik Ibsen",["Knut Hamsun","Bjørnstjerne Bjørnson","Sigrid Undset"],2],
+  ["Hvem komponerte musikken til «Peer Gynt»?","Edvard Grieg",["Johan Halvorsen","Ole Bull","Johan Svendsen"],2],
+  ["Hva heter Peter Parker som superhelt?","Spider-Man",["Batman","Iron Man","Hulk"],2],
+  ["Hva heter Bulles venninne i «Doktor Proktor»?","Lise",["Nina","Petra","Siri"],2],
+  ["Hvem skrev «Alice i Eventyrland»?","Lewis Carroll",["Roald Dahl","A.A. Milne","Astrid Lindgren"],3],
+  ["Hvem skrev romanen «Sult» fra 1890?","Knut Hamsun",["Henrik Ibsen","Jon Fosse","Dag Solstad"],3],
+  ["Hvem skrev «Krig og fred»?","Leo Tolstoj",["Fjodor Dostojevskij","Anton Tsjekhov","Boris Pasternak"],3],
+  ["Hvem skrev «1984»?","George Orwell",["Aldous Huxley","Ray Bradbury","H.G. Wells"],3],
+  ["Hvem regisserte «Jurassic Park» (1993)?","Steven Spielberg",["James Cameron","George Lucas","Peter Jackson"],3],
+  ["Hvem vant Nobelprisen i litteratur i 2023?","Jon Fosse",["Karl Ove Knausgård","Annie Ernaux","Abdulrazak Gurnah"],3],
+ ],
+ natur:[
+  ["Hva er verdens største hav?","Stillehavet",["Atlanterhavet","Indiahavet","Nordsjøen"],1],
+  ["Hvilket dyr er størst på land?","Elefant",["Neshorn","Giraff","Flodhest"],1],
+  ["Hva er Norges høyeste fjell?","Galdhøpiggen",["Glittertind","Store Skagastølstind","Snøhetta"],1],
+  ["Hva er Norges største innsjø?","Mjøsa",["Femunden","Tyrifjorden","Røssvatnet"],1],
+  ["Hva er verdens høyeste fjell?","Mount Everest",["K2","Mont Blanc","Kilimanjaro"],1],
+  ["Hvor mange kontinenter er det?","7",["5","6","8"],1],
+  ["Hvilken planet kalles den røde planeten?","Mars",["Venus","Jupiter","Merkur"],1],
+  ["Hvilken gass puster vi inn for å leve?","Oksygen",["Karbondioksid","Helium","Nitrogen"],1],
+  ["Hvor mange bein har en edderkopp?","8",["6","10","12"],1],
+  ["Hvilket dyr løper raskest på land?","Gepard",["Løve","Hest","Antilope"],1],
+  ["Hva kalles et dyr som bare spiser planter?","Planteeter",["Kjøttetter","Altetende","Åtseleter"],1],
+  ["Hvilket organ pumper blodet rundt i kroppen?","Hjertet",["Lungene","Leveren","Magen"],1],
+  ["Hvilket pattedyr kan fly?","Flaggermus",["Ugle","Ekorn","Mus"],1],
+  ["Hva kalles lysfenomenet på nordhimmelen?","Nordlys",["Midnattssol","Regnbue","Stjerneskudd"],1],
+  ["Hva heter Norges nest største by?","Bergen",["Trondheim","Stavanger","Tromsø"],1],
+  ["Hva er verdens lengste elv (vanligvis regnet)?","Nilen",["Amazonas","Mississippi","Donau"],2],
+  ["Hva er Norges lengste elv?","Glomma",["Numedalslågen","Tana","Drammenselva"],2],
+  ["Hvilken planet er nærmest solen?","Merkur",["Venus","Mars","Jorden"],2],
+  ["Hva heter galaksen vi bor i?","Melkeveien",["Andromeda","Sirius","Orion"],2],
+  ["Hva er den kjemiske formelen for vann?","H₂O",["CO₂","O₂","NaCl"],2],
+  ["Hvilken gass tar planter opp når de gjør fotosyntese?","Karbondioksid",["Oksygen","Nitrogen","Hydrogen"],2],
+  ["Hva er verdens største varme ørken?","Sahara",["Gobi","Kalahari","Arabia"],2],
+  ["Hvor mange tenner har en voksen normalt (med visdomstenner)?","32",["28","30","36"],2],
+  ["Hva heter hovedbyen på Svalbard?","Longyearbyen",["Tromsø","Ny-Ålesund","Barentsburg"],2],
+  ["Hva er pi omtrent?","3,14",["2,71","1,61","3,41"],2],
+  ["Hvilket grunnstoff har symbolet Fe?","Jern",["Fluor","Fosfor","Kobber"],3],
+  ["Omtrent hvor fort går lyset?","300 000 km/s",["30 000 km/s","3 000 km/s","3 000 000 km/s"],3],
+  ["Hva er den dypeste havgrøften vi kjenner?","Marianegrøften",["Puerto Rico-grøften","Tonga-grøften","Java-grøften"],3],
+  ["Hvilket land har flest innbyggere?","India",["Kina","USA","Indonesia"],3],
+  ["Hva kalles det når magma kommer opp på overflaten?","Vulkanutbrudd",["Jordskjelv","Tsunami","Skred"],2],
+  ["Hvilken celletype frakter oksygen i blodet?","Røde blodceller",["Hvite blodceller","Blodplater","Nerveceller"],3],
+  ["Hva måler vi med Richters skala?","Jordskjelv",["Vindstyrke","Temperatur","Lufttrykk"],3],
+ ],
+ aktuelt:[
+  ["Hvem er Norges konge?","Haakon",["Harald V","Olav V","Carl XVI Gustaf"],1],
+  ["Hvem er Norges kronprinsesse?","Ingrid Alexandra",["Mette-Marit","Märtha Louise","Sonja"],1],
+  ["Hva heter Norges dronning (kongens kone)?","Mette-Marit",["Sonja","Ingrid Alexandra","Märtha Louise"],1],
+  ["Hvem er nummer to i arverekkefølgen til den norske tronen?","Prins Sverre Magnus",["Prinsesse Märtha Louise","Dronning Sonja","Kong Harald"],2],
+  ["Hvem var Norges konge i 35 år, fra 1991 til 2026?","Harald V",["Olav V","Haakon VII","Haakon VIII"],2],
+  ["Hvem er Norges statsminister?","Jonas Gahr Støre",["Erna Solberg","Jens Stoltenberg","Bjørnar Moxnes"],1],
+  ["Hvilket land vant fotball-VM 2026?","Spania",["Argentina","Frankrike","Brasil"],1],
+  ["Hvilket land tapte finalen i fotball-VM 2026?","Argentina",["Frankrike","England","Tyskland"],2],
+  ["Hvor mange mål var det i VM-finalen i 2026 (Spania–Argentina)?","1–0 etter ekstraomganger",["3–2 etter straffer","2–2","4–0"],3],
+  ["Hvilket land vant Eurovision i 2026?","Bulgaria",["Israel","Norge","Italia"],2],
+  ["Hva heter vinnerlåten i Eurovision 2026?","Bangaranga",["Wasted Love","Tattoo","Euphoria"],3],
+  ["Hvilket land fikk flest gullmedaljer i vinter-OL 2026?","Norge",["USA","Sverige","Italia"],1],
+  ["Hvor mange gullmedaljer tok Norge i vinter-OL 2026?","18",["12","16","25"],2],
+  ["Hvor mange gull tok Klæbo i vinter-OL 2026?","6",["3","4","2"],2],
+  ["Hvem er USAs president?","Donald Trump",["Joe Biden","Barack Obama","Kamala Harris"],1],
+  ["Hvem er Storbritannias statsminister (fra juli 2026)?","Andy Burnham",["Keir Starmer","Boris Johnson","Rishi Sunak"],3],
+  ["Hvem er Storbritannias konge?","Charles III",["William","Harry","George VI"],1],
+  ["Hvem er president i Ukraina?","Volodymyr Zelenskyj",["Vladimir Putin","Petro Porosjenko","Emmanuel Macron"],2],
+  ["Hvem er Canadas statsminister?","Mark Carney",["Justin Trudeau","Stephen Harper","Jean Chrétien"],3],
+  ["Hvem er Finlands president?","Alexander Stubb",["Sauli Niinistö","Sanna Marin","Petteri Orpo"],3],
+  ["Hvem er borgermester i New York (fra 2026)?","Zohran Mamdani",["Eric Adams","Bill de Blasio","Michael Bloomberg"],3],
+  ["Hva står AI for?","Artificial intelligence",["Automatic internet","Advanced input","Android interface"],2],
+  ["Hvilket land var vertskap for vinter-OL i 2022?","Kina",["Norge","Japan","Sør-Korea"],3],
+ ]
+};
+
+const QEXTRA2 = {
+ historie:[
+  ["Hva kalte vikingene de store skipene sine?","Langskip",["Karaveller","Galeier","Hurtigruter"],1],
+  ["Hva er Eidsvoll kjent for?","Her ble grunnloven skrevet i 1814",["Her ble Norge frigjort","Her ligger kongeslottet","Her er Norges høyeste fjell"],1],
+  ["Hva brukte egypterne til å skrive?","Hieroglyfer",["Runer","Latin","Kileskrift"],1],
+  ["Hva kalte vikingene skriften sin?","Runer",["Hieroglyfer","Kileskrift","Latin"],1],
+  ["Hvor ligger Colosseum?","Roma",["Athen","Paris","Kairo"],1],
+  ["Hva er Den kinesiske mur?","En svært lang forsvarsmur",["Et slott","En kanal","En motorvei"],1],
+  ["Hvilket land har Eiffeltårnet?","Frankrike",["Italia","Belgia","Tyskland"],1],
+  ["Hvem var Olav den hellige?","En norsk konge som ble helgen",["En dansk pirat","En svensk maler","Norges første statsminister"],2],
+  ["Hvem utviklet relativitetsteorien?","Albert Einstein",["Isaac Newton","Marie Curie","Niels Bohr"],2],
+  ["Hvem fant opp glødelampen på 1870-tallet?","Thomas Edison",["Alexander Graham Bell","Isaac Newton","Albert Einstein"],2],
+  ["Hvilken by var delt av en mur fra 1961 til 1989?","Berlin",["Wien","Budapest","Praha"],2],
+  ["Hvem var Kleopatra?","Dronning av Egypt",["Romersk keiser","Gresk gudinne","Persisk prinsesse"],2],
+  ["Hva er en pyramide i Egypt egentlig?","En grav for en farao",["Et tempel for sola","Et slott","Et lagerhus"],2],
+  ["Hvilket land ga Frihetsgudinnen til USA?","Frankrike",["England","Spania","Italia"],2],
+  ["Hva kaller vi tiden før skriftspråket ble oppfunnet?","Forhistorien",["Middelalderen","Renessansen","Antikken"],2],
+  ["Hva er en saga?","En fortelling fra vikingtiden og middelalderen",["En type skip","Et sverd","En dans"],2],
+  ["Hva heter museet i Oslo som viser vikingskip?","Vikingskipshuset",["Kon-Tiki-museet","Fram-museet","Nasjonalmuseet"],2],
+  ["Hvilken tidsalder kom etter steinalderen?","Bronsealderen",["Vikingtiden","Middelalderen","Renessansen"],3],
+  ["Hvem foreslo at jorden går rundt sola (1543)?","Nikolaus Kopernikus",["Isaac Newton","Albert Einstein","Johannes Kepler"],3],
+  ["Hvem fikk patent på telefonen i 1876?","Alexander Graham Bell",["Thomas Edison","Nikola Tesla","Samuel Morse"],3],
+  ["Hva heter Norges eldste jernbane (åpnet 1854)?","Hovedbanen",["Bergensbanen","Ofotbanen","Dovrebanen"],3],
+  ["Hva het den greske gudinnen for visdom?","Athene",["Afrodite","Hera","Artemis"],3],
+  ["Hvem fløy som første kvinne alene over Atlanterhavet i 1932?","Amelia Earhart",["Bessie Coleman","Harriet Quimby","Jacqueline Cochran"],3],
+  ["Hvilken ekspedisjon fullførte den første jordomseilingen (1519–22)?","Magellans ekspedisjon",["Columbus' ekspedisjon","Cooks ekspedisjon","Amundsens ekspedisjon"],3],
+  ["Hvilket fengsel ble stormet i Paris i 1789?","Bastillen",["Louvre","Versailles","Notre-Dame"],3],
+  ["Hvem skrev kongesagaene (Heimskringla)?","Snorre Sturluson",["Henrik Ibsen","Ari Frode","Saxo Grammaticus"],3],
+  ["Hva het Olav Tryggvasons store skip?","Ormen Lange",["Fram","Gokstad","Kon-Tiki"],3],
+  ["Hvilket språk snakket romerne?","Latin",["Gresk","Italiensk","Etruskisk"],2],
+  ["Hvem var Gutenberg?","Mannen som utviklet trykkekunsten i Europa",["Maleren av Mona Lisa","Norges første konge","Oppfinneren av dampmaskinen"],3],
+  ["Hvilken oppfinnelse gjorde at bøker kunne lages raskt og billig i Europa?","Trykkpressen",["Dampmaskinen","Skrivemaskinen","Papiret"],3],
+  ["Hvem var Marie Curie?","Forsker som fikk to Nobelpriser",["Dronning av Frankrike","Kjent maler","Første kvinne på månen"],3],
+  ["Hva het det største skipet som sank i 1912?","Titanic",["Lusitania","Bismarck","Britannic"],1],
+ ],
+ boker:[
+  ["Hvem skrev «Pippi Langstrømpe»?","Astrid Lindgren",["Roald Dahl","Thorbjørn Egner","Anne-Cath. Vestly"],1],
+  ["Hvem skrev «Folk og røvere i Kardemomme by»?","Thorbjørn Egner",["Alf Prøysen","Jo Nesbø","Astrid Lindgren"],1],
+  ["Hva heter de tre røverne i Kardemomme by?","Kasper, Jesper og Jonatan",["Ole, Dole og Doffen","Knoll og Tott","Pål, Peter og Espen"],1],
+  ["Hva heter bamsen som elsker honning i bøkene av A.A. Milne?","Ole Brumm",["Paddington","Bamse","Teddy"],1],
+  ["Hva heter Mikke Mus' hund?","Pluto",["Fant","Rolf","Dollar"],1],
+  ["Hva heter Donald Ducks tre nevøer?","Ole, Dole og Doffen",["Knoll og Tott","Pelle og Pål","Tick, Trick og Track"],1],
+  ["Hvem bor under brua i eventyret om de tre bukkene Bruse?","Et troll",["En drage","En heks","En ulv"],1],
+  ["Hva heter Harry Potters skole på norsk?","Galtvort",["Beauxbatons","Durmstrang","Ilvermorny"],1],
+  ["Hvem skrev «Charlie og sjokoladefabrikken»?","Roald Dahl",["Astrid Lindgren","C.S. Lewis","Enid Blyton"],1],
+  ["Hva heter den blå piggsvinet i dataspill?","Sonic",["Mario","Pikachu","Kirby"],1],
+  ["Hva heter den gule Pokémon-figuren med lyn?","Pikachu",["Charmander","Bulbasaur","Eevee"],1],
+  ["Hva heter Elsas søster i Frost?","Anna",["Belle","Mulan","Rapunsel"],1],
+  ["Hva heter bjørnen i Jungelboken?","Balu",["Bagheera","Shere Khan","Mowgli"],1],
+  ["Hvilket instrument har 88 tangenter?","Piano",["Gitar","Fiolin","Trommer"],1],
+  ["Hva heter Norges nasjonalsang?","Ja, vi elsker",["Sønner av Norge","Norge i rødt, hvitt og blått","Gud signe vårt dyre fedreland"],1],
+  ["Hva heter Harry Potters ugle?","Hedwig",["Errol","Hermes","Pigwidgeon"],2],
+  ["Hva heter løven i Narnia-bøkene?","Aslan",["Simba","Mufasa","Leo"],2],
+  ["Hva heter hobbiten i «Hobbiten»?","Bilbo Lommelun",["Frodo","Samvis","Gandalf"],2],
+  ["Hvem samlet norske folkeeventyr på 1800-tallet?","Asbjørnsen og Moe",["Brødrene Grimm","Henrik Ibsen","Thorbjørn Egner"],2],
+  ["Hvem skrev «Den lille havfrue»?","H.C. Andersen",["Brødrene Grimm","Astrid Lindgren","Roald Dahl"],2],
+  ["Hvem skrev «Romeo og Julie»?","William Shakespeare",["Charles Dickens","Homer","Molière"],2],
+  ["Hvem skrev «Sofies verden»?","Jostein Gaarder",["Jo Nesbø","Karl Ove Knausgård","Anne B. Ragde"],2],
+  ["Hvem skrev «Ronja Røverdatter»?","Astrid Lindgren",["Thorbjørn Egner","Roald Dahl","Tove Jansson"],2],
+  ["Hvem skapte Mummitrollet?","Tove Jansson",["Astrid Lindgren","Alf Prøysen","Selma Lagerlöf"],2],
+  ["Hvem skrev «Teskjekjerringa»?","Alf Prøysen",["Thorbjørn Egner","Jo Nesbø","Astrid Lindgren"],2],
+  ["Hvor mange strenger har en vanlig gitar?","6",["4","5","8"],2],
+  ["Hvem skrev «Skatten på sjørøverøya»?","Robert Louis Stevenson",["Jules Verne","Mark Twain","Daniel Defoe"],3],
+  ["Hvem skrev «Jorden rundt på 80 dager»?","Jules Verne",["H.G. Wells","Mark Twain","Charles Dickens"],3],
+  ["Hvem skrev «Oliver Twist»?","Charles Dickens",["Jane Austen","Mark Twain","Oscar Wilde"],3],
+  ["Hvem skrev «Stolthet og fordom»?","Jane Austen",["Emily Brontë","Charlotte Brontë","Virginia Woolf"],3],
+  ["Hvem komponerte «Måneskinnssonaten»?","Ludwig van Beethoven",["Wolfgang Amadeus Mozart","Johann Sebastian Bach","Edvard Grieg"],3],
+  ["Hvem komponerte «Fire årstider»?","Antonio Vivaldi",["Johann Sebastian Bach","Frédéric Chopin","Joseph Haydn"],3],
+  ["Hvem skrev «Moby Dick»?","Herman Melville",["Mark Twain","Jack London","Ernest Hemingway"],3],
+  ["Hvem skrev «Don Quijote»?","Miguel de Cervantes",["Dante Alighieri","Molière","Gabriel García Márquez"],3],
+  ["Hvem malte «Stjernenatt» (Starry Night)?","Vincent van Gogh",["Claude Monet","Pablo Picasso","Edvard Munch"],2],
+  ["Hvem skrev skuespillet «Peer Gynt»?","Henrik Ibsen",["Bjørnstjerne Bjørnson","Knut Hamsun","Jon Fosse"],3],
+  ["Hva heter den smilende katten i «Alice i Eventyrland»?","Cheshirekatten",["Pluto","Garfield","Tom"],3],
+  ["Hvem skrev «Dagbok for en pingle»?","Jeff Kinney",["Roald Dahl","David Walliams","J.K. Rowling"],1],
+ ],
+ natur:[
+  ["Hva heter en kus unge?","Kalv",["Føll","Lam","Kje"],1],
+  ["Hva heter en hests unge?","Føll",["Kalv","Lam","Kje"],1],
+  ["Hva heter en sauens unge?","Lam",["Føll","Kje","Kalv"],1],
+  ["Hva kalles en liten frosk som lever i vann?","Rumpetroll",["Larve","Pjokk","Pupp"],1],
+  ["Hva spiser pandaer nesten bare?","Bambus",["Fisk","Gress","Frukt"],1],
+  ["Hvilket dyr har lengst hals?","Giraff",["Elefant","Struts","Kamel"],1],
+  ["Hvilken fugl kan ikke fly og lever på Sydpolen?","Pingvin",["Ugle","Måke","Ørn"],1],
+  ["Hvilke farger har det norske flagget?","Rød, hvit og blå",["Rød og hvit","Blå og gul","Rød, hvit og grønn"],1],
+  ["Hvilket kontinent er størst?","Asia",["Afrika","Nord-Amerika","Europa"],1],
+  ["Hvilket land har formen som en støvel?","Italia",["Hellas","Spania","Portugal"],1],
+  ["Hvilket hav ligger mellom Europa og Amerika?","Atlanterhavet",["Stillehavet","Indiahavet","Nordishavet"],1],
+  ["Hva kalles stjernen midt i solsystemet vårt?","Sola",["Sirius","Månen","Mars"],1],
+  ["Hvor mange planeter er det i solsystemet?","8",["7","9","10"],1],
+  ["Hva er den største planeten?","Jupiter",["Saturn","Neptun","Jorden"],1],
+  ["Hvilken planet er kjent for ringene sine?","Saturn",["Mars","Venus","Merkur"],1],
+  ["Hvor lang tid bruker jorden rundt sola?","Ett år",["En måned","En dag","Ti år"],1],
+  ["Ved hvilken temperatur fryser vann?","0 grader",["10 grader","–10 grader","100 grader"],1],
+  ["Ved hvilken temperatur koker vann (ved havnivå)?","100 grader",["50 grader","90 grader","120 grader"],1],
+  ["Hva måler et termometer?","Temperatur",["Vekt","Lengde","Tid"],1],
+  ["Hva kalles det sørligste punktet på jorda?","Sydpolen",["Nordpolen","Ekvator","Tropene"],1],
+  ["Hva er et dyr som lever både på land og i vann kalt?","Amfibium",["Reptil","Pattedyr","Fisk"],2],
+  ["Hva er et pattedyr?","Et dyr som gir melk til ungene",["Et dyr med fjær","Et dyr som legger egg","Et dyr uten ben"],2],
+  ["Hva kalles et dyr som spiser både planter og kjøtt?","Altetende",["Planteeter","Kjøttetter","Åtseleter"],2],
+  ["Hva er verdens største dyr?","Blåhval",["Elefant","Hvalhai","Spermhval"],2],
+  ["Hva kalles det når dyr sover gjennom vinteren?","Dvale",["Trekk","Hamstring","Hekking"],2],
+  ["Hva er Norges største rovdyr?","Brunbjørn",["Ulv","Gaupe","Jerv"],2],
+  ["Hvilket dyr kan skifte farge for å gjemme seg?","Kameleon",["Sebra","Elefant","Hest"],1],
+  ["Hva heter Norges lengste fjord?","Sognefjorden",["Hardangerfjorden","Oslofjorden","Trondheimsfjorden"],2],
+  ["Hva heter havet vest for Norge?","Norskehavet",["Østersjøen","Middelhavet","Svartehavet"],2],
+  ["Hvilken linje deler jorda i en nordlig og en sørlig halvkule?","Ekvator",["Polarsirkelen","Vendekretsen","Nullmeridianen"],2],
+  ["Hva heter fjellkjeden i Sør-Amerika?","Andesfjellene",["Alpene","Himalaya","Rocky Mountains"],2],
+  ["Hva heter elven som renner gjennom Paris?","Seinen",["Rhinen","Donau","Themsen"],2],
+  ["Hva heter elven som renner gjennom London?","Themsen",["Seinen","Rhinen","Tiberen"],2],
+  ["Hva er hardest av naturlige stoffer?","Diamant",["Jern","Kvarts","Gull"],2],
+  ["Hva kalles kraften som trekker ting mot jorda?","Tyngdekraften",["Magnetisme","Friksjon","Elektrisitet"],2],
+  ["Hva er kjemisk symbol for oksygen?","O",["Ox","Og","Om"],2],
+  ["Hva er kjemisk symbol for gull?","Au",["Ag","Gd","Go"],3],
+  ["Hva er kjemisk symbol for natrium?","Na",["N","Ne","Sa"],3],
+  ["Hvilken gass er det mest av i lufta?","Nitrogen",["Oksygen","Karbondioksid","Hydrogen"],3],
+  ["Hva er verdens største øy (som ikke er et kontinent)?","Grønland",["Madagaskar","Island","Borneo"],3],
+  ["Hva er verdens minste kontinent?","Oseania (Australia)",["Europa","Antarktis","Sør-Amerika"],2],
+  ["Hva er Afrikas høyeste fjell?","Kilimanjaro",["Mount Kenya","Table Mountain","Atlasfjellene"],3],
+  ["Hvilken fjellkjede skiller Europa og Asia i Russland?","Uralfjellene",["Alpene","Pyreneene","Karpatene"],3],
+  ["Hva er Norges høyeste foss?","Vinnufossen",["Langfoss","Vøringsfossen","Kjosfossen"],3],
+  ["Hva er verdens største ørken (alle typer)?","Antarktis",["Sahara","Gobi","Arabia"],3],
+  ["Hvor mange hjerter har en blekksprut?","3",["1","2","4"],3],
+  ["Hvilket land har flest øyer i verden?","Sverige",["Norge","Filippinene","Indonesia"],3],
+  ["Hva kalles en stor, flytende isbre i havet?","Isfjell",["Snøskred","Istapp","Fjellvegg"],1],
+  ["Hva kalles det når jordskorpeplatene brått flytter seg?","Jordskjelv",["Vulkan","Orkan","Flom"],2],
+ ],
+ kropp:[
+  ["Hvor mange fingre har en vanlig person til sammen?","10",["8","12","20"],1],
+  ["Hva bruker vi for å høre?","Ørene",["Øynene","Nesen","Tunga"],1],
+  ["Hva bruker vi for å se?","Øynene",["Ørene","Nesen","Tunga"],1],
+  ["Hva bruker vi for å lukte?","Nesen",["Ørene","Øynene","Hendene"],1],
+  ["Hva kalles de harde, hvite tingene i munnen vi tygger med?","Tenner",["Tunger","Lepper","Gommer"],1],
+  ["Hva trenger kroppen for å hvile og hente seg inn?","Søvn",["Brus","Godteri","Mer lys"],1],
+  ["Hva bør du ha på hodet når du sykler?","Hjelm",["Caps","Lue","Briller"],1],
+  ["Hva smører vi på huden når sola er sterk?","Solkrem",["Smør","Maling","Såpe"],1],
+  ["Hva puster vi med?","Lungene",["Hjertet","Magen","Nyrene"],1],
+  ["Hvilket organ bruker vi til å tenke?","Hjernen",["Hjertet","Magen","Leveren"],1],
+  ["Hvor mange sanser har vi (de klassiske)?","5",["3","4","7"],1],
+  ["Hvilken del av kroppen beskytter hjernen?","Hodeskallen",["Ryggraden","Ribbeina","Kjeven"],1],
+  ["Hva bør vi drikke mest av?","Vann",["Brus","Saft","Kaffe"],1],
+  ["Hvor ofte bør du pusse tennene?","To ganger om dagen",["Én gang i uka","Bare før jul","Ti ganger om dagen"],1],
+  ["Hva bør du gjøre før du spiser?","Vaske hendene",["Hoppe","Synge","Sove"],1],
+  ["Hva er det største organet vi har?","Huden",["Leveren","Hjernen","Magen"],2],
+  ["Hvor mange bein har en voksen?","206",["106","306","150"],2],
+  ["Hva heter det største beinet i kroppen?","Lårbeinet",["Skinnebeinet","Ryggraden","Kragebeinet"],2],
+  ["Hvilket vitamin lager huden når den får sol?","D",["A","B","C"],2],
+  ["Hva heter det svarte hullet midt i øyet?","Pupillen",["Iris","Netthinnen","Linsen"],2],
+  ["Hvilke blodårer fører blod bort fra hjertet?","Arterier",["Vener","Hårrør","Nerver"],2],
+  ["I hvilken del av kroppen sitter hammeren, ambolten og stigbøylen?","Øret",["Nesen","Kneet","Halsen"],2],
+  ["Hva er normal kroppstemperatur?","Omtrent 37 grader",["Omtrent 30 grader","Omtrent 42 grader","Omtrent 25 grader"],2],
+  ["Hva er en vaksine til for?","Gi kroppen beskyttelse mot sykdom",["Gjøre deg høyere","Gi deg bedre syn","Lage deg sulten"],2],
+  ["Hvilket vitamin finnes det mye av i appelsiner?","C",["D","K","B12"],2],
+  ["Hvor mange melketenner har et barn til slutt?","20",["12","28","32"],2],
+  ["Hvor mange timer søvn trenger voksne vanligvis?","7–9 timer",["2–3 timer","4–5 timer","12–14 timer"],2],
+  ["Hva trenger musklene for å vokse og repareres?","Protein",["Sukker","Salt","Vann alene"],2],
+  ["Hva gir kroppen mest rask energi?","Karbohydrater",["Vitaminer","Mineraler","Fiber"],2],
+  ["Hva gjør leveren blant annet?","Renser blodet for skadelige stoffer",["Pumper blod","Hjelper oss å puste","Styrer synet"],2],
+  ["Hvor mange kromosomer har et menneske vanligvis?","46",["23","44","48"],3],
+  ["Hva heter kroppens største pulsåre?","Aorta",["Vena cava","Halspulsåren","Lårarterien"],3],
+  ["Hvilket organ lager insulin?","Bukspyttkjertelen",["Leveren","Milten","Nyrene"],3],
+  ["Hva er DNA?","Arvestoffet vårt",["Et vitamin","En muskel","En blodtype"],3],
+  ["Hvilken del av øyet er farget?","Iris",["Pupillen","Hornhinnen","Netthinnen"],3],
+  ["Hvilken muskel hjelper oss å puste og ligger under lungene?","Mellomgulvet",["Magemuskelen","Hjertemuskelen","Ryggmuskelen"],3],
+  ["Hva er kroppens største muskel?","Setemuskelen",["Lårmuskelen","Magemuskelen","Overarmsmuskelen"],3],
+  ["Hvor mye blod har en voksen omtrent?","5 liter",["1 liter","12 liter","20 liter"],3],
+  ["Hvilket vitamin mangler man ved skjørbuk?","C",["A","D","B12"],3],
+  ["Hva er insulin?","Et hormon som regulerer blodsukker",["Et vitamin","En bakterie","En muskel"],3],
+  ["Hva heter hjertets fire rom?","To forkamre og to hjertekamre",["Fire lunger","To nyrer og to lever","Tre kamre og en port"],3],
+  ["Hvilken blodtype regnes som universalgiver?","O negativ",["AB positiv","A positiv","B negativ"],3],
+  ["Hva heter hudens ytterste lag?","Overhuden",["Lærhuden","Underhuden","Fettlaget"],3],
+  ["Hva kalles små organismer som kan gi sykdom og som antibiotika virker mot?","Bakterier",["Virus","Sopp","Alger"],3],
+  ["Hvor mange tenner har en voksen uten visdomstenner?","28",["20","24","32"],3],
+  ["Hvilken av disse er IKKE en av de fem sansene?","Humor",["Syn","Hørsel","Lukt"],2],
+  ["Hva heter beinet du sitter på?","Sittebeinet",["Lårbeinet","Skulderbladet","Leggbeinet"],3],
+ ],
+ sprak:[
+  ["Hva er flertall av «bok»?","Bøker",["Boker","Boks","Bokene"],1],
+  ["Hva er flertall av «mann»?","Menn",["Manner","Mannen","Mans"],1],
+  ["Hva er flertall av «fot»?","Føtter",["Fots","Foter","Fotter"],1],
+  ["Hva er flertall av «tre» (planten)?","Trær",["Treer","Tres","Tre"],1],
+  ["Hva er det motsatte av «stor»?","Liten",["Tung","Lang","Sterk"],1],
+  ["Hva er det motsatte av «varm»?","Kald",["Våt","Tørr","Lys"],1],
+  ["Hvilket ord betyr det samme som «fort»?","Raskt",["Sakte","Tungt","Stille"],1],
+  ["Hvilket tegn setter vi på slutten av et spørsmål?","Spørsmålstegn",["Punktum","Komma","Utropstegn"],1],
+  ["Hva betyr «thank you» på norsk?","Takk",["Unnskyld","Hei","Ha det"],1],
+  ["Hva betyr «good morning» på norsk?","God morgen",["God natt","God dag","Hei hei"],1],
+  ["Hva er «cat» på norsk?","Katt",["Hund","Mus","Hest"],1],
+  ["Hvilken måned kommer etter mars?","April",["Mai","Februar","Juni"],1],
+  ["Hvilken dag er mellom tirsdag og torsdag?","Onsdag",["Mandag","Fredag","Lørdag"],1],
+  ["Hva kalles en person som skriver bøker?","Forfatter",["Redaktør","Kritiker","Bokhandler"],1],
+  ["Hva er X i romertall?","10",["5","50","100"],2],
+  ["Hva er C i romertall?","100",["10","50","500"],2],
+  ["Hvilken ordklasse er «løpe»?","Verb",["Substantiv","Adjektiv","Adverb"],2],
+  ["Hvilken ordklasse er «hus»?","Substantiv",["Verb","Adjektiv","Preposisjon"],2],
+  ["Hvilken ordklasse er «vakker»?","Adjektiv",["Verb","Substantiv","Pronomen"],2],
+  ["Hvor mange bokstaver har det norske alfabetet?","29",["26","28","30"],2],
+  ["Hvilke tre bokstaver kommer til slutt i det norske alfabetet?","Æ, Ø, Å",["X, Y, Z","Å, Ø, Æ","Ø, Æ, Å"],2],
+  ["Hva er flertall av «barn»?","Barn",["Barner","Barne","Barns"],2],
+  ["Fullfør ordtaket: «Hvor det er hjerterom, er det …»","husrom",["plass","varme","mat"],2],
+  ["Fullfør ordtaket: «Øvelse gjør …»","mester",["sliten","sterk","rask"],1],
+  ["Hva betyr «å ha is i magen»?","Å holde seg rolig",["Å være sulten","Å være syk","Å være kald"],2],
+  ["Hva betyr «å slå to fluer i ett smekk»?","Å løse to ting på en gang",["Å drepe insekter","Å lage mat","Å rydde"],2],
+  ["Hva er «onsdag» på engelsk?","Wednesday",["Tuesday","Thursday","Friday"],2],
+  ["Hva betyr «hola» på spansk?","Hei",["Takk","Farvel","Unnskyld"],2],
+  ["Hva er «takk» på fransk?","Merci",["Gracias","Danke","Grazie"],2],
+  ["Hva er «takk» på tysk?","Danke",["Merci","Gracias","Grazie"],2],
+  ["Hva er «takk» på spansk?","Gracias",["Grazie","Danke","Merci"],2],
+  ["Hva er «takk» på italiensk?","Grazie",["Danke","Merci","Gracias"],2],
+  ["Hvor mange dager har februar i et skuddår?","29",["28","30","31"],2],
+  ["Hva betyr det engelske ordet «library»?","Bibliotek",["Bokhandel","Skole","Bibel"],2],
+  ["Hva kalles et ord som beskriver hvordan noe gjøres (fort, pent)?","Adverb",["Adjektiv","Verb","Preposisjon"],3],
+  ["Hva betyr «å gå som katten rundt grøten»?","Å somle med å si det man egentlig vil",["Å lage mat","Å jage katter","Å gå sakte"],3],
+  ["Hva betyr «å ta seg vann over hodet»?","Å ta på seg for mye",["Å dusje","Å bade","Å bli våt"],3],
+  ["Hva betyr «å gå over bekken etter vann»?","Å gjøre noe unødvendig tungvint",["Å være tørst","Å bade","Å hente vann"],3],
+  ["Hva betyr «å skjære alle over én kam»?","Å behandle alle likt uten å se forskjeller",["Å klippe hår","Å rydde","Å krangle"],3],
+  ["Hva betyr «å sitte med skjegget i postkassa»?","Å bli tatt i noe pinlig",["Å vente på post","Å ha langt skjegg","Å være gammel"],3],
+  ["Hvor mange måneder har 31 dager?","7",["6","5","8"],3],
+  ["Hva er XL i romertall?","40",["60","14","90"],3],
+  ["Hva betyr latin «carpe diem»?","Grip dagen",["Spis fisken","Vær rolig","Husk det"],3],
+  ["Hvilket språk snakkes i Brasil?","Portugisisk",["Spansk","Brasiliansk","Italiensk"],2],
+  ["Hvilket språk snakkes i Østerrike?","Tysk",["Østerriksk","Ungarsk","Italiensk"],2],
+  ["Hvilket er det mest snakkede morsmålet i verden?","Mandarin (kinesisk)",["Engelsk","Spansk","Hindi"],3],
+ ]
+};
+
+const COUNTRIES = [
+ ["Norge","🇳🇴","Oslo",1],["Sverige","🇸🇪","Stockholm",1],["Danmark","🇩🇰","København",1],["Finland","🇫🇮","Helsingfors",1],
+ ["Island","🇮🇸","Reykjavik",1],["Tyskland","🇩🇪","Berlin",1],["Frankrike","🇫🇷","Paris",1],["Spania","🇪🇸","Madrid",1],
+ ["Italia","🇮🇹","Roma",1],["Storbritannia","🇬🇧","London",1],["USA","🇺🇸","Washington D.C.",1],["Japan","🇯🇵","Tokyo",1],
+ ["Kina","🇨🇳","Beijing",1],["Brasil","🇧🇷","Brasília",1],["Canada","🇨🇦","Ottawa",1],["Hellas","🇬🇷","Athen",1],["Nederland","🇳🇱","Amsterdam",1],
+ ["Polen","🇵🇱","Warszawa",2],["Portugal","🇵🇹","Lisboa",2],["Sveits","🇨🇭","Bern",2],["Østerrike","🇦🇹","Wien",2],["Belgia","🇧🇪","Brussel",2],
+ ["Irland","🇮🇪","Dublin",2],["Mexico","🇲🇽","Mexico by",2],["Argentina","🇦🇷","Buenos Aires",2],["Australia","🇦🇺","Canberra",2],
+ ["India","🇮🇳","New Delhi",2],["Sør-Korea","🇰🇷","Seoul",2],["Tyrkia","🇹🇷","Ankara",2],["Egypt","🇪🇬","Kairo",2],
+ ["Sør-Afrika","🇿🇦","Pretoria",2],["Kenya","🇰🇪","Nairobi",2],["Ukraina","🇺🇦","Kyiv",2],["Estland","🇪🇪","Tallinn",2],
+ ["Peru","🇵🇪","Lima",3],["Colombia","🇨🇴","Bogotá",3],["Cuba","🇨🇺","Havana",3],["Saudi-Arabia","🇸🇦","Riyadh",3],["Iran","🇮🇷","Teheran",3],
+ ["Irak","🇮🇶","Bagdad",3],["Pakistan","🇵🇰","Islamabad",3],["Bangladesh","🇧🇩","Dhaka",3],["Indonesia","🇮🇩","Jakarta",3],["Filippinene","🇵🇭","Manila",3],
+ ["Nigeria","🇳🇬","Abuja",3],["Etiopia","🇪🇹","Addis Abeba",3],["Ghana","🇬🇭","Accra",3],["Tsjekkia","🇨🇿","Praha",3],["Ungarn","🇭🇺","Budapest",3],
+ ["Romania","🇷🇴","București",3],["Bulgaria","🇧🇬","Sofia",3],["Serbia","🇷🇸","Beograd",3],["Latvia","🇱🇻","Riga",3],["Litauen","🇱🇹","Vilnius",3],
+ ["Kasakhstan","🇰🇿","Astana",3],["Nepal","🇳🇵","Kathmandu",3],["Tanzania","🇹🇿","Dodoma",3],["Slovakia","🇸🇰","Bratislava",3],["Slovenia","🇸🇮","Ljubljana",3],
+ ["Thailand","🇹🇭","Bangkok",2],["Jamaica","🇯🇲","Kingston",2],["New Zealand","🇳🇿","Wellington",2],["Marokko","🇲🇦","Rabat",2],
+ ["Kroatia","🇭🇷","Zagreb",2],["Chile","🇨🇱","Santiago",2],["Vietnam","🇻🇳","Hanoi",2],
+];
+// [spørsmål, riktig, [feil...], nivå]
+const QBANK = {
+ historie:[
+  ["Hvilket år fikk Norge sin grunnlov?","1814",["1905","1945","1914"],1],
+  ["Hva feirer vi på 17. mai?","Grunnloven",["Kongens bursdag","At krigen sluttet","At sommeren starter"],1],
+  ["Hvem var det første mennesket på månen?","Neil Armstrong",["Yuri Gagarin","Buzz Lightyear","Roald Amundsen"],1],
+  ["Hvilket år landet mennesker på månen for første gang?","1969",["1959","1979","1989"],2],
+  ["Hvem kom først til Sydpolen?","Roald Amundsen",["Fridtjof Nansen","Robert Scott","Thor Heyerdahl"],1],
+  ["Hvilket år ble Norge selvstendig fra Sverige?","1905",["1814","1945","1890"],2],
+  ["Hvilket skip sank i 1912 etter å ha truffet et isfjell?","Titanic",["Fram","Kon-Tiki","Osebergskipet"],1],
+  ["I hvilket land ligger pyramidene i Giza?","Egypt",["Mexico","Hellas","India"],1],
+  ["Hva kaller vi nordboerne som dro på tokt for ca. 1200 år siden?","Vikinger",["Romere","Riddere","Cowboyer"],1],
+  ["Hvem regnes for å ha samlet Norge til ett rike?","Harald Hårfagre",["Olav den hellige","Haakon VII","Eirik Raude"],2],
+  ["Hvilken viking kom til Amerika rundt år 1000?","Leiv Eiriksson",["Harald Hardråde","Olav Tryggvason","Ragnar Lodbrok"],2],
+  ["Når var Norge okkupert under andre verdenskrig?","1940–1945",["1914–1918","1939–1941","1950–1955"],2],
+  ["Hva het flåten Thor Heyerdahl seilte over Stillehavet med?","Kon-Tiki",["Fram","Gjøa","Titanic"],2],
+  ["Hvilket kjent maleri laget Edvard Munch?","Skrik",["Mona Lisa","Stjernenatt","Brudeferden i Hardanger"],1],
+  ["Hvilken sykdom tok livet av veldig mange i Norge rundt 1349?","Svartedauden",["Vannkopper","Forkjølelse","Omgangssyke"],2],
+  ["Hvilket år falt Berlinmuren?","1989",["1969","1999","1945"],2],
+  ["Hva var hovedstaden i Romerriket?","Roma",["Athen","Paris","Kairo"],1],
+  ["Hva het Fridtjof Nansens polarskute?","Fram",["Titanic","Kon-Tiki","Oseberg"],2],
+  ["Hvem ble Norges konge i 1905?","Haakon VII",["Harald V","Olav V","Oscar II"],2],
+  ["Hva brukte vikingene som skrift?","Runer",["Hieroglyfer","Kinesiske tegn","Morsekode"],1],
+  ["Hvem skrev «Peer Gynt» og «Et dukkehjem»?","Henrik Ibsen",["Edvard Grieg","Henrik Wergeland","Roald Dahl"],2],
+  ["Levde dinosaurene samtidig med menneskene?","Nei, de døde ut lenge før",["Ja, med vikingene","Ja, med romerne","Ja, i steinalderen"],1],
+  ["Hvem var Norges første kvinnelige statsminister?","Gro Harlem Brundtland",["Erna Solberg","Dronning Sonja","Camilla Collett"],2],
+  ["Hva het vikingenes gud med hammeren Mjølner?","Tor",["Odin","Loke","Frøy"],1],
+ ],
+ boker:[
+  ["Hva heter skolen Harry Potter går på?","Galtvort",["Durmstrang","Beauxbatons","Galtvang"],1],
+  ["Hva heter Pippi Langstrømpes hest?","Lilla Gubben",["Svarten","Blakken","Sleipner"],1],
+  ["Hva heter Pippis apekatt?","Herr Nilsson",["Abu","Georg","Kong Julian"],1],
+  ["Hvem skrev bøkene om Pippi Langstrømpe?","Astrid Lindgren",["Roald Dahl","Thorbjørn Egner","J.K. Rowling"],1],
+  ["Hvem er de tre røverne i Kardemomme by?","Kasper, Jesper og Jonatan",["Karius, Baktus og Bastian","Ole, Dole og Doffen","Emil, Ida og Alfred"],1],
+  ["Hvem skrev «Karius og Baktus»?","Thorbjørn Egner",["Alf Prøysen","Astrid Lindgren","Anne-Cath. Vestly"],2],
+  ["Hva heter søsteren til Elsa i Frost?","Anna",["Vaiana","Ariel","Rapunzel"],1],
+  ["Hva heter snømannen i Frost?","Olaf",["Sven","Kristoff","Hans"],1],
+  ["Hvem skrev «Charlie og sjokoladefabrikken»?","Roald Dahl",["Astrid Lindgren","Jeff Kinney","Maria Parr"],2],
+  ["Hvilket land bor Bluey og familien i?","Australia",["Norge","USA","England"],1],
+  ["Hva heter den gule Pokémonen til Ash?","Pikachu",["Charmander","Squirtle","Jigglypuff"],1],
+  ["Hvilket grønt monster i Minecraft eksploderer?","Creeper",["Zombie","Enderman","Skeleton"],1],
+  ["Hvem skrev «Dagbok for pingler»?","Jeff Kinney",["Roald Dahl","J.K. Rowling","David Walliams"],2],
+  ["Hva heter skipet til Kaptein Sabeltann?","Den sorte dame",["Black Pearl","Titanic","Jolly Roger"],2],
+  ["I «Innsiden ut» – hvilken følelse er blå?","Tristhet",["Glede","Sinne","Avsky"],1],
+  ["Hvilken film handler om Mirabel og familien Madrigal?","Encanto",["Vaiana","Coco","Frost"],1],
+  ["Hva heter jentebandet i «KPop Demon Hunters»?","HUNTR/X",["Saja Boys","BLACKPINK","Spice Girls"],2],
+  ["Hvem skrev Harry Potter-bøkene?","J.K. Rowling",["Roald Dahl","Astrid Lindgren","Rick Riordan"],1],
+  ["Hva heter Harry Potters ugle?","Hedvig",["Skabbe","Fønix","Krokkskank"],2],
+  ["Hvem er Ole Brumms beste venn?","Nasse Nøff",["Tigergutt","Petter Sprett","Kristoffer Robin"],1],
+  ["Hva heter Mikke Mus sin hund?","Pluto",["Langbein","Snoopy","Fido"],1],
+  ["Hvilken farge har Shrek?","Grønn",["Blå","Brun","Lilla"],1],
+  ["Hva slags vesen er Stitch i «Lilo & Stitch»?","Et romvesen",["En hund","En koala","En kanin"],1],
+  ["Hva heter Ronja Røverdatters beste venn?","Birk",["Emil","Mattis","Skalle-Per"],2],
+  ["Hva heter bilen i «Flåklypa Grand Prix»?","Il Tempo Gigante",["Lynet McQueen","Kong Kjell","Gigantus"],2],
+  ["Hva heter løveungen i «Løvenes konge»?","Simba",["Nala","Mufasa","Scar"],1],
+  ["Hva heter racerbilen i filmen «Biler»?","Lynet McQueen",["Doc Hudson","Bill","Ramone"],1],
+  ["Hvem er broren til Mario i Super Mario?","Luigi",["Wario","Toad","Bowser"],1],
+ ],
+ natur:[
+  ["Hvor mange bein har en edderkopp?","8",["6","10","4"],1],
+  ["Hvilken planet er nærmest sola?","Merkur",["Venus","Mars","Jorda"],2],
+  ["Hvilken planet kalles den røde planeten?","Mars",["Jupiter","Venus","Saturn"],1],
+  ["Hva er det største dyret i verden?","Blåhval",["Elefant","Sjiraff","Hvithai"],1],
+  ["Hvilken gass tar plantene opp fra lufta?","Karbondioksid (CO₂)",["Oksygen","Helium","Nitrogen"],2],
+  ["Hvor mange dager er det i et vanlig år?","365",["360","366","350"],1],
+  ["Hva skjer med vann når det blir kaldere enn 0 °C?","Det fryser til is",["Det koker","Det blir til damp","Ingenting"],1],
+  ["Hva er Norges høyeste fjell?","Galdhøpiggen",["Glittertind","Snøhetta","Preikestolen"],2],
+  ["Hva er Norges lengste elv?","Glomma",["Numedalslågen","Altaelva","Drammenselva"],2],
+  ["Hva er verdens største hav?","Stillehavet",["Atlanterhavet","Indiahavet","Nordsjøen"],2],
+  ["Hva er verdens største land i areal?","Russland",["Kina","USA","Canada"],2],
+  ["Hva er Norges nasjonalfugl?","Fossekall",["Ørn","Måke","Spurv"],2],
+  ["Hvor mange farger har regnbuen?","7",["5","6","10"],1],
+  ["Hva heter stjernen jorda går rundt?","Sola",["Månen","Nordstjerna","Mars"],1],
+  ["Hva lager biene honning av?","Nektar fra blomster",["Blader","Sukker fra butikken","Vann"],1],
+  ["Hva slags dyr er en hval?","Et pattedyr",["En fisk","Et krypdyr","Et insekt"],2],
+  ["Hvilket organ pumper blodet rundt i kroppen?","Hjertet",["Lungene","Magen","Hjernen"],1],
+  ["Hva er verdens høyeste fjell?","Mount Everest",["Galdhøpiggen","Kilimanjaro","Mont Blanc"],1],
+  ["Hvilken gass trenger vi for å puste?","Oksygen",["Karbondioksid","Helium","Røyk"],1],
+  ["Hvor mange tenner har en voksen (med visdomstenner)?","32",["20","28","40"],2],
+  ["Hva kalles det når en larve blir til sommerfugl?","Forvandling (metamorfose)",["Fotosyntese","Fordøyelse","Fordampning"],2],
+  ["Hvilket dyr er verdens raskeste på land?","Gepard",["Løve","Hest","Struts"],1],
+ ],
+ aktuelt:[
+  ["Hvor ble vinter-OL 2026 arrangert?","Milano og Cortina (Italia)",["Oslo","Beijing","Lillehammer"],1],
+  ["Hvilke land arrangerte fotball-VM 2026?","USA, Canada og Mexico",["Qatar","Brasil","Norge og Sverige"],1],
+  ["Hvor mange lag var med i fotball-VM 2026?","48",["32","24","64"],2],
+  ["Hvilken norsk fotballspiss spiller for Manchester City?","Erling Haaland",["Martin Ødegaard","Sander Berge","Alexander Sørloth"],1],
+  ["Hvem er kaptein på Norges herrelandslag i fotball?","Martin Ødegaard",["Erling Haaland","Ada Hegerberg","Kristian Thorstvedt"],2],
+  ["Hvilket land vant Eurovision i 2025?","Østerrike",["Norge","Sverige","Italia"],2],
+  ["Hvilken sport driver Jakob Ingebrigtsen med?","Løping",["Skiskyting","Fotball","Svømming"],1],
+  ["Hvilken øvelse er Karsten Warholm kjent for?","400 meter hekk",["Spydkast","Lengdehopp","Maraton"],2],
+  ["Hvilken norsk langrennsløper tok mange gull i OL 2026?","Johannes Høsflot Klæbo",["Erling Haaland","Karsten Warholm","Jakob Ingebrigtsen"],1],
+  ["Hva står KI for?","Kunstig intelligens",["Kjempe internett","Kul info","Kongelig institusjon"],2],
+  ["Hva heter NRK sin kanal for barn?","NRK Super",["NRK Junior","Barne-TV Pluss","NRK Kids"],1],
+ ],
+};
+for(const k in QEXTRA) QBANK[k]=(QBANK[k]||[]).concat(QEXTRA[k]);
+for(const k in QEXTRA2) QBANK[k]=(QBANK[k]||[]).concat(QEXTRA2[k]);
+for(const k in QBANK){ const u=new Set(); QBANK[k]=QBANK[k].filter(q=>!u.has(q[0])&&u.add(q[0])); }
+
+const CATS = [
+  {id:"matte",   name:"Matte",            e:"➗", bg:"#ffe1ef"},
+  {id:"flagg",   name:"Flagg",            e:"🏳️", bg:"#e1f0ff"},
+  {id:"hoved",   name:"Hovedsteder",      e:"🏙️", bg:"#e9e1ff"},
+  {id:"historie",name:"Historie",         e:"🏰", bg:"#fff1cc"},
+  {id:"boker",   name:"Bøker, film & TV", e:"📚", bg:"#dcf7e6"},
+  {id:"natur",   name:"Natur & geografi", e:"🌍", bg:"#d9f4ff"},
+  {id:"kropp",   name:"Kropp & helse",    e:"🫀", bg:"#ffdede"},
+  {id:"sprak",   name:"Språk & ordtak",   e:"🗣️", bg:"#e8f0d0"},
+  {id:"aktuelt", name:"Aktuelt",          e:"📰", bg:"#ffe6d6"},
+  {id:"mix",     name:"Bland alt!",       e:"🎲", bg:"#f3e8ff"},
+];
+
+/* =========================================================
+   STATE – alt lagres i Firebase (skyen)
+   ========================================================= */
+// ⬇️ Fylles inn med Firebase-oppsettet
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDlG0Dyrc8KLiDWZxCGL3jKKNjR-W3CG3Y",
+  authDomain: "squishy-trade-b859e.firebaseapp.com",
+  databaseURL: "https://squishy-trade-b859e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "squishy-trade-b859e",
+  storageBucket: "squishy-trade-b859e.firebasestorage.app",
+  messagingSenderId: "1052131866044",
+  appId: "1:1052131866044:web:0fb81a48cb0564954ca7b9"
+};
+const ME_KEY = "squishyTrade.me", SEEN_KEY = "squishyTrade.seen", FAM_KEY="squishyTrade.fam";
+let famOK=!!localStorage.getItem(FAM_KEY), famHash=null;
+let db=null, me=localStorage.getItem(ME_KEY)||"", PLAYERS={}, TRADES={}, ready=false, fbError="";
+let S = fresh();
+function fresh(){ return {name:"", lvl:2, coins:0, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,opened:0}, daily:""}; }
+let _uc=0; const uid = ()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36)+(_uc++).toString(36);
+const rnd = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick = a=>a[Math.floor(Math.random()*a.length)];
+const shuffle = a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const esc = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $ = s=>document.querySelector(s);
+const R = p=>FB.ref(db,p);
+const errTxt=e=>String((e&&(e.code||e.message))||e||"ukjent").slice(0,60);
+const fail = e=>{ console.error(e); toast("⚠️ Klarte ikke å lagre ("+errTxt(e)+"). Prøv igjen om litt.",6000); };
+// Prøver en skriving på nytt (og logger inn på nytt hvis tilgangen har falt ut)
+async function retryWrite(fn){
+  try{ return await fn(); }catch(e1){
+    console.warn("skriving feilet, prøver igjen",e1);
+    try{ await FB.signInAnonymously(FB.getAuth()); }catch(e){}
+    await new Promise(r=>setTimeout(r,1200));
+    return await fn();
+  }
+}
+
+function value(it){ const d=DEF[it.id]; if(d&&d.fake) return FAKE_VALUE; return d&&VARIANTS[it.v]? Math.round(TIERS[d.tier].price*VARIANTS[it.v].mult) : 0; }
+function invValue(inv){ return inv.reduce((s,i)=>s+value(i),0); }
+function rollVariant(boost=1){
+  const r=Math.random()*100;
+  if(r<1*boost) return "gold";
+  if(r<(1+5)*boost) return "r";
+  if(r<(1+5+12)*boost) return "g";
+  return "n";
+}
+function makeItem(id,boost){ return {uid:uid(), id, v:(DEF[id]&&DEF[id].fake)?"n":rollVariant(boost), k:rollColor(DEF[id]), at:Date.now()}; }
+// Lagring: hver ting skrives for seg, så trades fra andre aldri blir overskrevet
+function save(){ if(!me||!db) return; retryWrite(()=>FB.update(R("players/"+me),{coins:S.coins,lvl:S.lvl,name:S.name,stats:S.stats,daily:S.daily})).catch(fail); }
+function addItem(it){ S.inv.push(it); S.dex[it.id]=true; if(!me) return; FB.set(R(`players/${me}/inv/${it.uid}`),{id:it.id,v:it.v,k:it.k||DEF[it.id].col||"",at:it.at}).catch(fail); FB.set(R(`players/${me}/dex/${it.id}`),true).catch(fail); }
+function removeItem(u){ S.inv=S.inv.filter(i=>i.uid!==u); FB.remove(R(`players/${me}/inv/${u}`)).catch(fail); }
+function setCoins(n){ S.coins=n; save(); $("#coinN").textContent=S.coins; const c=$("#coins"); c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
+function sendInv(){}
+const invOf = p=>Object.entries((PLAYERS[p]&&PLAYERS[p].inv)||{}).map(([uid,i])=>Object.assign({uid},i)).filter(i=>DEF[i.id]);
+function syncMe(){
+  const P=PLAYERS[me]; if(!P) return;
+  S={name:P.name||"", lvl:P.lvl||2, coins:P.coins||0, inv:invOf(me), dex:P.dex||{}, stats:Object.assign(fresh().stats,P.stats||{}), daily:P.daily||""};
+}
+
+/* =========================================================
+   UI helpers
+   ========================================================= */
+function card(it,opts={}){
+  const d=DEF[it.id]; if(!d) return "";
+  const t=TIERS[d.tier], v=VARIANTS[it.v];
+  return `<div class="card t${d.tier} v-${it.v} ${opts.cls||""}" data-uid="${it.uid||""}" data-id="${d.id}">
+    <span class="tier">${d.fake?"Falsk":t.name}</span>${itemCol(it)?`<span class="cdot" title="${COLS[itemCol(it)][0]}" style="background:${colBg(itemCol(it))}"></span>`:""}${d.fake?`<span class="faketag">FAKE</span>`:""}${v.icon?`<span class="vtag">${v.icon}</span>`:""}
+    <div class="blob art">${artSVG(d,it.k)}</div>
+    <div class="nm">${v.name?v.name+" ":""}${esc(d.name)}</div>
+    <div class="br">${esc(d.brand)}</div>
+    ${opts.noval?"":`<div class="val">🪙 ${opts.price??value(it)}</div>`}
+  </div>`;
+}
+function toast(msg,ms=2200){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),ms); }
+function modal(html,{center=false,onclose}={}){
+  const m=document.createElement("div"); m.className="modal"+(center?" center":"");
+  m.innerHTML=`<div class="sheet">${html}</div>`;
+  m.addEventListener("click",e=>{ if(e.target===m){ m.remove(); onclose&&onclose(); }});
+  document.body.appendChild(m); return m;
+}
+function confirmBox(text,yes="Ja",no="Avbryt"){
+  return new Promise(res=>{
+    const m=modal(`<h3 style="margin-top:0">${text}</h3><div class="row"><button class="btn sec grow" id="cn">${no}</button><button class="btn grow" id="cy">${yes}</button></div>`,{center:true,onclose:()=>res(false)});
+    m.querySelector("#cy").onclick=()=>{m.remove();res(true)}; m.querySelector("#cn").onclick=()=>{m.remove();res(false)};
+  });
+}
+function coinFly(x,y,txt){ const e=document.createElement("div"); e.className="coinfly"; e.textContent=txt; e.style.left=x+"px"; e.style.top=y+"px"; document.body.appendChild(e); setTimeout(()=>e.remove(),1000); }
+function squishOn(el){ el.classList.remove("squish"); void el.offsetWidth; el.classList.add("squish"); }
+
+/* =========================================================
+   ROUTER
+   ========================================================= */
+let view="samling";
+function go(v){ view=v; if(v==="trade"&&me&&db){ ensureOpp(); setTimeout(heartbeat,0); } document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); window.scrollTo(0,0); }
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
+function render(){
+  $("#coinN").textContent=S.coins;
+  const m=$("#main");
+  $("#nav").style.display=(ready&&famOK&&me&&PLAYERS[me])?"flex":"none"; $("#coins").style.visibility=me?"visible":"hidden";
+  if(!ready) return vLoading(m);
+  if(!famOK) return vFamily(m);
+  if(me&&!PLAYERS[me]) return vLoading(m);
+  if(!me) return vLogin(m);
+  updateBadge();
+  ({samling:vSamling,oppgaver:vOppgaver,butikk:vButikk,trade:vTrade,meg:vMeg})[view](m);
+}
+
+/* ---------- SAMLING ---------- */
+let samTab="mine", sortBy="value";
+let colF="";
+function vSamling(m){
+  const tot=invValue(S.inv), dexN=Object.keys(S.dex).length;
+  const have=[...new Set(S.inv.map(itemCol).filter(Boolean))];
+  let html=`<div class="tabs"><button data-t="mine" class="${samTab==="mine"?"on":""}">Mine squishies (${S.inv.length})</button><button data-t="dex" class="${samTab==="dex"?"on":""}">Squishydex</button></div>`;
+  if(samTab==="mine"){
+    html+=`<div class="panel row"><div class="grow"><b>Samlingsverdi</b><div style="font-size:26px;font-weight:900">🪙 ${tot}</div></div>
+      <select id="sort" style="width:auto"><option value="value">Verdi</option><option value="new">Nyeste</option><option value="brand">Merke</option></select></div>`;
+    if(!S.inv.length) html+=`<div class="panel" style="text-align:center"><div style="font-size:60px">🥺</div><b>Du har ingen squishies ennå!</b><p class="muted">Løs oppgaver for å tjene mynter, og kjøp squishies i butikken.</p><button class="btn" onclick="go('oppgaver')">Start oppgaver</button></div>`;
+    if(colF&&!have.includes(colF)) colF="";
+    if(have.length>1) html+=`<div class="chips colchips"><button class="${colF?"":"on"}" data-c="">Alle</button>${have.map(k=>`<button class="${colF===k?"on":""}" data-c="${k}"><span class="cdot2" style="background:${colBg(k)}"></span>${COLS[k][0]}</button>`).join("")}</div>`;
+    const inv=S.inv.filter(i=>!colF||itemCol(i)===colF).sort(sortBy==="value"?(a,b)=>value(b)-value(a):sortBy==="new"?(a,b)=>b.at-a.at:(a,b)=>DEF[a.id].brand.localeCompare(DEF[b.id].brand)||value(b)-value(a));
+    html+=`<div class="grid">${inv.map(i=>card(i,{cls:"tap"+(isOffered(i.uid)?" locked":"")})).join("")}</div>`;
+  } else {
+    html+=`<div class="panel"><b>Samlet ${dexN} av ${CATALOG.length}</b><div class="dexbar"><div style="width:${dexN/CATALOG.length*100}%"></div></div><span class="muted">Grå = ikke funnet ennå</span></div>`;
+    for(const brand of [...new Set(CATALOG.map(d=>d.brand))]){
+      html+=`<h3>${brand}</h3><div class="grid small">${CATALOG.filter(d=>d.brand===brand).map(d=>card({id:d.id,v:"n"},{noval:true,cls:S.dex[d.id]?"":"unknown"})).join("")}</div>`;
+    }
+  }
+  m.innerHTML=html;
+  m.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{samTab=b.dataset.t;render();});
+  m.querySelectorAll(".colchips [data-c]").forEach(b=>b.onclick=()=>{colF=b.dataset.c;render();});
+  const so=m.querySelector("#sort"); if(so){ so.value=sortBy; so.onchange=()=>{sortBy=so.value;render();}; }
+  m.querySelectorAll(".grid .card[data-uid]").forEach(c=>c.onclick=()=>{ squishOn(c); if(c.dataset.uid) setTimeout(()=>itemDetail(c.dataset.uid),250); });
+}
+function itemDetail(u){
+  const it=S.inv.find(i=>i.uid===u); if(!it) return;
+  const d=DEF[it.id], sell=Math.round(value(it)*0.4);
+  const m=modal(`<div style="width:180px;margin:0 auto">${card(it)}</div>
+   <p style="text-align:center" class="muted">${TIERS[d.tier].name}${itemCol(it)?" · "+COLS[itemCol(it)][0]:""}${it.v!=="n"?" · "+VARIANTS[it.v].name+"-variant (x"+VARIANTS[it.v].mult+" verdi)":""}${it.from?"<br>Tradet fra "+esc(it.from):""}</p>
+   <div class="row"><button class="btn sec grow" id="cl">Lukk</button><button class="btn red grow" id="sl" ${isOffered(u)?"disabled":""}>Selg for 🪙 ${sell}</button></div>`,{center:true});
+  m.querySelector("#cl").onclick=()=>m.remove();
+  m.querySelector("#sl").onclick=async()=>{ m.remove(); if(await confirmBox(`Selge ${VARIANTS[it.v].name} ${esc(d.name)} for 🪙 ${sell}?`,"Selg")){ removeItem(u); setCoins(S.coins+sell); render(); toast("Solgt! +"+sell+" 🪙"); } };
+}
+
+/* ---------- OPPGAVER ---------- */
+let quiz=null;
+function vOppgaver(m){
+  if(!quiz){
+    const today=new Date().toDateString();
+    m.innerHTML=`<h2>Tjen mynter 🧠</h2>
+     ${S.daily!==today?`<div class="panel row"><div class="grow"><b>Daglig bonus!</b><div class="muted">Hent 50 gratis mynter i dag</div></div><button class="btn green" id="daily">Hent 🪙 50</button></div>`:""}
+     <p class="muted">Riktig svar = 🪙 10. Fem riktige på rad = 🪙 25 ekstra! Nivå: <b>${["","Lett","Middels","Voksen"][S.lvl]||"Middels"}</b> (bytt under «Meg»)</p>
+     <div class="cats">${CATS.map(c=>`<button class="cat" data-c="${c.id}" style="background:${c.bg}"><span class="e">${c.e}</span>${c.name}</button>`).join("")}</div>`;
+    m.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{ quiz={cat:b.dataset.c,streak:0,n:0,right:0,earned:0,q:null,seen:new Set()}; nextQ(); render(); });
+    const d=m.querySelector("#daily"); if(d) d.onclick=(e)=>{ S.daily=today; setCoins(S.coins+50); coinFly(e.clientX,e.clientY,"+50 🪙"); render(); };
+    return;
+  }
+  const q=quiz.q, cat=CATS.find(c=>c.id===quiz.cat);
+  m.innerHTML=`<div class="panel qbox">
+    <div class="qhead"><button class="btn sec" id="back" style="padding:6px 12px">← Tilbake</button><span>${cat.e} ${cat.name}</span><span class="streak">🔥 ${quiz.streak}</span></div>
+    ${q.big?`<div class="qbig">${q.big}</div>`:""}
+    <div class="qtext">${esc(q.q)}</div>
+    <div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>
+    <p class="muted" style="margin-bottom:0">Denne runden: ${quiz.right}/${quiz.n} riktige · tjent 🪙 ${quiz.earned}</p>
+  </div>`;
+  m.querySelector("#back").onclick=()=>{ quiz=null; render(); };
+  let done=false;
+  m.querySelectorAll(".opt").forEach(b=>b.onclick=(e)=>{
+    if(done) return; done=true;
+    const ok=q.opts[+b.dataset.i]===q.a; quiz.n++; S.stats.answered++;
+    if(ok){ b.classList.add("ok"); quiz.right++; quiz.streak++; S.stats.correct++; S.stats.best=Math.max(S.stats.best,quiz.streak);
+      let gain=10; if(quiz.streak%5===0){ gain+=25; toast("🔥 "+quiz.streak+" på rad! +25 bonus"); }
+      quiz.earned+=gain; setCoins(S.coins+gain); coinFly(e.clientX-20,e.clientY-20,"+"+gain+" 🪙");
+    } else { b.classList.add("no"); quiz.streak=0; m.querySelectorAll(".opt").forEach(x=>{ if(q.opts[+x.dataset.i]===q.a) x.classList.add("ok"); }); }
+    save();
+    setTimeout(()=>{ nextQ(); render(); }, ok?700:1600);
+  });
+}
+function mcq(q,a,wrong,big){ return {q,a:String(a),opts:shuffle([String(a),...wrong.slice(0,3).map(String)]),big}; }
+function numWrong(a,spread){ const s=new Set(); while(s.size<3){ let w=a+rnd(-spread,spread); if(w!==a&&w>=0) s.add(w); } return [...s]; }
+function genMathAdult(){
+  const t=pick(["mul","pst","rab","ekv","kv","rot","brok","snitt","tid","dev"]);
+  let q,a;
+  if(t==="mul"){ const x=rnd(12,99),y=rnd(6,19); q=`Hva er ${x} × ${y}?`; a=x*y; }
+  else if(t==="pst"){ const p=pick([5,15,20,25,30,35,40,60,75]), x=rnd(2,40)*20; q=`Hva er ${p} % av ${x}?`; a=x*p/100; }
+  else if(t==="rab"){ const p=pick([10,20,25,30,40,50]), x=rnd(4,40)*40; q=`En vare koster ${x} kr. Du får ${p} % rabatt. Hva blir prisen?`; a=x*(100-p)/100; }
+  else if(t==="ekv"){ const x=rnd(3,25), k=rnd(2,9), c=rnd(1,40); q=`Løs for x: ${k}x + ${c} = ${k*x+c}`; a=x; }
+  else if(t==="kv"){ const x=rnd(11,30); q=`Hva er ${x}²?`; a=x*x; }
+  else if(t==="rot"){ const x=rnd(6,25); q=`Hva er kvadratroten av ${x*x}?`; a=x; }
+  else if(t==="brok"){ const n=pick([2,3,4,5,8]), x=rnd(2,12)*n, k=rnd(1,n-1); q=`Hva er ${k}/${n} av ${x}?`; a=x/n*k; }
+  else if(t==="snitt"){ const a1=rnd(4,12),b1=rnd(4,12),c1=rnd(4,12); const tot=a1+b1+c1, pad=(3-tot%3)%3; const c2=c1+pad; q=`Hva er gjennomsnittet av ${a1}, ${b1} og ${c2}?`; a=(a1+b1+c2)/3; }
+  else if(t==="tid"){ const h=rnd(2,9), mm=pick([15,30,45]); q=`Hvor mange minutter er ${h} timer og ${mm} minutter?`; a=h*60+mm; }
+  else { const x=rnd(3,12), y=rnd(3,12), z=rnd(2,9); q=`Hva er (${x} + ${y}) × ${z}?`; a=(x+y)*z; }
+  return mcq(q, a, numWrong(a, Math.max(4,Math.round(a*0.12))));
+}
+function genMath(lvl){
+  if(lvl>=3) return genMathAdult();
+  const t = lvl===1 ? pick(["+","+","-","-","x"]) : pick(["+","-","x","x",":","halv","pst"]);
+  let q,a;
+  if(lvl===1){
+    if(t==="+"){ const x=rnd(2,30),y=rnd(2,20); q=`${x} + ${y}`; a=x+y; }
+    else if(t==="-"){ const x=rnd(10,50),y=rnd(1,x); q=`${x} − ${y}`; a=x-y; }
+    else { const x=rnd(2,5),y=rnd(1,10); q=`${x} × ${y}`; a=x*y; }
+  } else {
+    if(t==="+"){ const x=rnd(50,600),y=rnd(20,400); q=`${x} + ${y}`; a=x+y; }
+    else if(t==="-"){ const x=rnd(100,1000),y=rnd(10,x); q=`${x} − ${y}`; a=x-y; }
+    else if(t==="x"){ const x=rnd(3,12),y=rnd(3,12); q=`${x} × ${y}`; a=x*y; }
+    else if(t===":"){ const y=rnd(2,10),a0=rnd(2,12); q=`${y*a0} : ${y}`; a=a0; }
+    else if(t==="halv"){ const x=rnd(5,60)*2; q=`Hva er halvparten av ${x}?`; a=x/2; }
+    else { const x=rnd(1,30)*10; q=`Hva er 10 % av ${x}?`; a=x/10; }
+  }
+  return mcq(q.includes("?")?q:`Hva er ${q}?`, a, numWrong(a, Math.max(3,Math.round(a*0.15))));
+}
+// husker hvilke spørsmål spilleren har fått, så de ikke går igjen før alle i temaet er brukt opp
+function qSeenSet(){ const k="squishyTrade.qseen."+(me||"x"); if(qSeenSet.k!==k){ qSeenSet.k=k; try{ qSeenSet.s=new Set(JSON.parse(localStorage.getItem(k)||"[]")); }catch(e){ qSeenSet.s=new Set(); } } return qSeenSet.s; }
+function qSeenSave(){ try{ localStorage.setItem(qSeenSet.k,JSON.stringify([...qSeenSet.s].slice(-2000))); }catch(e){} }
+function genQ(cat){
+  const lvl=S.lvl, cs=COUNTRIES.filter(c=>lvl>=3?c[3]>=2:c[3]<=lvl);
+  if(cat==="mix") cat=pick(["matte","flagg","hoved","historie","boker","natur","kropp","sprak","aktuelt"]);
+  if(cat==="matte") return genMath(lvl);
+  if(cat==="flagg"||cat==="hoved"){
+    const c=pick(cs), others=shuffle(COUNTRIES.filter(x=>x!==c&&x[3]<=Math.max(lvl,1)+ (lvl===1?0:0)));
+    if(cat==="flagg") return mcq("Hvilket land har dette flagget?", c[0], others.map(o=>o[0]), c[1]);
+    return Math.random()<.5 ? mcq(`Hva er hovedstaden i ${c[0]}?`, c[2], others.map(o=>o[2]), c[1])
+                            : mcq(`${c[2]} er hovedstaden i hvilket land?`, c[0], others.map(o=>o[0]), "🏙️");
+  }
+  const bank=QBANK[cat].filter(q=>lvl>=3?q[3]>=2:q[3]<=lvl);
+  const SS=qSeenSet();
+  let fresh=bank.filter(q=>!SS.has(q[0]));
+  if(!fresh.length){ bank.forEach(q=>SS.delete(q[0])); fresh=bank; }
+  const item=pick(fresh); SS.add(item[0]); qSeenSave();
+  return mcq(item[0], item[1], item[2]);
+}
+function nextQ(){ quiz.q=genQ(quiz.cat); }
+
+/* ---------- BUTIKK ---------- */
+let shopBrand="Alle", shopOnly=false;
+const MDUMP={id:"mdump",name:"Mysterie-dumpling",e:"🥟",price:90,desc:"1 dumpling · du vet ikke hvilken!"};
+function cdSpan(ts){ return `<b data-cd="${ts}">${fmtCd(ts-Date.now())}</b>`; }
+function vButikk(m){
+  const brands=["Alle",...new Set(CATALOG.filter(d=>!d.blind).map(d=>d.brand))];
+  const all=CATALOG.filter(d=>!d.blind&&(shopBrand==="Alle"||d.brand===shopBrand)).map(d=>({d,st:stockOf(d)}));
+  const list=all.filter(x=>!shopOnly||x.st.on).sort((a,b)=>(b.st.on-a.st.on)||(b.st.fresh?1:0)-(a.st.fresh?1:0)||a.d.tier-b.d.tier);
+  const fresh=all.filter(x=>x.st.fresh).map(x=>x.d.name);
+  const soon=all.filter(x=>x.st.next).sort((a,b)=>a.st.next-b.st.next)[0];
+  const md=stockInfo(MD_KEY,MD_P);
+  m.innerHTML=`<h2>Butikken 🛍️</h2>
+   ${fresh.length?`<div class="restock">🔔 <b>Restock!</b> Nytt på lager: ${fresh.slice(0,3).map(esc).join(", ")}${fresh.length>3?` og ${fresh.length-3} til`:""}</div>`:""}
+   ${soon?`<p class="muted" style="font-size:13px;margin:4px 0">⏳ Neste restock: <b>${esc(soon.d.name)}</b> om ${cdSpan(soon.st.next)}</p>`:""}
+   <h3>Mysteriebokser</h3>
+   <div class="boxes">${BOXES.map(b=>`<div class="box ${b.cls}"><span class="e">${b.e}</span>${b.name}<small>${b.desc}</small><button class="btn" data-box="${b.id}" ${S.coins<b.price?"disabled":""}>🪙 ${b.price}</button></div>`).join("")}
+     <div class="box b1 ${md.on?"":"oosb"}"><span class="e">🥟❓</span>${MDUMP.name}<small>${md.on?MDUMP.desc:"UTSOLGT"}</small>
+       ${md.on?`<button class="btn" data-box="mdump" ${S.coins<MDUMP.price?"disabled":""}>🪙 ${MDUMP.price}</button><small>${md.end?`Utsolgt om ${cdSpan(md.end)}`:""}</small>`:`<button class="btn" disabled>Utsolgt</button><small>🔔 Restock om ${md.next?cdSpan(md.next):"…"}</small>`}</div></div>
+   <p class="muted" style="font-size:13px">Episke og legendariske squishies finnes mest i bokser! Pass opp for <b>fake</b> dumplings 😬. Alle kjøp kan bli <b>✨ Glitter</b>, <b>🌈 Regnbue</b> eller <b>👑 Gull</b>.</p>
+   <h3>Kjøp squishies</h3>
+   <div class="chips">${brands.map(b=>`<button class="${b===shopBrand?"on":""}" data-b="${b}">${b}</button>`).join("")}<button class="${shopOnly?"on":""}" id="onlyin">✅ Bare på lager</button></div>
+   <div class="grid">${list.map(({d,st})=>{
+     const p=priceOf(d);
+     const info = st.on ? (st.end?`<div class="cdl">Utsolgt om ${cdSpan(st.end)}</div>`:`<div class="cdl">På lager</div>`)
+                : st.never ? `<div class="cdl">Utsolgt – kommer ikke tilbake på en stund</div>`
+                : `<div class="cdl">🔔 Restock om ${cdSpan(st.next)}</div>`;
+     return `<div class="shopitem ${st.on?"":"oos"}"><div class="cw">${card({id:d.id,v:"n"},{price:p})}${st.fresh?`<span class="rs">🔔 RESTOCK</span>`:""}${st.on?"":`<span class="oosr">UTSOLGT</span>`}</div>${info}<button class="btn" style="width:100%;padding:8px" data-buy="${d.id}" ${(!st.on||S.coins<p)?"disabled":""}>${st.on?"Kjøp":"Utsolgt"}</button></div>`; }).join("")}</div>`;
+  m.querySelectorAll(".chips button[data-b]").forEach(b=>b.onclick=()=>{shopBrand=b.dataset.b;render();});
+  m.querySelector("#onlyin").onclick=()=>{shopOnly=!shopOnly;render();};
+  m.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>buy(b.dataset.buy));
+  m.querySelectorAll("[data-box]").forEach(b=>b.onclick=()=>openBox(b.dataset.box));
+}
+function buy(id){
+  const d=DEF[id], p=priceOf(d); if(!stockOf(d).on){ toast("Utsolgt akkurat nå 😢"); return render(); }
+  if(S.coins<p) return toast("Ikke nok mynter 😅");
+  setCoins(S.coins-p); const it=makeItem(id,1); addItem(it); save(); sendInv();
+  reveal([it],"🛍️",()=>render());
+}
+// teller ned hvert sekund; når noe restockes/blir utsolgt tegnes butikken på nytt
+setInterval(()=>{
+  const els=document.querySelectorAll("[data-cd]"); if(!els.length) return;
+  let again=false; els.forEach(e=>{ const r=+e.dataset.cd-Date.now(); if(r<=0) again=true; else e.textContent=fmtCd(r); });
+  if(again&&view==="butikk"&&!document.querySelector(".modal")&&!$("#reveal").classList.contains("show")) render();
+},1000);
+// varsler når noe kommer tilbake på lager mens appen er åpen (eller siden sist du var inne)
+const STK_KEY="squishyTrade.stk";
+function stockTick(first){
+  const cur=CATALOG.filter(d=>!d.blind&&stockOf(d).on).map(d=>d.id);
+  let prev=null; try{ prev=JSON.parse(localStorage.getItem(STK_KEY)||"null"); }catch(e){}
+  try{ localStorage.setItem(STK_KEY,JSON.stringify(cur)); }catch(e){}
+  if(!prev||!me) return;
+  const back=cur.filter(id=>!prev.includes(id)&&DEF[id].tier>=2);
+  if(back.length&&Date.now()-(window._lrt||0)>10*60*1000){ window._lrt=Date.now(); toast("🔔 Restock! "+back.slice(0,2).map(id=>DEF[id].name).join(", ")+(back.length>2?` og ${back.length-2} til`:"")+" er på lager",5000); if(view==="butikk") softRender(); }
+}
+setInterval(stockTick,20000);
+function rollTier(odds){ let r=Math.random()*100; for(let i=0;i<odds.length;i++){ if(r<odds[i]) return i; r-=odds[i]; } return 0; }
+function rollMystery(){
+  if(Math.random()<0.12) return pick(CATALOG.filter(d=>d.fake));
+  const pool=CATALOG.filter(d=>d.brand==="Mystery Dumpling"), W=[10,8,5,0,1];
+  let tot=pool.reduce((a,d)=>a+W[d.tier],0), r=Math.random()*tot;
+  for(const d of pool){ r-=W[d.tier]; if(r<0) return d; } return pool[0];
+}
+function openBox(bid){
+  const b=bid==="mdump"?MDUMP:BOXES.find(x=>x.id===bid); if(!b) return;
+  if(bid==="mdump"&&!stockInfo(MD_KEY,MD_P).on){ toast("Utsolgt akkurat nå 😢"); return render(); }
+  if(S.coins<b.price) return toast("Ikke nok mynter 😅");
+  setCoins(S.coins-b.price); S.stats.opened++;
+  const items=[];
+  if(bid==="mdump"){ const it=makeItem(rollMystery().id,1); addItem(it); items.push(it); }
+  else for(let i=0;i<b.count;i++){
+    const t=rollTier(b.odds); let d;
+    if(t===0&&Math.random()<0.08) d=pick(CATALOG.filter(c=>c.fake));
+    else d=pick(CATALOG.filter(c=>c.tier===t&&!c.fake));
+    const it=makeItem(d.id,b.vboost); addItem(it); items.push(it);
+  }
+  save(); sendInv(); reveal(items,bid==="mdump"?"🥟":b.e,()=>render());
+}
+
+/* ---------- REVEAL-ANIMASJON ---------- */
+function fanfare(it){ return Math.max(DEF[it.id].tier, VARIANTS[it.v].fan); }
+const FAN_COL=["#ffffff","#7cf2a8","#6fb6ff","#d68bff","#ffcc33"];
+function reveal(items,boxEmoji,done,title){
+  const R=$("#reveal"), box=$("#rbox"), ri=$("#ritem"), lab=$("#rlabel"), sub=$("#rsub"), nx=$("#rnext");
+  let i=0;
+  R.classList.add("show");
+  const step=()=>{
+    if(i>=items.length){ R.classList.remove("show","big"); done&&done(); return; }
+    const it=items[i], d=DEF[it.id], f=fanfare(it);
+    R.classList.remove("big"); ri.classList.remove("on"); ri.innerHTML=""; lab.textContent=title||""; lab.classList.remove("pop"); sub.textContent=items.length>1?`${i+1} av ${items.length}`:""; nx.style.display="none";
+    box.textContent=boxEmoji; box.style.display="block"; box.className="shake";
+    R.style.setProperty("--rc",FAN_COL[f]);
+    const shakeTime = 700 + f*450;
+    setTimeout(()=>{
+      box.className="boom";
+      setTimeout(()=>{
+        box.style.display="none";
+        ri.innerHTML=card(it); ri.classList.add("on");
+        if(f>=2){ R.classList.add("big"); confetti(f); try{navigator.vibrate&&navigator.vibrate(f>=4?[100,60,100,60,300]:[80,50,80]);}catch(e){} }
+        const v=VARIANTS[it.v];
+        let L = d.tier===4&&d.brand==="Mystery Dumpling"?"👑 GOLDEN DUMPLING!! 👑": f>=4?"🌟 LEGENDARISK! 🌟": f===3?"💜 EPISK! 💜": f===2?"💙 SJELDEN! 💙": d.tier===1?"Uvanlig!":"Ny squishy!";
+        if(it.v!=="n") L = `${v.icon} ${v.name.toUpperCase()}-VARIANT! ${v.icon}`;
+        if(d.fake) L="😬 Æsj – en FAKE dumpling!";
+        lab.textContent=L; if(f>=2) lab.classList.add("pop");
+        lab.style.color=FAN_COL[f];
+        sub.textContent=`${TIERS[d.tier].name}${it.v!=="n"?" · "+v.name:""} · verdi 🪙 ${value(it)}`+(items.length>1?`  (${i+1}/${items.length})`:"");
+        nx.style.display="inline-block"; nx.textContent = i<items.length-1?"Neste ➜":"Fortsett";
+      },300);
+    },shakeTime);
+  };
+  nx.onclick=()=>{ i++; step(); };
+  step();
+}
+function confetti(level){
+  const cv=$("#confetti"), cx=cv.getContext("2d"); cv.width=innerWidth; cv.height=innerHeight;
+  const cols= level>=4?["#ffd700","#ffec8b","#fff","#ffb300"]:["#ff8fc7","#a78bfa","#7dd3fc","#fde047","#86efac"];
+  const P=[]; const n=level>=4?260:level===3?170:110;
+  for(let k=0;k<n;k++) P.push({x:cv.width/2,y:cv.height/2,vx:(Math.random()-.5)*16,vy:Math.random()*-16-4,s:rnd(5,11),c:pick(cols),r:Math.random()*6,vr:(Math.random()-.5)*.4});
+  let t=0; (function f(){ cx.clearRect(0,0,cv.width,cv.height); P.forEach(p=>{p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr; cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);cx.restore();}); if(++t<170) requestAnimationFrame(f); else cx.clearRect(0,0,cv.width,cv.height); })();
+}
+
+/* =========================================================
+   TRADINGBRETT – live, delt mellom to spillere (lagres i skyen)
+   Venstre side = deg, høyre side = motspilleren.
+   Knapper: ✕ avslå · ＋ legg til · pil = godta
+   ========================================================= */
+const MAXB=5;
+let tv={opp:""}, BOARDS={}, hereTimer=null, shownNew=new Set(), firstBoards=true;
+const seen=new Set(JSON.parse(localStorage.getItem(SEEN_KEY)||"[]"));
+const markSeen=k=>{ seen.add(k); try{localStorage.setItem(SEEN_KEY,JSON.stringify([...seen].slice(-300)));}catch(e){} };
+const pname=p=>(PLAYERS[p]&&PLAYERS[p].name)||"?";
+const itemsOf=o=>Object.entries(o||{}).map(([uid,i])=>Object.assign({uid},i)).filter(i=>DEF[i.id]);
+const bkey=(a,b)=>[a,b].sort().join("__");
+const others=()=>Object.keys(PLAYERS).filter(p=>p!==me);
+const myBoards=()=>Object.entries(BOARDS).filter(([k])=>k.split("__").includes(me));
+function isOffered(u){ return myBoards().some(([k,b])=>b.offers&&b.offers[me]&&b.offers[me][u]); }
+const isHere=(b,p)=>b&&b.here&&b.here[p]&&Date.now()-b.here[p]<45000;
+function updateBadge(){
+  // Prikk på Trade når noen har lagt noe på brettet / godtatt og du ikke ser på det
+  let n=0; for(const [k,b] of myBoards()){ const o=k.split("__").find(p=>p!==me); const has=Object.keys((b.offers||{})[o]||{}).length||(b.acc&&b.acc[o]); if(has&&!(view==="trade"&&tv.opp===o)&&(b.upd||0)>(+localStorage.getItem("sqv:"+k)||0)) n++; }
+  const btn=document.querySelector('nav button[data-v="trade"]'); if(btn) btn.dataset.badge=n?"!":"";
+}
+function onBoards(){
+  for(const [k,b] of myBoards()){
+    const o=k.split("__").find(p=>p!==me);
+    if(b.last&&!seen.has("L"+b.last.id)){ markSeen("L"+b.last.id); if(!firstBoards&&Date.now()-b.last.at<120000){ const got=itemsOf((b.last.got||{})[me]); swapAnim(o,()=>{ if(got.length) reveal(got,"🤝",()=>render(),"Byttet er gjort!"); else { toast("✅ Byttet er gjort!"); render(); } }); } }
+    if(b.ev&&!seen.has("E"+b.ev.id)){ markSeen("E"+b.ev.id); if(!firstBoards&&b.ev.by!==me&&Date.now()-b.ev.at<120000){ toast(b.ev.type==="declined"?"❌ "+pname(b.ev.by)+" avslo byttet":"😕 Byttet gikk ikke – noe er solgt",3000); } }
+    if(b.ask&&!seen.has("A"+b.ask.id)){ markSeen("A"+b.ask.id); if(!firstBoards&&b.ask.by!==me&&Date.now()-b.ask.at<120000){ toast("☝️ "+pname(o)+" ber deg legge til mer på brettet",3500); try{navigator.vibrate&&navigator.vibrate(80);}catch(e){} if(view==="trade"&&tv.opp===o) render(); } }
+    if(b.emote&&!seen.has("M"+b.emote.id)){ markSeen("M"+b.emote.id); if(!firstBoards&&b.emote.from!==me&&Date.now()-b.emote.at<20000) showEmote(b.emote.e,o); }
+  }
+  firstBoards=false; updateBadge();
+}
+function ensureOpp(){ const os=others(); if(!os.includes(tv.opp)) tv.opp=os.length===1?os[0]:(os[0]||""); return tv.opp; }
+function heartbeat(){
+  clearInterval(hereTimer);
+  const beat=()=>{ if(view!=="trade"||!tv.opp||!me||!db) return clearInterval(hereTimer); FB.set(R(`boards/${bkey(me,tv.opp)}/here/${me}`),Date.now()).catch(()=>{}); localStorage.setItem("sqv:"+bkey(me,tv.opp),Date.now()); };
+  beat(); hereTimer=setInterval(beat,15000);
+}
+// --- handlinger (transaksjoner, så to mobiler aldri ødelegger for hverandre) ---
+function boardTx(fn){ const k=bkey(me,tv.opp); return FB.runTransaction(R("boards/"+k),b=>{ b=b||{}; b.offers=b.offers||{}; b.acc=b.acc||{}; const r=fn(b); if(r===false) return; b.upd=Date.now(); return b; }).catch(fail); }
+function addToBoard(it){ return boardTx(b=>{ b.ask=null; const m=b.offers[me]||{}; if(Object.keys(m).length>=MAXB) return false; m[it.uid]={id:it.id,v:it.v,k:it.k||""}; b.offers[me]=m; b.acc={}; }); }
+function removeFromBoard(u){ return boardTx(b=>{ const m=b.offers[me]||{}; delete m[u]; b.offers[me]=m; b.acc={}; }); }
+function declineBoard(){ return boardTx(b=>{ b.offers={}; b.acc={}; b.ev={id:uid(),type:"declined",by:me,at:Date.now()}; }); }
+function unaccept(){ return boardTx(b=>{ b.acc[me]=false; }); }
+function sendEmote(e){ const k=bkey(me,tv.opp); FB.set(R(`boards/${k}/emote`),{id:uid(),from:me,e,at:Date.now()}).catch(()=>{}); showEmote(e,me); }
+async function acceptBoard(){
+  const o=tv.opp, k=bkey(me,o);
+  try{
+    await FB.runTransaction(FB.ref(db),root=>{
+      if(!root) return root;
+      const b=root.boards&&root.boards[k]; if(!b) return;
+      b.offers=b.offers||{}; b.acc=b.acc||{};
+      const mine=Object.keys(b.offers[me]||{}), theirs=Object.keys(b.offers[o]||{});
+      if(!mine.length&&!theirs.length) return;
+      b.acc[me]=true; b.upd=Date.now();
+      if(b.acc[o]){
+        const A=root.players[me], B=root.players[o]; if(!A||!B) return;
+        A.inv=A.inv||{}; B.inv=B.inv||{};
+        if(!mine.every(u=>A.inv[u])||!theirs.every(u=>B.inv[u])){ b.offers={}; b.acc={}; b.ev={id:uid(),type:"failed",by:me,at:Date.now()}; return root; }
+        const now=Date.now(), got={[me]:{},[o]:{}};
+        const move=(F,T,list,to)=>list.forEach(u=>{ const it=F.inv[u]; delete F.inv[u]; const nu=uid(); T.inv[nu]={id:it.id,v:it.v,k:it.k||"",at:now,from:F.name||""}; T.dex=T.dex||{}; T.dex[it.id]=true; got[to][nu]={id:it.id,v:it.v,k:it.k||""}; });
+        move(A,B,mine,o); move(B,A,theirs,me);
+        b.last={id:uid(),at:now,got}; b.offers={}; b.acc={};
+      }
+      return root;
+    });
+  }catch(e){ fail(e); }
+}
+// --- animasjoner ---
+function swapAnim(o,done){
+  if(view!=="trade"||tv.opp!==o){ done(); return; }
+  const L=document.querySelector(".tpanel.me"), Rr=document.querySelector(".tpanel.them");
+  if(!L||!Rr){ done(); return; }
+  const d=Rr.getBoundingClientRect().left-L.getBoundingClientRect().left;
+  L.style.transition=Rr.style.transition="transform .7s cubic-bezier(.5,-0.3,.4,1.3)";
+  L.style.transform=`translateX(${d}px) rotate(4deg)`; Rr.style.transform=`translateX(${-d}px) rotate(-4deg)`;
+  try{navigator.vibrate&&navigator.vibrate([60,40,60]);}catch(e){}
+  setTimeout(done,800);
+}
+function showEmote(e,who){
+  const el=document.querySelector(who===me?".tpanel.me":".tpanel.them"); const r=el?el.getBoundingClientRect():{left:innerWidth/2,top:innerHeight/2,width:0,height:0};
+  const f=document.createElement("div"); f.className="emote"; f.textContent=e; f.style.left=(r.left+r.width/2-30)+"px"; f.style.top=(r.top+r.height/2-30)+"px"; document.body.appendChild(f); setTimeout(()=>f.remove(),1600);
+}
+// --- visning ---
+function slotHTML(it,mine){
+  if(!it) return `<div class="slot empty"></div>`;
+  const d=DEF[it.id], v=VARIANTS[it.v]; const isNew=!shownNew.has(it.uid); shownNew.add(it.uid);
+  return `<div class="slot t${d.tier} v-${it.v} ${isNew?"pop":""} ${mine?"rm":""}" data-uid="${it.uid}">
+     <div class="sb art">${artSVG(d,it.k)}</div>
+     <div class="si"><b>${v.icon?v.icon+" ":""}${esc(d.name)}</b><span>🪙 ${value(it)}</span></div>${mine?'<span class="sx">✕</span>':""}</div>`;
+}
+function vTrade(m){
+  const os=others();
+  if(!os.length){ m.innerHTML=`<h2>Tradingbrett 🤝</h2><div class="panel muted">Ingen andre spillere ennå. Når søsteren din lager en spiller, kan dere trade her.</div>`; return; }
+  const o=ensureOpp(), k=bkey(me,o), b=BOARDS[k]||{}, offers=b.offers||{}, acc=b.acc||{};
+  const mine=itemsOf(offers[me]), theirs=itemsOf(offers[o]);
+  const vm=invValue(mine), vt=invValue(theirs), any=mine.length+theirs.length>0;
+  const slots=(items,mineSide)=>Array.from({length:MAXB},(_,i)=>slotHTML(items[i],mineSide)).join("");
+  const asked=b.ask&&b.ask.by===me&&Date.now()-b.ask.at<600000, askOld=!(b.ask&&Date.now()-b.ask.at<600000);
+  let status = !any ? "Legg squishies på brettet med «＋ Legg til»" :
+    acc[me]&&acc[o] ? "Bytter…" :
+    acc[me] ? `Du har godtatt ✅ Venter på ${esc(pname(o))}…` :
+    acc[o] ? `🎉 ${esc(pname(o))} har godtatt! Trykk på pila for å godta du også` :
+    "Trykk på pila når du er fornøyd";
+  m.innerHTML=`
+   ${os.length>1?`<div class="chips">${os.map(p=>`<button class="${p===o?"on":""}" data-p="${p}">${esc(pname(p))}</button>`).join("")}</div>`:""}
+   <div class="row" style="justify-content:space-between;margin-bottom:8px">
+     <h2 style="margin:0">Tradingbrett</h2>
+     <div class="status"><span class="dot ${isHere(b,o)?"on":""}"></span>${esc(pname(o))} ${isHere(b,o)?"er på brettet":"er ikke her nå"}</div>
+   </div>
+   <div class="tboard">
+     <div class="tcol">
+       <button class="tbtn x" id="bx" ${any?"":"disabled"} aria-label="Avslå">✕</button>
+       <button class="tbtn ask ${asked?"on":""}" id="bm" aria-label="Be om mer">☝️</button>
+       <button class="tbtn arrow ${acc[me]?"on":""}" id="ba" ${any?"":"disabled"} aria-label="Godta">‹</button>
+     </div>
+     <div class="tpanel me ${acc[me]?"acc":""}"><div class="ph">Du ${acc[me]?"✅":""}</div>${slots(mine,true)}<div class="pv">🪙 ${vm}</div></div>
+     <div class="tpanel them ${acc[o]?"acc":""}"><div class="ph">${esc(pname(o))} ${acc[o]?"✅":""}</div>${slots(theirs,false)}<div class="pv">🪙 ${vt}</div></div>
+     <div class="tcol them">
+       <div class="tbtn arrow ${acc[o]?"on":""}">›</div>
+       <div class="tbtn ask ${b.ask&&b.ask.by===o&&!askOld?"on":""}">☝️</div>
+       <div class="tbtn x">✕</div>
+     </div>
+   </div>
+   <div class="addrow"><button class="btn sec" id="bp" ${mine.length>=MAXB?"disabled":""}>＋ Legg til squishy</button></div>
+   ${b.ask&&b.ask.by===o&&!askOld?`<div class="askbar">☝️ ${esc(pname(o))} vil ha mer på brettet fra deg!</div>`:""}
+   <div class="tstatus ${acc[o]&&!acc[me]?"hot":""}">${status}</div>
+   <div class="fair">Du gir 🪙 ${vm} · du får 🪙 ${vt} ${any?(vt>=vm?"😊":"🤔"):""}</div>
+   <div class="emotes">${["👍","🤔","😍","🙏","😂","😢"].map(e=>`<button data-e="${e}">${e}</button>`).join("")}</div>
+   <div class="panel" style="margin-top:12px"><b>${esc(pname(o))} sin samling</b> <span class="muted">(🪙 ${invValue(invOf(o))})</span>
+     <div class="grid small" style="margin-top:8px">${invOf(o).sort((a,b)=>value(b)-value(a)).map(i=>card(i,{cls:"peek"})).join("")||'<span class="muted">Tom</span>'}</div></div>`;
+  m.querySelectorAll(".chips [data-p]").forEach(x=>x.onclick=()=>{ tv.opp=x.dataset.p; heartbeat(); render(); });
+  m.querySelector("#bp").onclick=()=>picker("Legg på brettet",S.inv.filter(i=>!isOffered(i.uid)),it=>addToBoard(it));
+  m.querySelector("#bm").onclick=()=>{ boardTx(b=>{ b.ask={id:uid(),by:me,at:Date.now()}; b.acc={}; }); toast("☝️ Du ba "+pname(o)+" legge til mer"); };
+  m.querySelector("#ba").onclick=()=>{ squishOn(m.querySelector("#ba")); acc[me]?unaccept():acceptBoard(); };
+  m.querySelector("#bx").onclick=async()=>{ if(await confirmBox("Avslå og tøm brettet?","Avslå ❌")) declineBoard(); };
+  m.querySelectorAll(".tpanel.me .slot.rm").forEach(s=>s.onclick=()=>{ s.classList.add("out"); setTimeout(()=>removeFromBoard(s.dataset.uid),200); });
+  m.querySelectorAll(".emotes button").forEach(x=>x.onclick=()=>sendEmote(x.dataset.e));
+  localStorage.setItem("sqv:"+k,Date.now()); updateBadge();
+}
+function picker(title,items,onPick){
+  items=items.slice().sort((a,b)=>value(b)-value(a));
+  const m=modal(`<h3 style="margin-top:0">${title}</h3>
+    ${items.length?`<div class="grid small">${items.map(i=>card(i,{cls:"tap"})).join("")}</div>`:`<p class="muted">Ingen squishies å velge.</p>`}
+    <button class="btn sec" id="cl" style="width:100%;margin-top:12px">Lukk</button>`);
+  m.querySelector("#cl").onclick=()=>{ m.remove(); render(); };
+  m.querySelectorAll(".card").forEach(c=>c.onclick=()=>{ const it=items.find(i=>i.uid===c.dataset.uid); if(!it) return; squishOn(c); m.remove(); onPick({uid:it.uid,id:it.id,v:it.v,k:it.k}); });
+}
+
+/* ---------- MEG ---------- */
+function vMeg(m){
+  const st=S.stats, trades=S.inv.filter(i=>i.from).length;
+  const board=Object.keys(PLAYERS).map(p=>({p,n:pname(p),v:invValue(invOf(p))})).sort((a,b)=>b.v-a.v);
+  m.innerHTML=`<h2>Hei, ${esc(S.name)}! ⭐</h2>
+   <div class="panel">
+     <div class="stat"><span>Squishies</span><b>${S.inv.length}</b></div>
+     <div class="stat"><span>Samlingsverdi</span><b>🪙 ${invValue(S.inv)}</b></div>
+     <div class="stat"><span>Squishydex</span><b>${Object.keys(S.dex).length}/${CATALOG.length}</b></div>
+     <div class="stat"><span>Riktige svar</span><b>${st.correct} av ${st.answered}</b></div>
+     <div class="stat"><span>Lengste rekke</span><b>🔥 ${st.best}</b></div>
+     <div class="stat"><span>Bokser åpnet</span><b>${st.opened}</b></div>
+     <div class="stat" style="border:0"><span>Squishies fått i bytte</span><b>${trades}</b></div>
+   </div>
+   <div class="panel"><b>🏆 Toppliste (samlingsverdi)</b>${board.map((x,i)=>`<div class="stat" ${i===board.length-1?'style="border:0"':""}><span>${["🥇","🥈","🥉"][i]||"·"} ${esc(x.n)}</span><b>🪙 ${x.v}</b></div>`).join("")}</div>
+   <div class="panel"><b>Innstillinger</b>
+     <p style="margin:10px 0 4px">Nivå på oppgaver</p>
+     <select id="lv"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2">Middels (ca. 5.–7. trinn)</option><option value="3">Voksen (vanskelig)</option></select>
+     <button class="btn" id="sv" style="width:100%;margin-top:12px">Lagre</button>
+   </div>
+   <div class="panel"><b>Odds i boksene</b><p class="muted" style="font-size:13px">${BOXES.map(b=>`${b.e} ${b.name}: `+b.odds.map((o,i)=>o?`${TIERS[i].name} ${o}%`:"").filter(Boolean).join(", ")).join("<br>")}<br>Varianter: ✨ Glitter ~12 %, 🌈 Regnbue ~5 %, 👑 Gull ~1 % (høyere i store bokser)</p></div>
+   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 10 · flere squishies</p>`;
+  m.querySelector("#lv").value=S.lvl;
+  m.querySelector("#sv").onclick=()=>{ S.lvl=+m.querySelector("#lv").value; save(); toast("Lagret ✅"); };
+  m.querySelector("#lo").onclick=async()=>{ if(await confirmBox("Bytte spiller? Samlingen ligger trygt lagret.","Bytt")){ me=""; localStorage.removeItem(ME_KEY); S=fresh(); render(); } };
+}
+
+/* ---------- INNLOGGING ---------- */
+async function hashPin(p,pin){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("sq|"+p+"|"+pin)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+const slug=n=>n.toLowerCase().normalize("NFKD").replace(/[^a-z0-9æøå]+/g,"-").replace(/^-|-$/g,"")||"spiller";
+async function famH(c){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("fam|"+c.trim().toLowerCase())); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+function vFamily(m){
+  m.innerHTML=`<div style="text-align:center;margin-top:10px"><div style="font-size:64px">🥟🐸🦄</div><h2>Squishy Trade</h2><p class="muted">Skriv familiekoden for å spille sammen med de andre.</p></div>
+   <div class="panel"><input id="fc" placeholder="Familiekode" autocapitalize="none" autocomplete="off" style="font-size:22px;text-align:center"><button class="btn" id="fb" style="width:100%;margin-top:10px">Kom inn 🎉</button></div>`;
+  const go2=async()=>{ const c=m.querySelector("#fc").value; if(!c.trim()) return toast("Skriv koden");
+    const h=await famH(c);
+    if(!famHash){ try{ await retryWrite(()=>FB.set(R("meta/code"),h)); famHash=h; }catch(e){ return fail(e); } toast("Familiekoden er satt ✅",3000); }
+    else if(h!==famHash){ m.querySelector("#fc").value=""; return toast("Feil kode 🙈"); }
+    localStorage.setItem(FAM_KEY,h); famOK=true; render(); };
+  m.querySelector("#fb").onclick=go2; m.querySelector("#fc").onkeydown=e=>{ if(e.key==="Enter") go2(); };
+}
+function vLogin(m){
+  const ps=Object.keys(PLAYERS);
+  m.innerHTML=`<div style="text-align:center;margin-top:10px"><div style="font-size:64px">🥟🐸🦄</div><h2>Velkommen til Squishy Trade!</h2><p class="muted">Løs oppgaver, tjen mynter, kjøp squishies og trade med hverandre.</p></div>
+    ${ps.length?`<h3>Hvem spiller nå?</h3><div class="cats">${ps.map(p=>`<button class="cat" data-p="${p}" style="background:#ffe1ef"><span class="e">🧑‍🎤</span>${esc(pname(p))}</button>`).join("")}</div>`:""}
+    <div class="panel" style="margin-top:14px"><h3 style="margin-top:0">✨ Ny spiller</h3>
+      <input id="nn" maxlength="16" placeholder="Navnet ditt">
+      <select id="nl" style="margin-top:8px"><option value="1">Lett (ca. 2.–4. trinn)</option><option value="2" selected>Middels (ca. 5.–7. trinn)</option><option value="3">Voksen (vanskelig)</option></select>
+      <button class="btn" id="nb" style="width:100%;margin-top:10px">Lag spiller 🎉</button></div>`;
+  m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>login(b.dataset.p));
+  m.querySelector("#nb").onclick=async()=>{
+    const n=m.querySelector("#nn").value.trim();
+    if(!n) return toast("Skriv navnet ditt 😊");
+    let p=slug(n); if(PLAYERS[p]) return toast("Det navnet er tatt – velg et annet");
+    const welcome=makeItem("tb-dumpling",1);
+    const rec={name:n, lvl:+m.querySelector("#nl").value, coins:200, created:Date.now(),
+      stats:fresh().stats, daily:"", dex:{"tb-dumpling":true}, inv:{[welcome.uid]:{id:welcome.id,v:welcome.v,at:welcome.at}}};
+    if(!navigator.onLine) return toast("Ingen internett akkurat nå 📵",4000);
+    const btn=m.querySelector("#nb"); btn.disabled=true; btn.textContent="Lager spiller…";
+    try{ await retryWrite(()=>FB.set(R("players/"+p),rec)); }catch(e){ btn.disabled=false; btn.textContent="Lag spiller 🎉"; return fail(e); }
+    login(p); setTimeout(()=>reveal([welcome],"🎁",()=>render(),"Velkomstgave!"),300);
+  };
+}
+function login(p){ me=p; localStorage.setItem(ME_KEY,p); syncMe(); tv={opp:""}; firstBoards=true; go("samling"); onBoards(); }
+
+/* ---------- OPPSTART ---------- */
+function vLoading(m){
+  m.innerHTML=`<div style="text-align:center;margin-top:60px"><div style="font-size:64px;animation:float 1.5s infinite">🥟</div><h3>${fbError?"😕 "+esc(fbError):"Kobler til…"}</h3>${fbError?`<button class="btn" onclick="location.reload()">Prøv igjen</button>`:""}</div>`;
+}
+let rTimer=null;
+function softRender(){ // ikke forstyrr quiz-svar eller trade-utkast
+  $("#coinN").textContent=S.coins; updateBadge();
+  if(view==="oppgaver"&&quiz) return;
+  if(document.querySelector(".modal")||$("#reveal").classList.contains("show")) return;
+  clearTimeout(rTimer); rTimer=setTimeout(render,60);
+}
+function boot(){
+  if(!FIREBASE_CONFIG||!FIREBASE_CONFIG.apiKey){ fbError="Firebase er ikke satt opp ennå"; return render(); }
+  try{
+    const app=FB.initializeApp(FIREBASE_CONFIG); const auth=FB.getAuth(app); db=FB.getDatabase(app);
+    FB.signInAnonymously(auth).then(()=>{
+      FB.onValue(R("players"),snap=>{ PLAYERS=snap.val()||{}; if(me) syncMe();
+        const first=!ready; ready=true; if(first) render(); else softRender(); },e=>{ fbError="Ingen tilgang til databasen"; render(); });
+      FB.onValue(R("meta/code"),snap=>{ famHash=snap.val(); const st=localStorage.getItem(FAM_KEY); if(st&&famHash&&st!==famHash){ localStorage.removeItem(FAM_KEY); famOK=false; render(); } });
+      FB.onValue(R("boards"),snap=>{ BOARDS=snap.val()||{}; if(me){ onBoards(); softRender(); } });
+    }).catch(e=>{ console.error(e); fbError="Klarte ikke å koble til (er du på nett?)"; render(); });
+  }catch(e){ console.error(e); fbError="Feil i Firebase-oppsettet"; render(); }
+}
+go("samling");
+if(window.FB) boot(); else window.addEventListener("fb-ready",boot,{once:true});
+setTimeout(()=>{ if(!window.FB&&!fbError){ fbError="Klarte ikke å laste Firebase (er du på nett?)"; render(); } },12000);
+if("serviceWorker" in navigator && location.protocol.startsWith("http")) { navigator.serviceWorker.register("sw.js").then(r=>r.update()).catch(()=>{}); let rl=false; navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(!rl){ rl=true; location.reload(); } }); }
+</script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth, signInAnonymously} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getDatabase, ref, onValue, set, update, remove, push, runTransaction} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+window.FB={initializeApp,getAuth,signInAnonymously,getDatabase,ref,onValue,set,update,remove,push,runTransaction};
+window.dispatchEvent(new Event("fb-ready"));
+</script>
+</body>
+</html>
