@@ -1692,14 +1692,19 @@ function catState(c){ const p=progOf(c), U=unlockedTier(); if(p.c>=3) return {t:
 function countProgress(cat,lvl){
   if(!PCATS.includes(cat)) return;
   const st=catState(cat); if(st.t!=="gar"||st.lvl!==lvl) return;
-  if(!S.prog){ S.prog={}; for(const c of PCATS){ const p=progOf(c); S.prog[c]={c:p.c,n:p.n}; } }
-  const p=S.prog[cat]; p.n=(p.n||0)+1; const before=unlockedTier();
-  if(p.n>=NEED){ p.c=lvl; p.n=0; const CB=[0,30,50,100][lvl]; setCoins(S.coins+CB);
-    const cn=CATS.find(x=>x.id===cat).name; const after=unlockedTier();
-    if(p.c>=3) toast("🏆 "+cn+": Mester! +"+CB+" 🪙",4500);
-    else if(after>before){ setCoins(S.coins+100); toast("🔓 Nivå "+after+" åpnet i alle kategorier! +"+(CB+100)+" 🪙",5500); }
-    else toast("⭐ "+cn+" nivå "+lvl+" klart! +"+CB+" 🪙 – klar resten for å åpne nivå "+(lvl+1),5000); }
-  FB.set(R(`players/${me}/prog`),S.prog).catch(fail);
+  // Lag en kopi, og skriv til skyen FØR mynter lagres (ellers overskriver en synk fremdriften med gammel verdi)
+  const np={}; for(const c of PCATS){ const q=progOf(c); np[c]={c:q.c,n:q.n}; }
+  const before=unlockedTier(); const p=np[cat]; p.n=(p.n||0)+1; let cb=0, after=before, done=false;
+  if(p.n>=NEED){ p.c=lvl; p.n=0; done=true; cb=[0,30,50,100][lvl]; S.prog=np; after=unlockedTier(); if(p.c<3&&after>before) cb+=100; }
+  S.prog=np;
+  FB.set(R(`players/${me}/prog`),np).catch(fail);
+  if(done){
+    const cn=CATS.find(x=>x.id===cat).name;
+    setCoins(S.coins+cb);
+    if(p.c>=3) toast("🏆 "+cn+": Mester! +"+cb+" 🪙",4500);
+    else if(after>before) toast("🔓 Nivå "+after+" åpnet i alle kategorier! +"+cb+" 🪙",5500);
+    else toast("⭐ "+cn+" nivå "+lvl+" klart! +"+cb+" 🪙 – klar resten for å åpne nivå "+(lvl+1),5000);
+  }
 }
 function progPanel(){
   const U=unlockedTier(), done=PCATS.filter(c=>progOf(c).c>=U).length;
@@ -2096,7 +2101,7 @@ function vMeg(m){
    </div>
    <div class="panel"><b>🏆 Toppliste (samlingsverdi)</b>${board.map((x,i)=>`<div class="stat" ${i===board.length-1?'style="border:0"':""}><span>${["🥇","🥈","🥉"][i]||"·"} ${esc(x.n)}</span><b>🪙 ${x.v}</b></div>`).join("")}</div>
    <div class="panel"><b>Odds i boksene</b><p class="muted" style="font-size:13px">${BOXES.map(b=>`${b.e} ${b.name}: `+b.odds.map((o,i)=>o?`${TIERS[i].name} ${o}%`:"").filter(Boolean).join(", ")).join("<br>")}<br>Varianter: ✨ Glitter ~12 %, 🌈 Regnbue ~5 %, 👑 Gull ~1 % (høyere i store bokser)</p></div>
-   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 12 · nivåer, julekalender og nye spørsmål</p>`;
+   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 13 · nivåer, julekalender og nye spørsmål</p>`;
   m.querySelector("#lo").onclick=async()=>{ if(await confirmBox("Bytte spiller? Samlingen ligger trygt lagret.","Bytt")){ me=""; localStorage.removeItem(ME_KEY); S=fresh(); render(); } };
 }
 
