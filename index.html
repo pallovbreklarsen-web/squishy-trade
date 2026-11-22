@@ -73,6 +73,15 @@ input,select{font-family:inherit;font-size:16px;padding:12px;border-radius:14px;
 .card .tier{position:absolute;top:6px;left:6px;font-size:9px;font-weight:900;color:#fff;background:var(--tc);padding:2px 6px;border-radius:999px}
 .card .vtag{position:absolute;top:6px;right:6px;font-size:13px}
 .card.locked{opacity:.45}
+.card.broken{background:#e9e5ec!important;border-color:#bbb!important}.card.broken .art{filter:grayscale(1) brightness(.9);opacity:.55;transform:scaleY(.5);transform-origin:50% 100%}
+.card .brktag{position:absolute;top:6px;left:6px;background:#6b6275;color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:6px;z-index:2}
+.btn.pop{background:#ff7a1a;box-shadow:0 4px 0 #c75a08;color:#fff}
+.popfx{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;pointer-events:none;animation:popb .6s ease-out forwards}
+@keyframes popb{0%{transform:scale(.2);opacity:1}60%{transform:scale(1.5);opacity:1}100%{transform:scale(2);opacity:0}}
+.sqstage.popping .sqbody{animation:popout .35s ease-in forwards}
+@keyframes popout{0%{transform:scale(1)}40%{transform:scale(1.35,1.35)}100%{transform:scale(1.8);opacity:0}}
+.sqstage.broke .sqbody{filter:grayscale(1);opacity:.6;transform:scaleY(.45)}
+.box.b4{background:linear-gradient(135deg,#7ee8ff,#b58cff 55%,#ff9de1);border:2px solid #fff;box-shadow:0 0 18px #9be7ff}
 .card.locked::after{content:"🔒 på bordet";position:absolute;inset:auto 0 0 0;font-size:10px;font-weight:800;background:#000a;color:#fff;padding:2px}
 .t0{--tc:var(--t0)}.t1{--tc:var(--t1)}.t2{--tc:var(--t2)}.t3{--tc:var(--t3)}.t4{--tc:var(--t4)}
 /* variants */
@@ -772,6 +781,7 @@ const BOXES = [
   {id:"liten", name:"Mysterieboks", e:"🎁", cls:"b1", price:100, count:1, odds:[70,25,5,0,0], vboost:1, desc:"1 squishy · mest vanlige"},
   {id:"stor",  name:"Superboks",    e:"💜", cls:"b2", price:300, count:2, odds:[30,40,22,7,1], vboost:1.5, desc:"2 squishies · sjanse for episk!"},
   {id:"mega",  name:"Megaboks",     e:"🌟", cls:"b3", price:800, count:3, odds:[0,20,45,28,7], vboost:2, desc:"3 squishies · høy sjanse for legendarisk"},
+  {id:"diamant", name:"Diamantboks", e:"💎", cls:"b4", price:10000, count:5, odds:[0,0,20,50,30], vboost:4, guar:true, desc:"5 squishies · mest episk og legendarisk · garantert minst én ✨/🌈/👑"},
 ];
 
 /* =========================================================
@@ -1356,7 +1366,7 @@ const ME_KEY = "squishyTrade.me", SEEN_KEY = "squishyTrade.seen", FAM_KEY="squis
 let famOK=!!localStorage.getItem(FAM_KEY), famHash=null;
 let db=null, me=localStorage.getItem(ME_KEY)||"", PLAYERS={}, TRADES={}, ready=false, fbError="";
 let S = fresh();
-function fresh(){ return {name:"", lvl:2, coins:0, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,opened:0,squeezes:0}, daily:"", claims:{}, advent:{}, prog:null}; }
+function fresh(){ return {name:"", lvl:2, coins:0, inv:[], dex:{}, stats:{correct:0,answered:0,best:0,opened:0,squeezes:0,popped:0}, daily:"", claims:{}, advent:{}, prog:null}; }
 let _uc=0; const uid = ()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36)+(_uc++).toString(36);
 const rnd = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -1376,7 +1386,7 @@ async function retryWrite(fn){
   }
 }
 
-function value(it){ const d=DEF[it.id]; if(d&&d.fake) return FAKE_VALUE; return d&&VARIANTS[it.v]? Math.round(TIERS[d.tier].price*VARIANTS[it.v].mult) : 0; }
+function value(it){ const d=DEF[it.id]; if(it.x) return 0; if(d&&d.fake) return FAKE_VALUE; return d&&VARIANTS[it.v]? Math.round(TIERS[d.tier].price*VARIANTS[it.v].mult) : 0; }
 function invValue(inv){ return inv.reduce((s,i)=>s+value(i),0); }
 function rollVariant(boost=1){
   const r=Math.random()*100;
@@ -1404,12 +1414,12 @@ function syncMe(){
 function card(it,opts={}){
   const d=DEF[it.id]; if(!d) return "";
   const t=TIERS[d.tier], v=VARIANTS[it.v];
-  return `<div class="card t${d.tier} v-${it.v} ${opts.cls||""}" data-uid="${it.uid||""}" data-id="${d.id}">
+  return `<div class="card t${d.tier} v-${it.v} ${it.x?"broken ":""}${opts.cls||""}" data-uid="${it.uid||""}" data-id="${d.id}">${it.x?`<span class="brktag">💥 ØDELAGT</span>`:""}
     <span class="tier">${d.fake?"Falsk":t.name}</span>${itemCol(it)?`<span class="cdot" title="${COLS[itemCol(it)][0]}" style="background:${colBg(itemCol(it))}"></span>`:""}${d.fake?`<span class="faketag">FAKE</span>`:""}${v.icon?`<span class="vtag">${v.icon}</span>`:""}
     <div class="blob art">${artSVG(d,it.k)}</div>
     <div class="nm">${v.name?v.name+" ":""}${esc(d.name)}</div>
     <div class="br">${esc(d.brand)}</div>
-    ${opts.noval?"":`<div class="val">🪙 ${opts.price??value(it)}</div>`}
+    ${opts.noval?"":it.x?`<div class="val">🗑️ til søpla</div>`:`<div class="val">🪙 ${opts.price??value(it)}</div>`}
   </div>`;
 }
 function toast(msg,ms=2200){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),ms); }
@@ -1452,7 +1462,7 @@ let colF="";
 function vSamling(m){
   const tot=invValue(S.inv), dexN=Object.keys(S.dex).length;
   const _ab=advBanner();
-  const have=[...new Set(S.inv.map(itemCol).filter(Boolean))];
+  const have=[...new Set(S.inv.filter(i=>!i.x).map(itemCol).filter(Boolean))];
   let html=_ab+`<div class="tabs"><button data-t="mine" class="${samTab==="mine"?"on":""}">Mine squishies (${S.inv.length})</button><button data-t="dex" class="${samTab==="dex"?"on":""}">Squishydex</button><button data-t="farge" class="${samTab==="farge"?"on":""}">Fargejakt</button></div>`;
   if(samTab==="mine"){
     html+=`<div class="panel row"><div class="grow"><b>Samlingsverdi</b><div style="font-size:26px;font-weight:900">🪙 ${tot}</div></div>
@@ -1461,6 +1471,8 @@ function vSamling(m){
     if(colF&&!have.includes(colF)) colF="";
     if(have.length>1) html+=`<div class="chips colchips"><button class="${colF?"":"on"}" data-c="">Alle</button>${have.map(k=>`<button class="${colF===k?"on":""}" data-c="${k}"><span class="cdot2" style="background:${colBg(k)}"></span>${COLS[k][0]}</button>`).join("")}</div>`;
     const inv=S.inv.filter(i=>!colF||itemCol(i)===colF).sort(sortBy==="value"?(a,b)=>value(b)-value(a):sortBy==="new"?(a,b)=>b.at-a.at:(a,b)=>DEF[a.id].brand.localeCompare(DEF[b.id].brand)||value(b)-value(a));
+    const nb=S.inv.filter(i=>i.x).length;
+    if(nb) html+=`<div class="panel row"><div class="grow">💥 Du har <b>${nb}</b> ødelagt${nb>1?"e":""} squishy${nb>1?"s":""}</div><button class="btn red" id="trashall">🗑️ Kast ${nb>1?"alle":"den"}</button></div>`;
     html+=`<div class="grid">${inv.map(i=>card(i,{cls:"tap"+(isOffered(i.uid)?" locked":"")})).join("")}</div>`;
   } else if(samTab==="farge"){
     html+=vFarge();
@@ -1475,6 +1487,7 @@ function vSamling(m){
   const ao=m.querySelector("#advopen"); if(ao) ao.onclick=advModal;
   m.querySelectorAll("[data-claim]").forEach(b=>b.onclick=()=>claimColor(b.dataset.claim));
   m.querySelectorAll(".colchips [data-c]").forEach(b=>b.onclick=()=>{colF=b.dataset.c;render();});
+  const ta=m.querySelector("#trashall"); if(ta) ta.onclick=async()=>{ const bl=S.inv.filter(i=>i.x); if(await confirmBox(`Kaste ${bl.length} ødelagt${bl.length>1?"e":""} squishy${bl.length>1?"s":""} i søpla? Det kan ikke angres.`,"Kast")){ bl.forEach(i=>removeItem(i.uid)); render(); toast("🗑️ Kastet i søpla"); } };
   const so=m.querySelector("#sort"); if(so){ so.value=sortBy; so.onchange=()=>{sortBy=so.value;render();}; }
   m.querySelectorAll(".grid .card[data-uid]").forEach(c=>c.onclick=()=>{ squishOn(c); if(c.dataset.uid) setTimeout(()=>itemDetail(c.dataset.uid),250); });
 }
@@ -1487,7 +1500,8 @@ function squeak(fake,dn){
     g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(fake?0.05:0.09,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);
     o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.2); }catch(e){}
 }
-function setupSqueeze(m,d){
+const POPCHANCE=0.004; // ca. 1 av 250 klemmer
+function setupSqueeze(m,d,onPop){
   const st=m.querySelector("#sqs"), body=m.querySelector(".sqbody"), nEl=m.querySelector("#sqn"); if(!st) return;
   const fake=!!d.fake; let sy=1,vy=0,tgt=1,raf=0,last=0,down=false,mine=0;
   const tick=ts=>{ const dt=Math.min(0.03,(ts-last)/1000||0.016); last=ts;
@@ -1500,20 +1514,47 @@ function setupSqueeze(m,d){
     S.stats.squeezes=(S.stats.squeezes||0)+1; mine++;
     if(S.stats.squeezes%100===0){ setCoins(S.coins+10); toast("🤗 100 klemmer! +10 🪙"); save(); }
     else if(S.stats.squeezes%10===0) save();
-    nEl.textContent=`🤗 Klemt ${mine} ganger nå · ${S.stats.squeezes} totalt`; kick(); };
+    nEl.textContent=`🤗 Klemt ${mine} ganger nå · ${S.stats.squeezes} totalt`; kick();
+    if(onPop&&Math.random()<POPCHANCE){ down=false; st.removeEventListener('pointerdown',press); setTimeout(()=>onPop(),120); } };
   const rel=()=>{ if(!down) return; down=false; tgt=1; squeak(fake,false); kick(); };
   st.addEventListener("pointerdown",press); st.addEventListener("pointerup",rel); st.addEventListener("pointercancel",rel); st.addEventListener("pointerleave",rel);
 }
+function popBang(){
+  try{ _ac=_ac||new (window.AudioContext||window.webkitAudioContext)(); const t=_ac.currentTime, n=Math.floor(_ac.sampleRate*0.25), buf=_ac.createBuffer(1,n,_ac.sampleRate), ch=buf.getChannelData(0);
+    for(let i=0;i<n;i++) ch[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
+    const src=_ac.createBufferSource(), g=_ac.createGain(); src.buffer=buf; g.gain.value=0.5; src.connect(g); g.connect(_ac.destination); src.start(t);
+    const o=_ac.createOscillator(), g2=_ac.createGain(); o.frequency.setValueAtTime(260,t); o.frequency.exponentialRampToValueAtTime(40,t+0.2); g2.gain.setValueAtTime(0.25,t); g2.gain.exponentialRampToValueAtTime(0.0001,t+0.22); o.connect(g2); g2.connect(_ac.destination); o.start(t); o.stop(t+0.25); }catch(e){}
+}
+function trashItem(u){ removeItem(u); render(); toast("🗑️ Kastet i søpla"); }
 function itemDetail(u){
   const it=S.inv.find(i=>i.uid===u); if(!it) return;
   const d=DEF[it.id], sell=Math.round(value(it)*0.4);
+  if(it.x){
+    const m=modal(`<div style="text-align:center"><b style="font-size:18px">${esc(d.name)}</b></div>
+     <div class="sqstage broke" style="cursor:default"><div class="sqbody">${artSVG(d,it.k)}</div></div>
+     <p style="text-align:center"><b>💥 Poppet og ødelagt</b><br><span class="muted">Den kan ikke selges, byttes eller legges ut på auksjon. Den må kastes i søpla.</span></p>
+     <div class="row"><button class="btn sec grow" id="cl">Lukk</button><button class="btn red grow" id="tr">🗑️ Kast i søpla</button></div>`,{center:true});
+    m.querySelector("#cl").onclick=()=>m.remove();
+    m.querySelector("#tr").onclick=async()=>{ if(await confirmBox(`Kaste ${esc(d.name)} i søpla? Det kan ikke angres.`,"Kast")){ m.remove(); trashItem(u); } };
+    return;
+  }
+  const off=isOffered(u);
   const m=modal(`<div style="text-align:center"><b style="font-size:18px">${esc(d.name)}</b></div>
-   <div class="sqstage" id="sqs"><div class="sqbody">${artSVG(d,it.k)}</div></div>
-   <div class="sqn" id="sqn">🤗 Klem på meg! Hold fingeren nede</div>
+   <div class="sqstage" id="sqs" style="position:relative"><div class="sqbody">${artSVG(d,it.k)}</div></div>
+   <div class="sqn" id="sqn">🤗 Klem på meg! Hold fingeren nede · men pass opp, jeg kan sprekke 😬</div>
    <p style="text-align:center" class="muted">${TIERS[d.tier].name}${itemCol(it)?" · "+COLS[itemCol(it)][0]:""}${it.v!=="n"?" · "+VARIANTS[it.v].name+"-variant (x"+VARIANTS[it.v].mult+" verdi)":""}${it.from?"<br>Tradet fra "+esc(it.from):""}</p>
-   <div class="row"><button class="btn sec grow" id="cl">Lukk</button><button class="btn red grow" id="sl" ${isOffered(u)?"disabled":""}>Selg for 🪙 ${sell}</button></div>`,{center:true});
+   <div class="row"><button class="btn sec grow" id="cl">Lukk</button><button class="btn red grow" id="sl" ${off?"disabled":""}>Selg for 🪙 ${sell}</button></div>`,{center:true});
   m.querySelector("#cl").onclick=()=>{ m.remove(); save(); };
-  setupSqueeze(m,d);
+  const doPop=()=>{
+    const cur=S.inv.find(i=>i.uid===u); if(!cur||cur.x||isOffered(u)) return;
+    cur.x=1; S.stats.popped=(S.stats.popped||0)+1;
+    save(); FB.update(R(`players/${me}/inv/${u}`),{x:1}).catch(fail);
+    const st=m.querySelector("#sqs"); st.classList.add("popping"); const fx=document.createElement("div"); fx.className="popfx"; fx.textContent="💥"; st.appendChild(fx);
+    popBang(); if(navigator.vibrate) navigator.vibrate([60,30,120]);
+    m.querySelector("#sqn").textContent="💥 PANG! Den sprakk!";
+    setTimeout(()=>{ m.remove(); render(); itemDetail(u); },900);
+  };
+  setupSqueeze(m,d,off?null:doPop);
   m.querySelector("#sl").onclick=async()=>{ m.remove(); if(await confirmBox(`Selge ${VARIANTS[it.v].name} ${esc(d.name)} for 🪙 ${sell}?`,"Selg")){ removeItem(u); setCoins(S.coins+sell); render(); toast("Solgt! +"+sell+" 🪙"); } };
 }
 
@@ -1558,7 +1599,7 @@ function openDoor(d){
 /* ---------- FARGEJAKT ---------- */
 const COLGOAL=5, COLBONUS=150, RAINBOW_BONUS=800;
 function colorStats(){
-  const own={}; for(const i of S.inv){ const k=itemCol(i); if(!k) continue; (own[k]=own[k]||new Set()).add(i.id); }
+  const own={}; for(const i of S.inv){ if(i.x) continue; const k=itemCol(i); if(!k) continue; (own[k]=own[k]||new Set()).add(i.id); }
   const out={};
   for(const k of Object.keys(COLS)){
     const avail=CATALOG.filter(d=>d.cols&&d.cols.indexOf(k)>=0).length;
@@ -1612,7 +1653,7 @@ function vAuksjon(m){
   m.querySelectorAll("[data-acx]").forEach(b=>b.onclick=()=>cancelAuction(b.dataset.acx));
 }
 function listAuction(){
-  const items=S.inv.filter(i=>!isOffered(i.uid));
+  const items=S.inv.filter(i=>!i.x&&!isOffered(i.uid));
   picker("Velg squishy å legge ut",items,it=>{
     const d=DEF[it.id], def=Math.max(5,Math.round(value(it)*0.6));
     const m=modal(`<div style="width:150px;margin:0 auto">${card(it)}</div>
@@ -1886,11 +1927,15 @@ function openBox(bid){
   setCoins(S.coins-b.price); S.stats.opened++;
   const items=[];
   if(bid==="mdump"){ const it=makeItem(rollMystery().id,1); addItem(it); items.push(it); }
-  else for(let i=0;i<b.count;i++){
-    const t=rollTier(b.odds); let d;
-    if(t===0&&Math.random()<0.08) d=pick(CATALOG.filter(c=>c.fake));
-    else d=pick(CATALOG.filter(c=>c.tier===t&&!c.fake));
-    const it=makeItem(d.id,b.vboost); addItem(it); items.push(it);
+  else {
+    for(let i=0;i<b.count;i++){
+      const t=rollTier(b.odds); let d;
+      if(t===0&&Math.random()<0.08) d=pick(CATALOG.filter(c=>c.fake));
+      else d=pick(CATALOG.filter(c=>c.tier===t&&!c.fake&&!c.adv));
+      items.push(makeItem(d.id,b.vboost));
+    }
+    if(b.guar&&items.every(i=>i.v==="n")){ const best=items.slice().sort((a,c)=>DEF[c.id].tier-DEF[a.id].tier)[0]; const r=Math.random()*100; best.v=r<8?"gold":r<30?"r":"g"; }
+    items.forEach(addItem);
   }
   save(); sendInv(); reveal(items,bid==="mdump"?"🥟":b.e,()=>render());
 }
@@ -1994,7 +2039,7 @@ async function acceptBoard(){
       if(b.acc[o]){
         const A=root.players[me], B=root.players[o]; if(!A||!B) return;
         A.inv=A.inv||{}; B.inv=B.inv||{};
-        if(!mine.every(u=>A.inv[u])||!theirs.every(u=>B.inv[u])){ b.offers={}; b.acc={}; b.ev={id:uid(),type:"failed",by:me,at:Date.now()}; return root; }
+        if(!mine.every(u=>A.inv[u]&&!A.inv[u].x)||!theirs.every(u=>B.inv[u]&&!B.inv[u].x)){ b.offers={}; b.acc={}; b.ev={id:uid(),type:"failed",by:me,at:Date.now()}; return root; }
         const now=Date.now(), got={[me]:{},[o]:{}};
         const move=(F,T,list,to)=>list.forEach(u=>{ const it=F.inv[u]; delete F.inv[u]; const nu=uid(); T.inv[nu]={id:it.id,v:it.v,k:it.k||"",at:now,from:F.name||""}; T.dex=T.dex||{}; T.dex[it.id]=true; got[to][nu]={id:it.id,v:it.v,k:it.k||""}; });
         move(A,B,mine,o); move(B,A,theirs,me);
@@ -2068,7 +2113,7 @@ function vTrade(m){
    <div class="panel" style="margin-top:12px"><b>${esc(pname(o))} sin samling</b> <span class="muted">(🪙 ${invValue(invOf(o))})</span>
      <div class="grid small" style="margin-top:8px">${invOf(o).sort((a,b)=>value(b)-value(a)).map(i=>card(i,{cls:"peek"})).join("")||'<span class="muted">Tom</span>'}</div></div>`;
   m.querySelectorAll(".chips [data-p]").forEach(x=>x.onclick=()=>{ tv.opp=x.dataset.p; heartbeat(); render(); });
-  m.querySelector("#bp").onclick=()=>picker("Legg på brettet",S.inv.filter(i=>!isOffered(i.uid)),it=>addToBoard(it));
+  m.querySelector("#bp").onclick=()=>picker("Legg på brettet",S.inv.filter(i=>!i.x&&!isOffered(i.uid)),it=>addToBoard(it));
   m.querySelector("#bm").onclick=()=>{ boardTx(b=>{ b.ask={id:uid(),by:me,at:Date.now()}; b.acc={}; }); toast("☝️ Du ba "+pname(o)+" legge til mer"); };
   m.querySelector("#ba").onclick=()=>{ squishOn(m.querySelector("#ba")); acc[me]?unaccept():acceptBoard(); };
   m.querySelector("#bx").onclick=async()=>{ if(await confirmBox("Avslå og tøm brettet?","Avslå ❌")) declineBoard(); };
@@ -2097,11 +2142,12 @@ function vMeg(m){
      <div class="stat"><span>Riktige svar</span><b>${st.correct} av ${st.answered}</b></div>
      <div class="stat"><span>Lengste rekke</span><b>🔥 ${st.best}</b></div>
      <div class="stat"><span>Bokser åpnet</span><b>${st.opened}</b></div>
+     <div class="stat"><span>Squishies poppet 💥</span><b>${st.popped||0}</b></div>
      <div class="stat" style="border:0"><span>Squishies fått i bytte</span><b>${trades}</b></div>
    </div>
    <div class="panel"><b>🏆 Toppliste (samlingsverdi)</b>${board.map((x,i)=>`<div class="stat" ${i===board.length-1?'style="border:0"':""}><span>${["🥇","🥈","🥉"][i]||"·"} ${esc(x.n)}</span><b>🪙 ${x.v}</b></div>`).join("")}</div>
    <div class="panel"><b>Odds i boksene</b><p class="muted" style="font-size:13px">${BOXES.map(b=>`${b.e} ${b.name}: `+b.odds.map((o,i)=>o?`${TIERS[i].name} ${o}%`:"").filter(Boolean).join(", ")).join("<br>")}<br>Varianter: ✨ Glitter ~12 %, 🌈 Regnbue ~5 %, 👑 Gull ~1 % (høyere i store bokser)</p></div>
-   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 13 · nivåer, julekalender og nye spørsmål</p>`;
+   <button class="btn sec" id="lo" style="width:100%">🔄 Bytt spiller (alle i familien)</button><p class="muted" style="text-align:center;font-size:12px">Versjon 14 · squishies kan sprekke + Diamantboks</p>`;
   m.querySelector("#lo").onclick=async()=>{ if(await confirmBox("Bytte spiller? Samlingen ligger trygt lagret.","Bytt")){ me=""; localStorage.removeItem(ME_KEY); S=fresh(); render(); } };
 }
 
