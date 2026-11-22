@@ -244,6 +244,8 @@ button.tbtn:disabled{opacity:.45}
 .doors{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.door{border:0;border-radius:14px;padding:10px 0;background:#ef4b4b;color:#fff;font-weight:900;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 3px 0 #b83030}
 .door.lock{background:#c9c0cf;box-shadow:0 3px 0 #a79eb0}.door.open{background:#4cc577;box-shadow:0 3px 0 #2f9a55}.door.can{animation:glow 1.2s ease-in-out infinite}.door .dn{font-size:18px}.door .di{font-size:22px}
 .cbadge b{font-size:13px;letter-spacing:0}.cbadge .dots{font-size:11px}.cbadge{display:block;font-size:11px;font-weight:800;margin-top:6px;color:#5a4a6a;letter-spacing:1px}.cbadge.m{color:#b8860b}.cbadge.w{color:#2f9a55;letter-spacing:0}
+.cat{position:relative}.cat.done{outline:3px solid #4cc577;outline-offset:-3px}.cat .chk{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:#4cc577;color:#fff;font-size:17px;line-height:26px;box-shadow:0 2px 0 #2f9a55}
+.pbar{text-align:center;font-weight:800;margin:6px 0 10px;color:#5a4a6a}.pdots{color:#4cc577;letter-spacing:2px;font-size:18px}.pgreen{color:#2f9a55;font-weight:900}
 .lvbar{display:flex;gap:8px;margin-bottom:12px}.lvb{flex:1;border:2px solid #eadff5;background:#fff;border-radius:14px;padding:10px 4px;font-weight:800;font-size:14px;color:#6b5b7a}.lvb.on{background:#2d2547;color:#fff;border-color:#2d2547}
 .addrow{margin-top:10px}.addrow button{width:100%}
 .askbar{background:#fff3c4;border:2px solid #f2c94c;border-radius:14px;padding:10px;margin-top:10px;font-weight:800;text-align:center;animation:glow 1.2s ease-in-out infinite}
@@ -1703,8 +1705,13 @@ function progPanel(){
   const U=unlockedTier(), done=PCATS.filter(c=>progOf(c).c>=U).length;
   return `<div class="panel"><b>🧭 Nivå ${U} (${LVN[U]})</b><div class="muted" style="margin-top:4px">${U>=3&&done===PCATS.length?"Du er mester i alle kategorier! 🏆":`Svar riktig ${NEED} ganger i hver kategori for å klare nivå ${U}. Når alle er klare, åpnes nivå ${Math.min(3,U+1)}. (${done}/${PCATS.length} klare)`}</div></div>`;
 }
+function dotsHTML(n){ return `<span class="pdots">${"●".repeat(n)}${"○".repeat(NEED-n)}</span>`; }
+function pbarHTML(cat,lvl){ const st=catState(cat);
+  if(st.t==="mester") return `<span class="pgreen">✅ 🏆 Mester i denne kategorien</span>`;
+  if(st.t==="vent") return `<span class="pgreen">✅ Nivå ${st.c} klart! Klar de andre kategoriene for å åpne neste nivå</span>`;
+  return `<b>Nivå ${st.lvl}</b> ${dotsHTML(st.n)} <span class="muted">(${st.n}/${NEED})</span>`; }
 function catBadge(c){ const st=catState(c);
-  if(st.t==="mester") return `<span class="cbadge m">🏆 Mester</span>`;
+  if(st.t==="mester") return `<span class="cbadge m"><b>✅ 🏆 Mester</b></span>`;
   if(st.t==="vent") return `<span class="cbadge w"><b>✅ Nivå ${st.c} klart</b><br>venter på resten</span>`;
   return `<span class="cbadge lv${st.lvl}"><b>${["","🟢","🟡","🔴"][st.lvl]} Nivå ${st.lvl}</b><br><span class="dots">${"●".repeat(st.n)}${"○".repeat(NEED-st.n)}</span></span>`; }
 
@@ -1717,7 +1724,7 @@ function vOppgaver(m){
      ${S.daily!==today?`<div class="panel row"><div class="grow"><b>Daglig bonus!</b><div class="muted">Hent 50 gratis mynter i dag</div></div><button class="btn green" id="daily">Hent 🪙 50</button></div>`:""}
      <p class="muted" style="margin-bottom:6px">Riktig svar gir 🪙 5 på Lett, 🪙 10 på Middels og 🪙 20 på Voksen. Fem på rad gir bonus!</p>
      ${progPanel()}
-     <div class="cats">${CATS.map(c=>`<button class="cat" data-c="${c.id}" style="background:${c.bg}"><span class="e">${c.e}</span>${c.name}${PCATS.includes(c.id)?catBadge(c.id):`<span class="cbadge">Alle nivåer</span>`}</button>`).join("")}</div>`;
+     <div class="cats">${CATS.map(c=>{ const dn=PCATS.includes(c.id)&&catState(c.id).t!=="gar"; return `<button class="cat ${dn?"done":""}" data-c="${c.id}" style="background:${c.bg}">${dn?`<span class="chk">✓</span>`:""}<span class="e">${c.e}</span>${c.name}${PCATS.includes(c.id)?catBadge(c.id):`<span class="cbadge"><b>${["","🟢","🟡","🔴"][unlockedTier()]} Nivå ${unlockedTier()}</b><br>alle kategorier</span>`}</button>`}).join("")}</div>`;
     m.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{ quiz={cat:b.dataset.c,streak:0,n:0,right:0,earned:0,q:null,seen:new Set()}; nextQ(); render(); });
     const d=m.querySelector("#daily"); if(d) d.onclick=(e)=>{ S.daily=today; setCoins(S.coins+50); coinFly(e.clientX,e.clientY,"+50 🪙"); render(); };
     return;
@@ -1725,6 +1732,7 @@ function vOppgaver(m){
   const q=quiz.q, cat=CATS.find(c=>c.id===quiz.cat);
   m.innerHTML=`<div class="panel qbox">
     <div class="qhead"><button class="btn sec" id="back" style="padding:6px 12px">← Tilbake</button><span>${cat.e} ${cat.name}${q.cat&&PCATS.includes(q.cat)?" · "+LVN[q.lvl]:""}</span><span class="streak">🔥 ${quiz.streak}</span></div>
+    ${q.cat&&PCATS.includes(q.cat)?`<div class="pbar" id="pbar">${pbarHTML(q.cat,q.lvl)}</div>`:""}
     ${q.big?`<div class="qbig">${q.big}</div>`:""}
     <div class="qtext">${esc(q.q)}</div>
     <div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>
@@ -1735,7 +1743,8 @@ function vOppgaver(m){
   m.querySelectorAll(".opt").forEach(b=>b.onclick=(e)=>{
     if(done) return; done=true;
     const ok=q.opts[+b.dataset.i]===q.a; quiz.n++; S.stats.answered++;
-    if(ok){ countProgress(q.cat,q.lvl); b.classList.add("ok"); quiz.right++; quiz.streak++; S.stats.correct++; S.stats.best=Math.max(S.stats.best,quiz.streak);
+    if(ok){ const pre=PCATS.includes(q.cat)?catState(q.cat):null; countProgress(q.cat,q.lvl); b.classList.add("ok");
+      if(pre&&pre.t==="gar"&&pre.lvl===q.lvl){ const n=Math.min(NEED,pre.n+1), pb=m.querySelector("#pbar"); if(pb) pb.innerHTML=n>=NEED?`<span class="pgreen">✅ Nivå ${pre.lvl} klart! ${dotsHTML(NEED)}</span>`:`<b>Nivå ${pre.lvl}</b> ${dotsHTML(n)} <span class="muted">(${n}/${NEED})</span>`; } quiz.right++; quiz.streak++; S.stats.correct++; S.stats.best=Math.max(S.stats.best,quiz.streak);
       const LG=[0,5,10,20][q.lvl||2], SB=[0,10,25,50][q.lvl||2]; let gain=LG; if(quiz.streak%5===0){ gain+=SB; toast("🔥 "+quiz.streak+" på rad! +"+SB+" bonus"); }
       quiz.earned+=gain; setCoins(S.coins+gain); coinFly(e.clientX-20,e.clientY-20,"+"+gain+" 🪙");
     } else { b.classList.add("no"); quiz.streak=0; m.querySelectorAll(".opt").forEach(x=>{ if(q.opts[+x.dataset.i]===q.a) x.classList.add("ok"); }); }
